@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kepalas Bakery — Rankų Darbo Kepiniai Vilniuje</title>
+  <meta name="description" content="Kepalas – šeimos artisaninė kepykla Vilniaus Justiniškėse. Šokoladinė Babka, Velykinė Boba, rūgštynė duona ir sezoniniai kepiniai, kepami kasdien iš natūralių ingredientų." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ivory:       '#FDFBF7',
+            almond:      '#F5EBE0',
+            honey:       '#E6A15C',
+            'honey-d':   '#C8762A',
+            'honey-l':   '#F2C990',
+            espresso:    '#2B1E17',
+            'esp-mid':   '#4A3325',
+            'esp-light': '#7A5C47',
+            sage:        '#8A9A86',
+            'sage-l':    '#B8C9B4',
+            'sage-d':    '#5E7A5A',
+            cream:       '#EAD5BC',
+            'cream-d':   '#CEAD8E',
+          },
+          fontFamily: {
+            serif:   ['"Playfair Display"', 'Georgia', 'serif'],
+            display: ['"DM Serif Display"', 'Georgia', 'serif'],
+            sans:    ['"Inter"', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    html { scroll-behavior: smooth; }
+
+    ::-webkit-scrollbar       { width: 5px; }
+    ::-webkit-scrollbar-track { background: #FDFBF7; }
+    ::-webkit-scrollbar-thumb { background: #E6A15C; border-radius: 3px; }
+
+    /* ── Navbar ── */
+    #navbar { transition: background .35s ease, box-shadow .35s ease, padding .35s ease; }
+    #navbar.scrolled {
+      background: rgba(253,251,247,.96) !important;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 1px 24px rgba(43,30,23,.08);
+      padding-top: .6rem;
+      padding-bottom: .6rem;
+    }
+
+    /* ── Underline nav links ── */
+    .nav-link::after {
+      content:''; display:block; height:1.5px;
+      background:#E6A15C; width:0;
+      transition: width .3s ease;
+    }
+    .nav-link:hover::after { width:100%; }
+
+    /* ── Product card lift ── */
+    .card {
+      transition: transform .35s cubic-bezier(.25,.46,.45,.94),
+                  box-shadow .35s cubic-bezier(.25,.46,.45,.94);
+    }
+    .card:hover { transform: translateY(-8px); box-shadow: 0 28px 64px rgba(43,30,23,.14); }
+    .card:hover .card-img { transform: scale(1.06); }
+    .card-img { transition: transform .5s cubic-bezier(.25,.46,.45,.94); }
+
+    /* ── Scroll animations ── */
+    .anim { opacity:0; transform:translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+    .anim.delay-1 { transition-delay:.12s; }
+    .anim.delay-2 { transition-delay:.24s; }
+    .anim.delay-3 { transition-delay:.36s; }
+    .anim.in      { opacity:1; transform:none; }
+
+    /* ── Form inputs ── */
+    .fi {
+      width:100%; background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      color:#FDFBF7; border-radius:1rem;
+      padding:.875rem 1rem; font-size:.875rem;
+      transition: border-color .25s, background .25s, box-shadow .25s;
+      outline: none;
+    }
+    .fi::placeholder { color: rgba(253,251,247,.3); }
+    .fi:focus {
+      border-color: #E6A15C;
+      background: rgba(255,255,255,.1);
+      box-shadow: 0 0 0 3px rgba(230,161,92,.18);
+    }
+    .fi-light {
+      width:100%; background:rgba(245,235,224,.6);
+      border:1px solid #EAD5BC;
+      color:#2B1E17; border-radius:.875rem;
+      padding:.75rem 1rem; font-size:.875rem;
+      outline:none; transition: border-color .25s, box-shadow .25s;
+    }
+    .fi-light::placeholder { color:#9B8070; }
+    .fi-light:focus { border-color:#E6A15C; box-shadow:0 0 0 3px rgba(230,161,92,.2); }
+
+    /* ── Mobile slide menu ── */
+    #mob-menu {
+      transform: translateX(100%);
+      transition: transform .35s cubic-bezier(.25,.46,.45,.94);
+    }
+    #mob-menu.open { transform: translateX(0); }
+
+    /* ── Float animation ── */
+    @keyframes float {
+      0%,100% { transform:translateY(0); }
+      50%      { transform:translateY(-10px); }
+    }
+    .float { animation: float 4s ease-in-out infinite; }
+
+    /* ── Pulse dot ── */
+    @keyframes pdot { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .pdot { animation: pdot 2s ease-in-out infinite; }
+
+    /* ── Badge ring ── */
+    @keyframes ring {
+      0%,100% { box-shadow: 0 0 0 0 rgba(230,161,92,.5); }
+      60%      { box-shadow: 0 0 0 7px rgba(230,161,92,0); }
+    }
+    .ring { animation: ring 2.4s ease-in-out infinite; }
+
+    /* ── Scale-in for success ── */
+    @keyframes scalein { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
+    .scalein { animation: scalein .45s cubic-bezier(.34,1.56,.64,1) forwards; }
+
+    /* ── Section divider lines ── */
+    .divline {
+      display:inline-block; width:40px; height:1.5px;
+      background:linear-gradient(90deg,#8A9A86,transparent);
+    }
+    .divline.r { background:linear-gradient(270deg,#8A9A86,transparent); }
+
+    /* ── IG hover ── */
+    .ig-ov { opacity:0; transition:opacity .3s; }
+    .ig-cell:hover .ig-ov { opacity:1; }
+
+    /* ── Timeline dot ── */
+    .tdot::before {
+      content:''; position:absolute; left:-1px; top:7px;
+      width:9px; height:9px; border-radius:50%;
+      background:#E6A15C;
+      box-shadow:0 0 0 3px rgba(230,161,92,.25);
+    }
+  </style>
+</head>
+
+<body class="bg-ivory text-espresso font-sans overflow-x-hidden">
+
+<!-- ═══════════════════════════════════════
+     MOBILE MENU
+════════════════════════════════════════ -->
+<div id="mob-overlay" class="hidden fixed inset-0 bg-espresso/40 z-40 backdrop-blur-sm" onclick="closeMob()"></div>
+<aside id="mob-menu" class="fixed inset-y-0 right-0 w-72 bg-ivory z-50 shadow-2xl flex flex-col pt-20 pb-10 px-8">
+  <button onclick="closeMob()" class="absolute top-5 right-5 w-9 h-9 rounded-full bg-almond flex items-center justify-center text-espresso">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+  </button>
+  <nav class="flex flex-col gap-6">
+    <a href="#meniu"    class="font-serif text-2xl text-espresso hover:text-honey transition-colors" onclick="closeMob()">Meniu</a>
+    <a href="#apie-mus" class="font-serif text-2xl text-espresso hover:text-honey transition-colors" onclick="closeMob()">Apie Mus</a>
+    <a href="#renginiai"class="font-serif text-2xl text-espresso hover:text-honey transition-colors" onclick="closeMob()">Renginiai</a>
+    <a href="#kontaktai"class="font-serif text-2xl text-espresso hover:text-honey transition-colors" onclick="closeMob()">Kontaktai</a>
+  </nav>
+  <div class="mt-auto space-y-5">
+    <a href="#renginiai" onclick="closeMob()" class="block w-full text-center bg-honey text-white font-semibold py-3 rounded-full hover:bg-honey-d transition-colors text-sm">
+      Gauti pasiūlymą
+    </a>
+    <div class="flex gap-4">
+      <a href="https://instagram.com/kepalas_bakery" target="_blank" class="text-esp-light hover:text-honey transition-colors">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+      <a href="https://facebook.com/kepalasbakery" target="_blank" class="text-esp-light hover:text-honey transition-colors">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════
+     NAVIGATION
+════════════════════════════════════════ -->
+<header id="navbar" class="fixed top-0 left-0 right-0 z-30 px-6 md:px-12 py-5 flex items-center justify-between">
+  <a href="#pradinis" class="flex items-center gap-2.5 group">
+    <div class="w-9 h-9 bg-honey rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+      <span class="font-serif font-bold text-white text-sm">K</span>
+    </div>
+    <span class="font-serif font-semibold text-xl text-espresso tracking-widest">KEPALAS</span>
+  </a>
+
+  <nav class="hidden md:flex items-center gap-8">
+    <a href="#meniu"     class="nav-link text-sm font-medium text-esp-light hover:text-espresso transition-colors">Meniu</a>
+    <a href="#apie-mus"  class="nav-link text-sm font-medium text-esp-light hover:text-espresso transition-colors">Apie Mus</a>
+    <a href="#renginiai" class="nav-link text-sm font-medium text-esp-light hover:text-espresso transition-colors">Renginiai</a>
+    <a href="#kontaktai" class="nav-link text-sm font-medium text-esp-light hover:text-espresso transition-colors">Kontaktai</a>
+  </nav>
+
+  <div class="flex items-center gap-3">
+    <a href="#renginiai" class="hidden md:inline-flex items-center gap-2 bg-espresso text-ivory text-sm font-medium px-5 py-2.5 rounded-full hover:bg-esp-mid transition-colors">
+      Gauti pasiūlymą
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4-4 4M3 12h18"/></svg>
+    </a>
+    <button onclick="openMob()" class="md:hidden w-10 h-10 bg-almond rounded-full flex flex-col gap-1.5 items-center justify-center">
+      <span class="w-5 h-0.5 bg-espresso rounded"></span>
+      <span class="w-5 h-0.5 bg-espresso rounded"></span>
+      <span class="w-3.5 h-0.5 bg-espresso rounded self-end"></span>
+    </button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════
+     HERO
+════════════════════════════════════════ -->
+<section id="pradinis" class="relative min-h-screen bg-ivory flex items-center overflow-hidden pt-20">
+  <!-- Background blobs -->
+  <div class="pointer-events-none absolute top-16 -left-20 w-96 h-96 bg-almond rounded-full blur-3xl opacity-70"></div>
+  <div class="pointer-events-none absolute bottom-20 left-1/3 w-64 h-64 rounded-full blur-2xl" style="background:rgba(230,161,92,.15)"></div>
+
+  <div class="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+    <!-- Left copy -->
+    <div>
+      <div class="inline-flex items-center gap-2 bg-almond border border-cream text-esp-light text-xs font-medium tracking-widest uppercase px-4 py-2 rounded-full mb-7">
+        <span class="w-1.5 h-1.5 bg-honey rounded-full pdot"></span>
+        Rankų darbo kepiniai · Vilnius
+      </div>
+
+      <h1 class="font-serif text-5xl md:text-6xl xl:text-[4.25rem] text-espresso leading-[1.08] mb-6">
+        Artisaninė<br>
+        <em class="not-italic text-honey">Lietuviška</em><br>
+        Kepyba.
+      </h1>
+
+      <p class="text-esp-light text-lg leading-relaxed max-w-md mb-9">
+        Kiekvienas kepinys — tai natūralūs ingredientai, lėtas rūgimas ir meilė, įdėta į kiekvieną formą. Kepame kasdien, kad jūsų rytai būtų šiltesni.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-3 mb-12">
+        <a href="#meniu" class="inline-flex items-center justify-center gap-2 bg-honey text-white font-semibold px-7 py-3.5 rounded-full hover:bg-honey-d transition-all hover:shadow-xl group" style="box-shadow:0 8px 24px rgba(230,161,92,.25)">
+          Šiandienos Meniu
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4-4 4M3 12h18"/></svg>
+        </a>
+        <a href="#renginiai" class="inline-flex items-center justify-center gap-2 border-2 border-espresso/20 text-espresso font-medium px-7 py-3.5 rounded-full hover:border-espresso/50 transition-colors">
+          Renginiai ir Verslas
+        </a>
+      </div>
+
+      <!-- Stats row -->
+      <div class="flex items-center gap-6 pt-8 border-t border-cream">
+        <div class="text-center">
+          <div class="font-serif text-2xl text-honey font-bold">2022</div>
+          <div class="text-xs text-esp-light mt-0.5">Įkurta</div>
+        </div>
+        <div class="w-px h-10 bg-cream"></div>
+        <div class="text-center">
+          <div class="font-serif text-2xl text-honey font-bold">100%</div>
+          <div class="text-xs text-esp-light mt-0.5">Natūralūs ingredientai</div>
+        </div>
+        <div class="w-px h-10 bg-cream"></div>
+        <div class="text-center">
+          <div class="font-serif text-2xl text-honey font-bold">∞</div>
+          <div class="text-xs text-esp-light mt-0.5">Meilė kepimui</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right image -->
+    <div class="relative order-first lg:order-last">
+      <div class="relative rounded-[2.5rem] overflow-hidden shadow-2xl" style="aspect-ratio:4/5;max-height:600px;box-shadow:0 40px 80px rgba(43,30,23,.22)">
+        <img src="images/babka-winter.jpg" alt="Šokoladinė Babka su žiemos dekoracijomis" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-espresso/25 via-transparent to-transparent pointer-events-none"></div>
+      </div>
+
+      <!-- Floating product card -->
+      <div class="absolute -bottom-4 -left-4 md:-left-8 bg-ivory rounded-2xl shadow-xl border border-almond p-4 max-w-[176px] float">
+        <div class="text-xs font-medium text-sage uppercase tracking-widest mb-1">Dienos kepinys</div>
+        <div class="font-serif text-espresso text-base leading-tight">Šokoladinė Babka</div>
+        <div class="text-honey font-bold text-xl mt-1">€21.00</div>
+      </div>
+
+      <!-- Favorite badge -->
+      <div class="absolute -top-3 -right-3 md:-right-5 bg-honey rounded-2xl shadow-lg px-4 py-3 text-white text-center ring">
+        <div class="font-serif text-xl font-bold leading-none">★</div>
+        <div class="text-xs font-medium mt-1 leading-tight">Klientų<br>Favoritas</div>
+      </div>
+
+      <!-- Decorative circle -->
+      <div class="absolute -z-10 -bottom-8 -right-8 w-56 h-56 bg-almond rounded-full opacity-80"></div>
+    </div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-esp-light">
+    <span class="text-xs tracking-widest uppercase">Slinkti žemyn</span>
+    <div class="w-px h-10 bg-gradient-to-b from-esp-light to-transparent pdot"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     MENU
+════════════════════════════════════════ -->
+<section id="meniu" class="py-24 md:py-32 bg-ivory">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+
+    <!-- Header -->
+    <div class="text-center mb-16 anim">
+      <div class="inline-flex items-center gap-3 text-sage text-xs font-medium tracking-widest uppercase mb-4">
+        <span class="divline"></span>Šiandienos Meniu<span class="divline r"></span>
+      </div>
+      <h2 class="font-serif text-4xl md:text-5xl text-espresso mb-4">
+        Iš Orkaitės, Tiesiai<br><em class="not-italic text-honey">į Jūsų Rankas</em>
+      </h2>
+      <p class="text-esp-light text-lg max-w-lg mx-auto leading-relaxed">
+        Kepame kiekvieną rytą iš aukštos kokybės, kruopščiai atrinktų natūralių ingredientų. Jokių konservantų — tik tikras skonis.
+      </p>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+      <!-- 1 · Babka (wide) -->
+      <div class="card bg-white rounded-3xl overflow-hidden border border-almond/70 shadow-sm sm:col-span-2 flex flex-col">
+        <div class="relative overflow-hidden" style="aspect-ratio:16/9">
+          <img src="images/babka-winter.jpg" alt="Šokoladinė Babka" class="card-img w-full h-full object-cover" />
+          <span class="ring absolute top-4 left-4 inline-flex items-center gap-1.5 bg-honey text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            Klientų Favoritas
+          </span>
+          <span class="absolute top-4 right-4 bg-espresso/75 text-ivory text-xs px-2.5 py-1 rounded-full backdrop-blur-sm">~650g</span>
+        </div>
+        <div class="p-6 flex flex-col flex-1">
+          <h3 class="font-serif text-2xl text-espresso mb-2">Šokoladinė Babka</h3>
+          <p class="text-esp-light text-sm leading-relaxed mb-5 flex-1">Sultingas, karamelizuotas briošo kepinys su gausiu tamsaus šokolado ir aguonų įdaru. Tešla rankomis laminuojama daugiau nei 24 val. — kiekviena sraigė unikali.</p>
+          <div class="flex items-center justify-between">
+            <span class="font-serif text-3xl text-honey font-bold">€21<span class="text-xl">.00</span></span>
+            <button class="flex items-center gap-2 bg-espresso text-ivory text-sm font-medium px-5 py-2.5 rounded-full hover:bg-esp-mid transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+              Užsakyti
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 · Velykinė Boba -->
+      <div class="card bg-white rounded-3xl overflow-hidden border border-almond/70 shadow-sm flex flex-col">
+        <div class="relative overflow-hidden aspect-square">
+          <img src="images/boba-close.jpg" alt="Velykinė Boba" class="card-img w-full h-full object-cover" />
+          <span class="absolute top-4 left-4 inline-flex items-center gap-1.5 bg-sage text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            Sezoninis
+          </span>
+        </div>
+        <div class="p-5 flex flex-col flex-1">
+          <h3 class="font-serif text-xl text-espresso mb-2">Velykinė Boba</h3>
+          <p class="text-esp-light text-xs leading-relaxed mb-4 flex-1">Orinis velykinias pyragas su džiovintais vaisiais ir migdolais, kepamas pagal itališko panettone tradiciją su vanilės aromatu.</p>
+          <div class="flex items-center justify-between">
+            <span class="font-serif text-2xl text-honey font-bold">€25<span class="text-base">.00</span></span>
+            <button class="bg-sage text-white text-xs font-medium px-4 py-2 rounded-full hover:bg-sage-d transition-colors">Užsakyti</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 · Rūgštynė Duona -->
+      <div class="card bg-white rounded-3xl overflow-hidden border border-almond/70 shadow-sm flex flex-col">
+        <div class="relative overflow-hidden aspect-square bg-gradient-to-br from-almond to-cream-d flex items-center justify-center">
+          <svg class="w-24 h-24 text-espresso/10" viewBox="0 0 100 60" fill="currentColor"><ellipse cx="50" cy="40" rx="46" ry="18"/><path d="M4 40 Q20 10 50 8 Q80 10 96 40" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="30" cy="32" r="4" opacity=".4"/><circle cx="50" cy="26" r="5" opacity=".4"/><circle cx="70" cy="32" r="4" opacity=".4"/></svg>
+          <span class="absolute top-4 left-4 bg-espresso/70 text-ivory text-xs px-2.5 py-1 rounded-full">Kasdien kepama</span>
+        </div>
+        <div class="p-5 flex flex-col flex-1">
+          <h3 class="font-serif text-xl text-espresso mb-2">Artisaninė Rūgštynė Duona</h3>
+          <p class="text-esp-light text-xs leading-relaxed mb-4 flex-1">Kepama tik su natūraliu raugu, miltais, vandeniu ir druska. Traški pluta, kvapnus, minkštas vidus — tobula kiekvienam stalui.</p>
+          <div class="flex items-center justify-between">
+            <div><span class="font-serif text-2xl text-honey font-bold">€6<span class="text-base">.50</span></span><span class="text-esp-light text-xs ml-1">/kg</span></div>
+            <button class="bg-espresso text-ivory text-xs font-medium px-4 py-2 rounded-full hover:bg-esp-mid transition-colors">Užsakyti</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 · Croissant — full-width dark feature -->
+      <div class="card sm:col-span-2 lg:col-span-4 rounded-3xl overflow-hidden relative" style="min-height:260px">
+        <div class="absolute inset-0">
+          <img src="images/artisanalu.jpg" alt="Kepalas kepiniai" class="card-img w-full h-full object-cover opacity-50" />
+          <div class="absolute inset-0 bg-gradient-to-r from-espresso via-espresso/85 to-transparent"></div>
+        </div>
+        <div class="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-start md:items-center gap-6 justify-between h-full">
+          <div class="flex-1">
+            <span class="inline-flex items-center gap-2 text-honey/80 text-xs font-medium tracking-widest uppercase mb-4" style="background:rgba(230,161,92,.12);padding:.375rem .875rem;border-radius:9999px">✦ Kasdieniai Kepiniai</span>
+            <h3 class="font-serif text-3xl md:text-4xl text-ivory mb-3">Migdolinis Kroasanas</h3>
+            <p class="text-ivory/60 text-sm leading-relaxed max-w-md">Sluoksniuota, sviestiška tešla su migdolų kremu ir traškiu mandelų glajumi. Kepamas kiekvieną rytą — geriausia ką tik iš orkaitės.</p>
+          </div>
+          <div class="flex-shrink-0">
+            <div class="font-serif text-5xl text-honey font-bold mb-1">€4<span class="text-3xl">.50</span></div>
+            <div class="text-ivory/50 text-sm mb-5">už vienetą</div>
+            <a href="#kontaktai" class="inline-block bg-honey text-white font-semibold px-6 py-3 rounded-full hover:bg-honey-d transition-colors">
+              Sužinoti daugiau
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wolt link -->
+    <p class="text-center text-esp-light text-sm mt-10 anim">
+      Meniu keičiasi kasdien. &nbsp;
+      <a href="https://wolt.com/en/ltu/vilnius/venue/kepalas-taikos-g" target="_blank" class="text-honey font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
+        Peržiūrėti visą meniu Wolt platformoje
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4-4 4M3 12h18"/></svg>
+      </a>
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SEASONAL BABKA FEATURE
+════════════════════════════════════════ -->
+<section class="py-24 bg-almond overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+      <!-- Image -->
+      <div class="relative anim">
+        <div class="rounded-[2.5rem] overflow-hidden shadow-2xl" style="aspect-ratio:4/5;box-shadow:0 32px 72px rgba(43,30,23,.18)">
+          <img src="images/babka-round.jpg" alt="Apskrita Šokoladinė Babka" class="w-full h-full object-cover" />
+        </div>
+        <div class="absolute -z-10 -bottom-8 -right-8 w-64 h-64 rounded-full" style="background:rgba(230,161,92,.25)"></div>
+        <div class="absolute -z-10 -top-6 -left-6 w-40 h-40 rounded-full" style="background:rgba(138,154,134,.2)"></div>
+      </div>
+
+      <!-- Copy -->
+      <div class="anim delay-1">
+        <div class="inline-flex items-center gap-2 text-sage text-xs font-medium tracking-widest uppercase mb-5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          Sezono Kūrinys
+        </div>
+        <h2 class="font-serif text-4xl md:text-5xl text-espresso leading-tight mb-5">
+          Babka — Tradicija,<br><em class="not-italic text-honey">Atgaivinta su Meile</em>
+        </h2>
+        <p class="text-esp-light text-base leading-relaxed mb-4">
+          Mūsų Šokoladinė Babka — tai rytų europietiška tradicija, perduota per kartas. Briošo tešla rankomis laminuojama su tamsaus šokolado ir aguonų įdaru, tuomet kruopščiai susukama į grakščią sraigę.
+        </p>
+        <p class="text-esp-light text-base leading-relaxed mb-8">
+          Kepimo procesas trunka virš 24 valandų — nuo tešlos rūgimo iki auksinės plutelės. Kiekviena Babka yra unikalus rankų darbo meno kūrinys. Tik natūralūs ingredientai, tik kantrybė ir meilė.
+        </p>
+
+        <div class="grid grid-cols-2 gap-4 mb-9">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(230,161,92,.18)">
+              <svg class="w-4 h-4 text-honey" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div><div class="text-sm font-medium text-espresso">24+ val. rūgimas</div><div class="text-xs text-esp-light">Lėtas fermentacijos procesas</div></div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(230,161,92,.18)">
+              <svg class="w-4 h-4 text-honey" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            </div>
+            <div><div class="text-sm font-medium text-espresso">Rankomis formuota</div><div class="text-xs text-esp-light">Be pramoninių procesų</div></div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(230,161,92,.18)">
+              <svg class="w-4 h-4 text-honey" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div><div class="text-sm font-medium text-espresso">Be konservantų</div><div class="text-xs text-esp-light">100% natūralūs ingredientai</div></div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(230,161,92,.18)">
+              <svg class="w-4 h-4 text-honey" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            </div>
+            <div><div class="text-sm font-medium text-espresso">Puiki dovana</div><div class="text-xs text-esp-light">Grakšti šventinė pakuotė</div></div>
+          </div>
+        </div>
+
+        <a href="#renginiai" class="inline-flex items-center gap-2 bg-honey text-white font-semibold px-7 py-3.5 rounded-full hover:bg-honey-d transition-all" style="box-shadow:0 8px 24px rgba(230,161,92,.3)">
+          Užsakyti Babką
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     ABOUT / HISTORY
+════════════════════════════════════════ -->
+<section id="apie-mus" class="py-24 md:py-32 bg-ivory">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+
+    <!-- Pull quote -->
+    <div class="text-center mb-20 anim">
+      <div class="inline-flex items-center gap-3 text-sage text-xs font-medium tracking-widest uppercase mb-6">
+        <span class="divline"></span>Mūsų Istorija<span class="divline r"></span>
+      </div>
+      <blockquote class="font-display italic text-3xl md:text-4xl lg:text-5xl text-espresso max-w-3xl mx-auto leading-snug">
+        "Skoniai, kurie artimi<br>jūsų namams."
+      </blockquote>
+    </div>
+
+    <!-- Story split -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start mb-24">
+      <!-- Copy -->
+      <div class="anim">
+        <h2 class="font-serif text-4xl text-espresso mb-8 leading-tight">
+          Šeimos Kepykla<br><em class="not-italic text-honey">Justiniškių Širdyje</em>
+        </h2>
+        <div class="space-y-5 text-esp-light leading-relaxed">
+          <p><strong class="text-espresso font-semibold">KEPALAS</strong> — tai mūsų šeimos kepykla, kurią atidarėme 2023 metais Justiniškių rajone, Vilniuje. Mūsų kelionė prasidėjo nuo paprastos svajonės — kurti ne dėl verslo, o iš meilės. Kiekvienas kepinys mūsų rankomis — tai ne tik maistas, bet ir istorija, šiluma ir rūpestis.</p>
+          <p>Tikime lėtu rūgimu, natūraliais ingredientais ir tradiciniais metodais. Mūsų rūgštyninis raugas, rūpestingai puoselėjamas nuo pat pirmosios dienos, suteikia duonai nepakartojamą skonį ir tekstūrą. Kiekvienas produktas gaminamas rankomis — jokių pramoninių procesų, jokių sintetinių priedų.</p>
+          <p>Justiniškės — mūsų namai. Ši šilta, gyva bendruomenė yra ta vieta, kur norime kurti gardžius momentus kiekvienam — nuo šeimų su vaikais iki verslo profesionalų. Esame čia, kad kiekvienas jūsų rytas, šventė ar susirinkimas taptų šiek tiek gardesnė.</p>
+          <p>Mūsų asortimentas — nuo traškios rūgštynės duonos iki subtiliausių sezoninių saldumynų. Nuolat eksperimentuojame su naujais skoniais, kad kiekvienas apsilankymas siūlytų ką nors naujo ir jaudinančio.</p>
+        </div>
+
+        <!-- Signature -->
+        <div class="mt-10 pt-8 border-t border-cream flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-almond border-2 border-honey flex items-center justify-center">
+            <span class="font-serif font-bold text-honey text-lg">K</span>
+          </div>
+          <div>
+            <div class="font-serif text-espresso font-semibold">Kepalas šeima</div>
+            <div class="text-esp-light text-xs">Kepyklos įkūrėjai, Vilnius</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image stack -->
+      <div class="relative anim delay-2">
+        <div class="rounded-[2.5rem] overflow-hidden shadow-xl" style="aspect-ratio:3/4;box-shadow:0 28px 60px rgba(43,30,23,.16)">
+          <img src="images/boba-full.jpg" alt="Velykinė Boba — mūsų kepyklos kūrinys" class="w-full h-full object-cover" />
+        </div>
+        <!-- Second overlapping image -->
+        <div class="absolute -bottom-6 -left-6 w-44 h-44 rounded-[1.5rem] overflow-hidden border-4 border-ivory shadow-xl hidden md:block">
+          <img src="images/artisanalu.jpg" alt="Kepalas kepinių asortimentas" class="w-full h-full object-cover" />
+        </div>
+        <div class="absolute -z-10 -top-5 -right-5 w-44 h-44 bg-almond rounded-full opacity-80"></div>
+      </div>
+    </div>
+
+    <!-- Timeline milestones -->
+    <div class="anim">
+      <h3 class="font-serif text-2xl text-espresso text-center mb-10">Mūsų Kelias</h3>
+      <div class="grid grid-cols-1 md:grid-cols-4 rounded-3xl overflow-hidden border border-almond">
+        <div class="bg-ivory p-8 text-center hover:bg-almond transition-colors border-b md:border-b-0 md:border-r border-almond">
+          <div class="font-serif text-4xl text-honey font-bold mb-2">2022</div>
+          <div class="font-medium text-espresso mb-2">Svajonė Gimė</div>
+          <p class="text-esp-light text-sm">Kepyklos idėja išaugo iš šeimos virtuvės ir meilės senoviniams receptams.</p>
+        </div>
+        <div class="bg-ivory p-8 text-center hover:bg-almond transition-colors border-b md:border-b-0 md:border-r border-almond">
+          <div class="font-serif text-4xl text-honey font-bold mb-2">2023</div>
+          <div class="font-medium text-espresso mb-2">Durys Atidarytos</div>
+          <p class="text-esp-light text-sm">Pirmąją dieną Justiniškėse eilė driekėsi pro duris — bendruomenė mus priėmė šiltai.</p>
+        </div>
+        <div class="bg-ivory p-8 text-center hover:bg-almond transition-colors border-b md:border-b-0 md:border-r border-almond">
+          <div class="font-serif text-4xl text-honey font-bold mb-2">2024</div>
+          <div class="font-medium text-espresso mb-2">Sezoninės Kolekcijos</div>
+          <p class="text-esp-light text-sm">Pradėjome Velykų, Kalėdų ir specialias sezono kolekcijas su rankiniu pristatymu.</p>
+        </div>
+        <div class="bg-ivory p-8 text-center hover:bg-almond transition-colors">
+          <div class="font-serif text-4xl text-honey font-bold mb-2">2025+</div>
+          <div class="font-medium text-espresso mb-2">Augame Kartu</div>
+          <p class="text-esp-light text-sm">Korporatyvinis kateringas, naujų skoniai ir didesnė bendruomenė — žengiam pirmyn.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     EVENTS & CORPORATE
+════════════════════════════════════════ -->
+<section id="renginiai" class="py-24 md:py-32 bg-espresso relative overflow-hidden">
+  <!-- Background texture -->
+  <div class="pointer-events-none absolute inset-0 opacity-15">
+    <img src="images/artisanalu.jpg" alt="" class="w-full h-full object-cover" />
+  </div>
+  <div class="pointer-events-none absolute inset-0" style="background:linear-gradient(135deg,rgba(43,30,23,.97) 0%,rgba(74,51,37,.94) 100%)"></div>
+  <div class="pointer-events-none absolute top-20 right-24 w-72 h-72 rounded-full blur-3xl" style="background:rgba(230,161,92,.08)"></div>
+  <div class="pointer-events-none absolute bottom-24 left-12 w-56 h-56 rounded-full blur-2xl" style="background:rgba(138,154,134,.08)"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
+
+    <!-- Header -->
+    <div class="text-center mb-16 anim">
+      <div class="inline-flex items-center gap-3 text-xs font-medium tracking-widest uppercase mb-4" style="color:rgba(230,161,92,.65)">
+        <span class="inline-block w-8 h-px" style="background:rgba(230,161,92,.4)"></span>
+        Verslas ir Renginiai
+        <span class="inline-block w-8 h-px" style="background:rgba(230,161,92,.4)"></span>
+      </div>
+      <h2 class="font-serif text-4xl md:text-5xl text-ivory mb-4 leading-tight">
+        Jūsų Ypatingas Momentas,<br><em class="not-italic text-honey">Mūsų Kepiniai</em>
+      </h2>
+      <p class="text-lg max-w-xl mx-auto leading-relaxed" style="color:rgba(253,251,247,.55)">
+        Planuojate vestuves, korporatyvinį renginį ar boutique šventę? Kuriame unikalius kepinių rinkinius pagal jūsų viziją su stiliaus detalėmis ir individualiu pakuojimu.
+      </p>
+    </div>
+
+    <!-- Feature cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-16 anim delay-1">
+      <div class="rounded-3xl p-8 border hover:border-white/20 transition-colors" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1)">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-5" style="background:rgba(230,161,92,.2)">
+          <svg class="w-6 h-6 text-honey" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </div>
+        <h3 class="font-serif text-xl text-ivory mb-3">Vestuviniai Kepiniai</h3>
+        <p class="text-sm leading-relaxed" style="color:rgba(253,251,247,.5)">Individualūs vestuviniai tortai, desertų stalai ir kepinių bokštai — sukurti pagal jūsų spalvas, skonį ir svajonę.</p>
+      </div>
+      <div class="rounded-3xl p-8 border hover:border-white/20 transition-colors" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1)">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-5" style="background:rgba(138,154,134,.2)">
+          <svg class="w-6 h-6 text-sage-l" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        </div>
+        <h3 class="font-serif text-xl text-ivory mb-3">Korporatyvinis Kateringas</h3>
+        <p class="text-sm leading-relaxed" style="color:rgba(253,251,247,.5)">Biuro pusryčiai, klientų susitikimai, komandos renginiai — pristatome šviežius kepiniai tiesiai į jūsų biurą Vilniuje.</p>
+      </div>
+      <div class="rounded-3xl p-8 border hover:border-white/20 transition-colors" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1)">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-5" style="background:rgba(230,161,92,.2)">
+          <svg class="w-6 h-6 text-honey" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        </div>
+        <h3 class="font-serif text-xl text-ivory mb-3">Dovanų Rinkiniai</h3>
+        <p class="text-sm leading-relaxed" style="color:rgba(253,251,247,.5)">Rankomis supakuoti kepiniai su lino kaspinais — tobula dovana partneriams, darbuotojams ir artimiesiems bet kokia proga.</p>
+      </div>
+    </div>
+
+    <!-- Form + image -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+
+      <!-- Inquiry form -->
+      <div class="anim">
+        <h3 class="font-serif text-3xl text-ivory mb-2">Pateikite Užklausą</h3>
+        <p class="text-sm mb-8" style="color:rgba(253,251,247,.45)">Atsakysime per 24 valandas su individualizuotu pasiūlymu.</p>
+
+        <div id="form-wrap">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-medium tracking-widest uppercase mb-2" style="color:rgba(253,251,247,.5)">Vardas *</label>
+              <input id="f-name" type="text" placeholder="Jonas Jonaitis" class="fi" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium tracking-widest uppercase mb-2" style="color:rgba(253,251,247,.5)">Įmonė (neprivaloma)</label>
+              <input id="f-company" type="text" placeholder="UAB Pavyzdys" class="fi" />
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="block text-xs font-medium tracking-widest uppercase mb-2" style="color:rgba(253,251,247,.5)">El. paštas *</label>
+            <input id="f-email" type="email" placeholder="jonas@pavyzdys.lt" class="fi" />
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-medium tracking-widest uppercase mb-2" style="color:rgba(253,251,247,.5)">Renginio data</label>
+              <input id="f-date" type="date" class="fi" style="color-scheme:dark" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium tracking-widest uppercase mb-2" style="color:rgba(253,251,247,.5)">Svečių skaičius</label>
+              <input id="f-guests" type="number" placeholder="50" min="1" class="fi" />
+            </div>
+          </div>
+          <div class="mb-5">
+            <label class="block text-xs font-medium tracking-widest uppercase mb-2" style="color:rgba(253,251,247,.5)">Specialūs pageidavimai</label>
+            <textarea id="f-msg" rows="4" placeholder="Papasakokite apie renginį, pageidaujamus gaminius, alergijas ar kitus poreikius..." class="fi resize-none"></textarea>
+          </div>
+          <button onclick="submitForm()" class="w-full bg-honey hover:bg-honey-d text-white font-semibold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 group" style="box-shadow:0 8px 32px rgba(230,161,92,.3)">
+            Siųsti Užklausą
+            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          </button>
+          <p class="text-center text-xs mt-4" style="color:rgba(253,251,247,.3)">
+            Arba rašykite tiesiogiai:
+            <a href="mailto:kepalasbakery@gmail.com" class="text-honey/70 hover:text-honey transition-colors">kepalasbakery@gmail.com</a>
+          </p>
+        </div>
+
+        <!-- Success state -->
+        <div id="form-success" class="hidden flex-col items-center justify-center text-center py-16 px-8">
+          <div class="scalein w-20 h-20 rounded-full flex items-center justify-center mb-6" style="background:rgba(138,154,134,.2)">
+            <svg class="w-10 h-10 text-sage-l" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h3 class="font-serif text-2xl text-ivory mb-3">Užklausa Gauta!</h3>
+          <p class="text-sm leading-relaxed max-w-sm mb-6" style="color:rgba(253,251,247,.55)">
+            Ačiū, kad kreipėtės į Kepalas kepyklą. Atsakysime per 24 valandas su individualizuotu pasiūlymu jūsų renginiui.
+          </p>
+          <span class="inline-flex items-center gap-2 text-sm text-honey">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            kepalasbakery@gmail.com
+          </span>
+        </div>
+      </div>
+
+      <!-- Events image + stats -->
+      <div class="hidden lg:block anim delay-2">
+        <div class="rounded-[2.5rem] overflow-hidden relative" style="aspect-ratio:3/4;box-shadow:0 32px 64px rgba(0,0,0,.35)">
+          <img src="images/artisanalu.jpg" alt="Kepalas kepiniai – dovanų rinkiniai" class="w-full h-full object-cover opacity-75" />
+          <div class="absolute inset-0 bg-gradient-to-t from-espresso/70 via-transparent to-transparent"></div>
+          <div class="absolute bottom-8 left-8 right-8">
+            <div class="font-serif text-ivory text-xl mb-2 leading-snug">"Kiekvienas kepinys — tai meilė, perduota per skonį."</div>
+            <div class="text-sm" style="color:rgba(253,251,247,.55)">— Kepalas kepyklos šeima</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4 mt-5">
+          <div class="rounded-2xl p-4 text-center border" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1)">
+            <div class="font-serif text-2xl text-honey font-bold">50+</div>
+            <div class="text-xs mt-1" style="color:rgba(253,251,247,.45)">Renginių per metus</div>
+          </div>
+          <div class="rounded-2xl p-4 text-center border" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1)">
+            <div class="font-serif text-2xl text-honey font-bold">200+</div>
+            <div class="text-xs mt-1" style="color:rgba(253,251,247,.45)">Patenkintų klientų</div>
+          </div>
+          <div class="rounded-2xl p-4 text-center border" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1)">
+            <div class="font-serif text-2xl text-honey font-bold">24h</div>
+            <div class="text-xs mt-1" style="color:rgba(253,251,247,.45)">Atsakymo laikas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+════════════════════════════════════════ -->
+<footer id="kontaktai" class="bg-esp-mid pt-20 pb-10">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-16 border-b" style="border-color:rgba(255,255,255,.1)">
+
+      <!-- Brand -->
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-honey rounded-full flex items-center justify-center">
+            <span class="font-serif font-bold text-white">K</span>
+          </div>
+          <span class="font-serif font-semibold text-xl text-ivory tracking-widest">KEPALAS</span>
+        </div>
+        <p class="text-sm leading-relaxed mb-6" style="color:rgba(253,251,247,.45)">
+          Artisaniniai kepiniai, kepami su meile ir natūraliais ingredientais Vilniaus Justiniškėse nuo 2023 m.
+        </p>
+        <div class="flex items-center gap-3">
+          <a href="https://instagram.com/kepalas_bakery" target="_blank" class="w-9 h-9 rounded-full flex items-center justify-center border transition-colors hover:border-honey/50 hover:text-honey" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);color:rgba(253,251,247,.5)">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="https://facebook.com/kepalasbakery" target="_blank" class="w-9 h-9 rounded-full flex items-center justify-center border transition-colors hover:border-honey/50 hover:text-honey" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);color:rgba(253,251,247,.5)">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Hours -->
+      <div>
+        <h4 class="font-serif text-ivory text-lg mb-5">Darbo Laikas</h4>
+        <div class="space-y-3.5">
+          <div class="flex justify-between">
+            <span class="text-sm" style="color:rgba(253,251,247,.5)">Pirmad.–Penktad.</span>
+            <span class="text-sm font-medium text-ivory">7:00–19:00</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-sm" style="color:rgba(253,251,247,.5)">Šeštadienis</span>
+            <span class="text-sm font-medium text-ivory">8:00–18:00</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-sm" style="color:rgba(253,251,247,.5)">Sekmadienis</span>
+            <span class="text-sm font-medium text-ivory">9:00–15:00</span>
+          </div>
+        </div>
+        <div class="mt-5 inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full" style="background:rgba(138,154,134,.18);color:#B8C9B4">
+          <span class="w-1.5 h-1.5 bg-sage-l rounded-full pdot"></span>
+          Šiandien dirbame iki 19:00
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div>
+        <h4 class="font-serif text-ivory text-lg mb-5">Kontaktai</h4>
+        <div class="space-y-4">
+          <div class="flex items-start gap-3">
+            <svg class="w-4 h-4 text-honey mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <div>
+              <div class="text-sm text-ivory">Taikos g. 104</div>
+              <div class="text-xs" style="color:rgba(253,251,247,.45)">Justiniškės, Vilnius, Lietuva</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-honey flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <a href="mailto:kepalasbakery@gmail.com" class="text-sm transition-colors hover:text-honey" style="color:rgba(253,251,247,.6)">kepalasbakery@gmail.com</a>
+          </div>
+          <div class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-honey flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            <a href="https://instagram.com/kepalas_bakery" target="_blank" class="text-sm transition-colors hover:text-honey" style="color:rgba(253,251,247,.6)">@kepalas_bakery</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Newsletter + Instagram grid -->
+      <div>
+        <h4 class="font-serif text-ivory text-lg mb-2">Naujienlaiškis</h4>
+        <p class="text-xs mb-5" style="color:rgba(253,251,247,.45)">Gaukite žinią apie naujus kepinkus ir sezonines kolekcijas.</p>
+        <div class="flex flex-col gap-2 mb-7">
+          <input type="email" id="nl-email" placeholder="jusu@email.lt"
+                 class="w-full bg-white/5 border border-white/15 text-ivory rounded-xl px-4 py-3 text-sm placeholder-white/25 focus:outline-none focus:border-honey/60 focus:shadow-none transition-all" />
+          <button onclick="subscribeNL()" class="bg-honey text-white text-sm font-medium py-3 rounded-xl hover:bg-honey-d transition-colors">
+            Prenumeruoti
+          </button>
+          <p id="nl-msg" class="hidden text-xs text-sage-l text-center">Ačiū! Prenumerata patvirtinta.</p>
+        </div>
+
+        <!-- Instagram mini-grid -->
+        <p class="text-xs mb-3" style="color:rgba(253,251,247,.35)">Sekite mus Instagram</p>
+        <a href="https://instagram.com/kepalas_bakery" target="_blank" class="grid grid-cols-3 gap-1.5">
+          <div class="ig-cell relative aspect-square rounded-lg overflow-hidden cursor-pointer">
+            <img src="images/babka-winter.jpg" alt="ig" class="w-full h-full object-cover opacity-60" />
+            <div class="ig-ov absolute inset-0 flex items-center justify-center" style="background:rgba(230,161,92,.45)">
+              <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </div>
+          </div>
+          <div class="ig-cell relative aspect-square rounded-lg overflow-hidden cursor-pointer">
+            <img src="images/boba-close.jpg" alt="ig" class="w-full h-full object-cover opacity-60" />
+            <div class="ig-ov absolute inset-0 flex items-center justify-center" style="background:rgba(230,161,92,.45)">
+              <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </div>
+          </div>
+          <div class="ig-cell relative aspect-square rounded-lg overflow-hidden cursor-pointer">
+            <img src="images/artisanalu.jpg" alt="ig" class="w-full h-full object-cover opacity-60" />
+            <div class="ig-ov absolute inset-0 flex items-center justify-center" style="background:rgba(230,161,92,.45)">
+              <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer bottom bar -->
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <p class="text-xs" style="color:rgba(253,251,247,.25)">© 2025 Kepalas Bakery. Visos teisės saugomos. Vilnius, Lietuva.</p>
+      <div class="flex items-center gap-6">
+        <a href="#" class="text-xs transition-colors hover:text-ivory/60" style="color:rgba(253,251,247,.25)">Privatumo Politika</a>
+        <a href="#" class="text-xs transition-colors hover:text-ivory/60" style="color:rgba(253,251,247,.25)">Slapukai</a>
+        <a href="https://www.kepalasbakery.lt" target="_blank" class="text-xs transition-colors hover:text-honey" style="color:rgba(253,251,247,.25)">kepalasbakery.lt</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+  // Navbar scroll
+  const nb = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    nb.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+
+  // Mobile menu
+  function openMob() {
+    document.getElementById('mob-menu').classList.add('open');
+    document.getElementById('mob-overlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMob() {
+    document.getElementById('mob-menu').classList.remove('open');
+    document.getElementById('mob-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  // Scroll animations
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.anim').forEach(el => io.observe(el));
+
+  // Form submit
+  function submitForm() {
+    const name  = document.getElementById('f-name').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const highlight = (id) => {
+      const el = document.getElementById(id);
+      el.style.borderColor = '#C8762A';
+      el.addEventListener('input', () => el.style.borderColor = '', { once: true });
+    };
+    if (!name)  { highlight('f-name');  return; }
+    if (!email) { highlight('f-email'); return; }
+    document.getElementById('form-wrap').classList.add('hidden');
+    const s = document.getElementById('form-success');
+    s.classList.remove('hidden');
+    s.classList.add('flex');
+  }
+
+  // Newsletter
+  function subscribeNL() {
+    const v = document.getElementById('nl-email').value.trim();
+    if (!v || !v.includes('@')) return;
+    document.getElementById('nl-email').value = '';
+    const m = document.getElementById('nl-msg');
+    m.classList.remove('hidden');
+    setTimeout(() => m.classList.add('hidden'), 4000);
+  }
+</script>
+</body>
+</html>
