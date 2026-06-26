@@ -9,6 +9,7 @@ import { clsx } from "@/lib/cn";
 import { LanguageStep } from "@/components/onboarding/LanguageStep";
 import { MetricsStep, type Metrics } from "@/components/onboarding/MetricsStep";
 import { BmiDashboard } from "@/components/onboarding/BmiDashboard";
+import { CalibrationComplete } from "@/components/onboarding/CalibrationComplete";
 
 const TOTAL_STEPS = 3;
 
@@ -23,6 +24,7 @@ export function OnboardingFlow({
   const [metrics, setMetrics] = useState<Metrics>(initialMetrics);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
+  const [done, setDone] = useState(false);
 
   const result = computeBmi(Number(metrics.weight), Number(metrics.height));
   const canAdvance = step === 1 || (step === 2 ? Boolean(result) : true);
@@ -47,12 +49,17 @@ export function OnboardingFlow({
         });
         if (!res.ok) throw new Error(await res.text());
       }
-      window.location.assign("/");
+      // Hand off to the calibration console; it owns the redirect via onEnter.
+      setDone(true);
     } catch {
       // Surface the failure instead of silently dropping the user's data.
       setError(true);
       setSaving(false);
     }
+  }
+
+  if (done) {
+    return <CalibrationComplete onEnter={() => window.location.assign("/")} />;
   }
 
   return (

@@ -57,9 +57,19 @@ export interface Dict {
     finishSubtitle: string;
     tiers: Record<BmiTierKey, TierCopy>;
   };
+  success: {
+    booting: [string, string, string]; // telemetry boot sequence
+    complete: string; // "Calibration Complete"
+    initialized: string; // "Protocol Initialized"
+    enter: string; // CTA
+  };
 }
 
-const en: Dict = {
+// The per-locale objects below define everything except the success screen
+// copy, which is merged in from SUCCESS at the bottom to keep each block lean.
+type Base = Omit<Dict, "success">;
+
+const en: Base = {
   step: "Step {n} of {total}",
   back: "Back", continue: "Continue", getStarted: "Get started",
   lang: { title: "Choose your language", subtitle: "You can change this anytime in Settings." },
@@ -117,7 +127,7 @@ const en: Dict = {
   },
 };
 
-const lt: Dict = {
+const lt: Base = {
   step: "{n} žingsnis iš {total}",
   back: "Atgal", continue: "Tęsti", getStarted: "Pradėti",
   lang: { title: "Pasirinkite kalbą", subtitle: "Galėsite pakeisti bet kada nustatymuose." },
@@ -175,7 +185,7 @@ const lt: Dict = {
   },
 };
 
-const lv: Dict = {
+const lv: Base = {
   step: "{n}. solis no {total}",
   back: "Atpakaļ", continue: "Turpināt", getStarted: "Sākt",
   lang: { title: "Izvēlieties valodu", subtitle: "To var mainīt jebkurā laikā iestatījumos." },
@@ -233,7 +243,7 @@ const lv: Dict = {
   },
 };
 
-const pl: Dict = {
+const pl: Base = {
   step: "Krok {n} z {total}",
   back: "Wstecz", continue: "Dalej", getStarted: "Zaczynamy",
   lang: { title: "Wybierz język", subtitle: "Możesz to zmienić w dowolnym momencie w Ustawieniach." },
@@ -291,7 +301,7 @@ const pl: Dict = {
   },
 };
 
-const de: Dict = {
+const de: Base = {
   step: "Schritt {n} von {total}",
   back: "Zurück", continue: "Weiter", getStarted: "Loslegen",
   lang: { title: "Wähle deine Sprache", subtitle: "Du kannst dies jederzeit in den Einstellungen ändern." },
@@ -349,7 +359,7 @@ const de: Dict = {
   },
 };
 
-const es: Dict = {
+const es: Base = {
   step: "Paso {n} de {total}",
   back: "Atrás", continue: "Continuar", getStarted: "Empezar",
   lang: { title: "Elige tu idioma", subtitle: "Puedes cambiarlo cuando quieras en Ajustes." },
@@ -407,7 +417,7 @@ const es: Dict = {
   },
 };
 
-const fr: Dict = {
+const fr: Base = {
   step: "Étape {n} sur {total}",
   back: "Retour", continue: "Continuer", getStarted: "Commencer",
   lang: { title: "Choisissez votre langue", subtitle: "Vous pourrez la changer à tout moment dans les Réglages." },
@@ -465,7 +475,7 @@ const fr: Dict = {
   },
 };
 
-const ru: Dict = {
+const ru: Base = {
   step: "Шаг {n} из {total}",
   back: "Назад", continue: "Продолжить", getStarted: "Начать",
   lang: { title: "Выберите язык", subtitle: "Это можно изменить в любой момент в настройках." },
@@ -523,9 +533,26 @@ const ru: Dict = {
   },
 };
 
-export const DICTIONARIES: Record<LocaleCode, Dict> = {
-  en, lt, lv, pl, de, es, fr, ru,
+// Success-screen telemetry copy, merged into each dictionary below.
+const SUCCESS: Record<LocaleCode, Dict["success"]> = {
+  en: { booting: ["Analyzing biometrics", "Syncing taste matrix", "Calibrating macro targets"], complete: "Calibration Complete", initialized: "Protocol Initialized", enter: "Enter Dashboard" },
+  lt: { booting: ["Analizuojami biometriniai duomenys", "Sinchronizuojama skonio matrica", "Kalibruojami makro tikslai"], complete: "Kalibravimas baigtas", initialized: "Protokolas paleistas", enter: "Atverti skydelį" },
+  lv: { booting: ["Analizē biometriskos datus", "Sinhronizē garšas matricu", "Kalibrē makro mērķus"], complete: "Kalibrēšana pabeigta", initialized: "Protokols inicializēts", enter: "Atvērt paneli" },
+  pl: { booting: ["Analiza danych biometrycznych", "Synchronizacja matrycy smaku", "Kalibracja celów makro"], complete: "Kalibracja zakończona", initialized: "Protokół zainicjowany", enter: "Otwórz panel" },
+  de: { booting: ["Biometrie wird analysiert", "Geschmacksmatrix wird synchronisiert", "Makroziele werden kalibriert"], complete: "Kalibrierung abgeschlossen", initialized: "Protokoll initialisiert", enter: "Dashboard öffnen" },
+  es: { booting: ["Analizando biometría", "Sincronizando matriz de sabor", "Calibrando objetivos macro"], complete: "Calibración completada", initialized: "Protocolo inicializado", enter: "Entrar al panel" },
+  fr: { booting: ["Analyse de la biométrie", "Synchronisation de la matrice gustative", "Calibrage des objectifs macro"], complete: "Calibrage terminé", initialized: "Protocole initialisé", enter: "Ouvrir le tableau de bord" },
+  ru: { booting: ["Анализ биометрии", "Синхронизация матрицы вкуса", "Калибровка макро-целей"], complete: "Калибровка завершена", initialized: "Протокол инициализирован", enter: "Открыть панель" },
 };
+
+const BASES: Record<LocaleCode, Base> = { en, lt, lv, pl, de, es, fr, ru };
+
+export const DICTIONARIES = Object.fromEntries(
+  (Object.keys(BASES) as LocaleCode[]).map((code) => [
+    code,
+    { ...BASES[code], success: SUCCESS[code] },
+  ]),
+) as Record<LocaleCode, Dict>;
 
 /** Interpolate {placeholders} in a string. */
 export function t(str: string, vars: Record<string, string | number> = {}): string {

@@ -65,10 +65,20 @@ const config: Config = {
           "0%": { opacity: "0", transform: "scale(0.96) translateY(8px)" },
           "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
         },
+        "pulse-ring": {
+          "0%": { transform: "scale(0.7)", opacity: "0.55" },
+          "100%": { transform: "scale(2.4)", opacity: "0" },
+        },
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         shimmer: "shimmer 1.6s infinite",
         "pop-in": "pop-in 0.5s cubic-bezier(0.32,0.72,0,1) both",
+        "pulse-ring": "pulse-ring 1.4s cubic-bezier(0.32,0.72,0,1) forwards",
+        "fade-up": "fade-up 0.6s cubic-bezier(0.32,0.72,0,1) both",
       },
     },
   },
