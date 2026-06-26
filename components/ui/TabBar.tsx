@@ -11,14 +11,14 @@ interface Tab {
 
 const tabs: Tab[] = [
   { key: "today", label: "Today", glyph: "◎" },
-  { key: "scan", label: "Scan", glyph: "＋", primary: true },
-  { key: "fridge", label: "Fridge", glyph: "❄" },
-  { key: "taste", label: "Taste", glyph: "♥" },
+  { key: "scan", label: "Scan", glyph: "⌖", primary: true },
+  { key: "fridge", label: "Fridge", glyph: "❒" },
+  { key: "taste", label: "Taste", glyph: "◆" },
 ];
 
 /**
- * Floating iOS-style tab bar with a translucent material background and a
- * prominent center scan action.
+ * Floating tab bar with a translucent material background and a graphite
+ * center scan action — monospaced labels to match the telemetry system.
  */
 export function TabBar({ active = "today" }: { active?: string }) {
   return (
@@ -33,7 +33,7 @@ export function TabBar({ active = "today" }: { active?: string }) {
             key={t.key}
             aria-label={t.label}
             className="-mt-6 flex h-14 w-14 items-center justify-center rounded-full
-                       bg-accent text-2xl text-white shadow-float
+                       bg-[#0C0D12] text-2xl text-white shadow-card
                        transition active:scale-90 ease-ios"
           >
             {t.glyph}
@@ -42,11 +42,11 @@ export function TabBar({ active = "today" }: { active?: string }) {
           <button
             key={t.key}
             className={clsx(
-              "flex min-w-[64px] flex-col items-center gap-0.5 rounded-2xl py-1.5 text-[11px] font-medium transition ease-ios",
-              active === t.key ? "text-accent" : "text-ink-2",
+              "flex min-w-[64px] flex-col items-center gap-1 rounded-2xl py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] transition ease-ios",
+              active === t.key ? "text-ink" : "text-ink-3",
             )}
           >
-            <span className="text-lg leading-none">{t.glyph}</span>
+            <span className="text-base leading-none">{t.glyph}</span>
             {t.label}
           </button>
         ),

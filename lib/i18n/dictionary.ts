@@ -63,11 +63,22 @@ export interface Dict {
     initialized: string; // "Protocol Initialized"
     enter: string; // CTA
   };
+  today: {
+    morning: string;
+    afternoon: string;
+    evening: string;
+    remaining: string;
+    composition: string;
+    health: string;
+    scan: string;
+    fridge: string;
+    awaitingScan: string;
+  };
 }
 
-// The per-locale objects below define everything except the success screen
-// copy, which is merged in from SUCCESS at the bottom to keep each block lean.
-type Base = Omit<Dict, "success">;
+// The per-locale objects below define the core copy; the success screen and
+// dashboard sections are merged in at the bottom to keep each block lean.
+type Base = Omit<Dict, "success" | "today">;
 
 const en: Base = {
   step: "Step {n} of {total}",
@@ -545,12 +556,25 @@ const SUCCESS: Record<LocaleCode, Dict["success"]> = {
   ru: { booting: ["Анализ биометрии", "Синхронизация матрицы вкуса", "Калибровка макро-целей"], complete: "Калибровка завершена", initialized: "Протокол инициализирован", enter: "Открыть панель" },
 };
 
+// Today-dashboard prose. Instrument labels (ENERGY, PROTEIN, BMI…) stay in
+// English mono in the component by design — they read as technical readouts.
+const TODAY: Record<LocaleCode, Dict["today"]> = {
+  en: { morning: "Good morning", afternoon: "Good afternoon", evening: "Good evening", remaining: "Remaining", composition: "Composition", health: "Health Index", scan: "Scan Plate", fridge: "Fridge", awaitingScan: "Awaiting first scan" },
+  lt: { morning: "Labas rytas", afternoon: "Laba diena", evening: "Labas vakaras", remaining: "Liko", composition: "Sudėtis", health: "Sveikatos indeksas", scan: "Skenuoti lėkštę", fridge: "Šaldytuvas", awaitingScan: "Laukiama pirmo skenavimo" },
+  lv: { morning: "Labrīt", afternoon: "Labdien", evening: "Labvakar", remaining: "Atlicis", composition: "Sastāvs", health: "Veselības indekss", scan: "Skenēt šķīvi", fridge: "Ledusskapis", awaitingScan: "Gaida pirmo skenēšanu" },
+  pl: { morning: "Dzień dobry", afternoon: "Dzień dobry", evening: "Dobry wieczór", remaining: "Pozostało", composition: "Skład", health: "Indeks zdrowia", scan: "Skanuj talerz", fridge: "Lodówka", awaitingScan: "Oczekiwanie na pierwszy skan" },
+  de: { morning: "Guten Morgen", afternoon: "Guten Tag", evening: "Guten Abend", remaining: "Übrig", composition: "Zusammensetzung", health: "Gesundheitsindex", scan: "Teller scannen", fridge: "Kühlschrank", awaitingScan: "Warte auf ersten Scan" },
+  es: { morning: "Buenos días", afternoon: "Buenas tardes", evening: "Buenas noches", remaining: "Restante", composition: "Composición", health: "Índice de salud", scan: "Escanear plato", fridge: "Nevera", awaitingScan: "Esperando primer escaneo" },
+  fr: { morning: "Bonjour", afternoon: "Bon après-midi", evening: "Bonsoir", remaining: "Restant", composition: "Composition", health: "Indice de santé", scan: "Scanner l'assiette", fridge: "Frigo", awaitingScan: "En attente du premier scan" },
+  ru: { morning: "Доброе утро", afternoon: "Добрый день", evening: "Добрый вечер", remaining: "Осталось", composition: "Состав", health: "Индекс здоровья", scan: "Сканировать тарелку", fridge: "Холодильник", awaitingScan: "Ожидание первого скана" },
+};
+
 const BASES: Record<LocaleCode, Base> = { en, lt, lv, pl, de, es, fr, ru };
 
 export const DICTIONARIES = Object.fromEntries(
   (Object.keys(BASES) as LocaleCode[]).map((code) => [
     code,
-    { ...BASES[code], success: SUCCESS[code] },
+    { ...BASES[code], success: SUCCESS[code], today: TODAY[code] },
   ]),
 ) as Record<LocaleCode, Dict>;
 
