@@ -1,7 +1,10 @@
+import { redirect } from "next/navigation";
 import { BentoCard } from "@/components/ui/BentoCard";
 import { MacroRing } from "@/components/ui/MacroRing";
 import { StoreMatchCard } from "@/components/ui/StoreMatchCard";
 import { TabBar } from "@/components/ui/TabBar";
+import { createClient } from "@/lib/supabase/server";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 import type { StoreQuote } from "@/lib/types";
 
 // ── Demo data ────────────────────────────────────────────────────────────────
@@ -27,13 +30,44 @@ const sampleQuote: StoreQuote = {
   ],
 };
 
-export default function TodayPage() {
+export default async function TodayPage() {
+  // Real onboarding gate: an authenticated-but-un-onboarded user is sent to
+  // the flow. In design-preview mode (no keys) we just render the dashboard.
+  let greetingName = "";
+  if (hasSupabaseEnv()) {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name, onboarded_at")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!profile?.onboarded_at) redirect("/onboarding");
+      greetingName = profile?.display_name ? `, ${profile.display_name}` : "";
+    } else {
+      redirect("/onboarding");
+    }
+  }
+
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
     <main className="mx-auto max-w-md px-4 pt-12">
       {/* Greeting */}
       <header className="mb-6 px-1">
-        <p className="text-sm font-medium text-ink-2">Friday, June 26</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Good evening 👋</h1>
+        <p className="text-sm font-medium text-ink-2">{today}</p>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Good evening{greetingName} 👋
+        </h1>
       </header>
 
       {/* Bento grid */}

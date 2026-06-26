@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { t } from "@/lib/i18n/dictionary";
 import { computeBmi } from "@/lib/bmi";
 import { clsx } from "@/lib/cn";
@@ -11,35 +12,46 @@ import { BmiDashboard } from "@/components/onboarding/BmiDashboard";
 
 const TOTAL_STEPS = 3;
 
-export function OnboardingFlow() {
+export function OnboardingFlow({
+  initialMetrics = { age: "", weight: "", height: "" },
+}: {
+  initialMetrics?: Metrics;
+}) {
   const { locale, d } = useLocale();
+  const { ready, configured } = useAuth();
   const [step, setStep] = useState(1);
-  const [metrics, setMetrics] = useState<Metrics>({ age: "", weight: "", height: "" });
+  const [metrics, setMetrics] = useState<Metrics>(initialMetrics);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(false);
 
   const result = computeBmi(Number(metrics.weight), Number(metrics.height));
   const canAdvance = step === 1 || (step === 2 ? Boolean(result) : true);
 
   async function finish() {
     setSaving(true);
+    setError(false);
     try {
-      await fetch("/api/onboarding", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          preferred_language: locale,
-          age: Number(metrics.age) || null,
-          weight_kg: Number(metrics.weight) || null,
-          height_cm: Number(metrics.height) || null,
-          bmi_status: result?.tier ?? null,
-        }),
-      });
-    } catch {
-      // Non-blocking: onboarding continues even if the network hiccups; the
-      // values are kept client-side and retried on the next authenticated load.
-    } finally {
-      setSaving(false);
+      // If Supabase isn't configured (design-preview), skip the network and
+      // just advance — nothing to persist.
+      if (configured) {
+        const res = await fetch("/api/onboarding", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            preferred_language: locale,
+            age: Number(metrics.age) || null,
+            weight_kg: Number(metrics.weight) || null,
+            height_cm: Number(metrics.height) || null,
+            bmi_status: result?.tier ?? null,
+          }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+      }
       window.location.assign("/");
+    } catch {
+      // Surface the failure instead of silently dropping the user's data.
+      setError(true);
+      setSaving(false);
     }
   }
 
@@ -69,31 +81,43 @@ export function OnboardingFlow() {
         {step === 3 && <BmiDashboard metrics={metrics} />}
       </div>
 
-      {/* Navigation */}
-      <div className="mt-8 flex items-center gap-3">
-        {step > 1 && (
-          <button
-            onClick={() => setStep((s) => s - 1)}
-            className="rounded-2xl px-5 py-4 text-sm font-semibold text-ink-2
-                       transition active:scale-95 ease-ios"
-          >
-            {d.back}
-          </button>
-        )}
-        <button
-          disabled={!canAdvance || saving}
-          onClick={() => (step < TOTAL_STEPS ? setStep((s) => s + 1) : finish())}
-          className={clsx(
-            "flex-1 rounded-3xl py-4 text-base font-semibold text-white shadow-float",
-            "transition duration-300 ease-ios active:scale-[0.97]",
-            !canAdvance || saving
-              ? "cursor-not-allowed bg-ink-3 shadow-none"
-              : "bg-accent",
-          )}
-        >
-          {saving ? "…" : step < TOTAL_STEPS ? d.continue : d.getStarted}
-        </button>
-      </div>
+      {/* On the final step we wait for the session to resolve before enabling
+          save, so the POST always carries a valid auth cookie. */}
+      {(() => {
+        const waitingForAuth = step === TOTAL_STEPS && configured && !ready;
+        const disabled = !canAdvance || saving || waitingForAuth;
+        return (
+          <div className="mt-8">
+            {error && (
+              <p className="mb-3 text-center text-sm font-medium text-coral">
+                Couldn't save just now — please try again.
+              </p>
+            )}
+            <div className="flex items-center gap-3">
+              {step > 1 && (
+                <button
+                  onClick={() => setStep((s) => s - 1)}
+                  className="rounded-2xl px-5 py-4 text-sm font-semibold text-ink-2
+                             transition active:scale-95 ease-ios"
+                >
+                  {d.back}
+                </button>
+              )}
+              <button
+                disabled={disabled}
+                onClick={() => (step < TOTAL_STEPS ? setStep((s) => s + 1) : finish())}
+                className={clsx(
+                  "flex-1 rounded-3xl py-4 text-base font-semibold text-white shadow-float",
+                  "transition duration-300 ease-ios active:scale-[0.97]",
+                  disabled ? "cursor-not-allowed bg-ink-3 shadow-none" : "bg-accent",
+                )}
+              >
+                {saving || waitingForAuth ? "…" : step < TOTAL_STEPS ? d.continue : d.getStarted}
+              </button>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
