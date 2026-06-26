@@ -6,9 +6,10 @@ import { BmiGauge } from "@/components/onboarding/BmiGauge";
 import type { Metrics } from "@/components/onboarding/MetricsStep";
 
 /**
- * Step 3 — the live BMI dashboard. Recomputes on every keystroke from Step 2's
- * metrics, reframes the result into a supportive tier, and reveals the user's
- * biological advantages as a confidence-building retention hook.
+ * Step 3 — composition telemetry. A graphite instrument panel reports the BMI
+ * index and classification; below it, the biological leverage points are laid
+ * out as precise micro-cards. Monospaced metrics, hairline borders, desaturated
+ * indicators — an elite lab report, not a friendly checklist.
  */
 export function BmiDashboard({ metrics }: { metrics: Metrics }) {
   const { d } = useLocale();
@@ -17,71 +18,81 @@ export function BmiDashboard({ metrics }: { metrics: Metrics }) {
 
   return (
     <div className="animate-pop-in">
-      <h1 className="text-3xl font-semibold tracking-tight">{d.bmi.title}</h1>
-      <p className="mt-2 text-ink-2">{d.bmi.subtitle}</p>
+      {/* Eyebrow */}
+      <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-3">
+        {d.bmi.title}
+      </p>
 
-      {/* Result card — continuous-curvature squircle */}
-      <div className="mt-7 rounded-4xl border border-hairline bg-surface p-6 shadow-card">
-        <div className="flex items-end justify-between">
+      {/* Instrument panel */}
+      <div className="mt-3 rounded-4xl bg-[#0C0D12] p-6 text-white shadow-card">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-ink-2">{d.bmi.label}</p>
-            <p
-              className="text-5xl font-bold tracking-tight tabular-nums transition-colors duration-500"
-              style={{ color: result?.color ?? "#C7C7CC" }}
-            >
-              {result ? result.bmi.toFixed(1) : "—"}
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+              {d.bmi.label} · Index
+            </p>
+            <p className="mt-1.5 font-mono text-[3.25rem] font-semibold leading-none tabular-nums">
+              {result ? result.bmi.toFixed(1) : "—.—"}
             </p>
           </div>
+
           {tier && (
             <span
-              className="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-500"
-              style={{
-                color: result!.color,
-                backgroundColor: `${result!.color}1A`, // 10% tint
-              }}
+              className="mt-1 rounded-full border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] transition-colors duration-500"
+              style={{ color: result!.color, borderColor: `${result!.color}55` }}
             >
               {tier.name}
             </span>
           )}
         </div>
 
-        <div className="mt-8">
+        <div className="mt-7">
           <BmiGauge result={result} />
         </div>
       </div>
 
-      {/* Motivational message + biological advantages */}
+      {/* Status + leverage points */}
       {tier ? (
-        <div className="mt-5 rounded-4xl border border-hairline bg-surface p-6 shadow-card">
-          <p className="text-[15px] leading-relaxed text-ink">{tier.message}</p>
-
-          <div className="mt-5">
-            <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
-              <span aria-hidden>⚡️</span>
-              {d.bmi.advantagesTitle}
+        <>
+          <div className="mt-7">
+            <h2 className="text-xl font-semibold tracking-tight">{tier.headline}</h2>
+            <p className="mt-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">
+              {d.bmi.analysisComplete}
             </p>
-            <ul className="space-y-2.5">
-              {tier.advantages.map((adv, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-3 rounded-2xl bg-canvas p-3 text-sm
-                             animate-pop-in"
-                  style={{ animationDelay: `${i * 90}ms` }}
-                >
-                  <span
-                    className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] text-white"
-                    style={{ backgroundColor: result!.color }}
-                  >
-                    ✓
-                  </span>
-                  <span className="leading-snug text-ink">{adv}</span>
-                </li>
-              ))}
-            </ul>
           </div>
-        </div>
+
+          <p className="mb-3 mt-8 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-3">
+            {d.bmi.leverageTitle}
+          </p>
+
+          <div className="space-y-2.5">
+            {tier.leverage.map((point, i) => (
+              <div
+                key={i}
+                className="flex items-stretch gap-4 rounded-3xl border border-hairline bg-surface p-4 animate-pop-in"
+                style={{ animationDelay: `${i * 70}ms` }}
+              >
+                {/* Desaturated indicator bar */}
+                <div
+                  className="w-[3px] shrink-0 rounded-full"
+                  style={{ backgroundColor: result!.color }}
+                />
+                <div className="flex-1">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="text-[15px] font-semibold tracking-tight">{point.metric}</p>
+                    <span className="font-mono text-[10px] tabular-nums text-ink-3">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[13px] leading-snug text-ink-2">{point.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
-        <p className="mt-5 px-1 text-sm text-ink-2">{d.bmi.enterMetrics}</p>
+        <p className="mt-6 px-1 font-mono text-[12px] uppercase tracking-[0.12em] text-ink-3">
+          {d.bmi.enterMetrics}
+        </p>
       )}
     </div>
   );

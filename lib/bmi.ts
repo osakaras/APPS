@@ -17,11 +17,12 @@ export interface BmiResult {
   color: string;
 }
 
+// Desaturated instrument palette — reads like telemetry, never childish.
 const TIER_COLOR: Record<BmiTierKey, string> = {
-  lean_light: "#0A84FF", // calm blue
-  optimal_balance: "#30D158", // system green
-  solid_built: "#FF9F0A", // warm amber
-  focus_zone: "#BF5AF2", // supportive violet (never alarmist red)
+  lean_light: "#6E8CA8", // steel blue
+  optimal_balance: "#4E9E82", // muted jade
+  solid_built: "#B08A52", // bronze
+  focus_zone: "#8A77A8", // slate violet (never alarmist red)
 };
 
 export function tierForBmi(bmi: number): BmiTierKey {

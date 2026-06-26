@@ -1,10 +1,10 @@
 // Onboarding copy in every supported locale. Picking a language in Step 1
 // swaps this dictionary live via the LocaleProvider — no reload.
 //
-// Tone of voice: warm, scientific, motivating. BMI tiers NEVER use blunt
-// words ("skinny", "fat", "obese"). Each tier has a supportive name, a
-// motivational message, and 2–3 "Biological Advantages" that reframe the
-// result as a strength.
+// Tone of voice: elite sports-science telemetry. Precise, data-backed,
+// clinically confident. No casual validation, no emoji. Each BMI tier reads
+// like a lab report: a classification, a status headline, and three
+// "biological leverage points" expressed as measured metrics.
 
 export const LOCALES = [
   { code: "en", flag: "🇬🇧", native: "English" },
@@ -22,10 +22,15 @@ export type LocaleCode = (typeof LOCALES)[number]["code"];
 // Canonical tier keys — also persisted to profiles.bmi_status.
 export type BmiTierKey = "lean_light" | "optimal_balance" | "solid_built" | "focus_zone";
 
+interface LeveragePoint {
+  metric: string; // concise scientific label
+  detail: string; // measured mechanism, one clause
+}
+
 interface TierCopy {
-  name: string;
-  message: string;
-  advantages: string[];
+  name: string; // classification badge
+  headline: string; // status statement
+  leverage: LeveragePoint[];
 }
 
 export interface Dict {
@@ -43,10 +48,10 @@ export interface Dict {
     years: string;
   };
   bmi: {
-    title: string;
-    subtitle: string;
-    label: string;
-    advantagesTitle: string;
+    title: string; // eyebrow
+    label: string; // "BMI" / "IMC" ...
+    analysisComplete: string;
+    leverageTitle: string;
     enterMetrics: string;
     finishTitle: string;
     finishSubtitle: string;
@@ -64,48 +69,48 @@ const en: Dict = {
     age: "Age", weight: "Weight", height: "Height", years: "years",
   },
   bmi: {
-    title: "Your body composition",
-    subtitle: "Calculated live from your height and weight.",
+    title: "Composition Analysis",
     label: "BMI",
-    advantagesTitle: "Your biological advantages",
-    enterMetrics: "Enter your weight and height to see your result.",
+    analysisComplete: "Physical composition analysis complete.",
+    leverageTitle: "Primary Biological Leverage Points",
+    enterMetrics: "Enter your weight and height to run the analysis.",
     finishTitle: "You're all set",
     finishSubtitle: "Your plan is ready. Let's eat well.",
     tiers: {
       lean_light: {
-        name: "Lean & Light",
-        message: "A great base to build clean strength and steady energy. Let's add nourishing fuel.",
-        advantages: [
-          "Higher baseline agility with lower joint stress during cardio",
-          "Ideal canvas for clean, aesthetic muscle definition",
-          "High metabolic flexibility",
+        name: "Lean Phenotype",
+        headline: "Lean Baseline Established",
+        leverage: [
+          { metric: "Low Mechanical Load", detail: "Reduced articular stress permits high training volume and rapid motor recovery." },
+          { metric: "High Insulin Sensitivity", detail: "Efficient nutrient partitioning primes clean myofibrillar accrual." },
+          { metric: "Elevated Metabolic Flexibility", detail: "Rapid substrate switching across lipid and glycolytic energy systems." },
         ],
       },
       optimal_balance: {
         name: "Optimal Balance",
-        message: "Beautifully balanced — a healthy foundation to build lasting habits on.",
-        advantages: [
-          "Prime metabolic base to lose fat and gain muscle at once",
-          "Balanced recovery rates and stable hormone production",
-          "Excellent cardiovascular efficiency",
+        headline: "Metabolic Baseline Established",
+        leverage: [
+          { metric: "High Metabolic Plasticity", detail: "Optimal environment for simultaneous lipid oxidation and myofibrillar hypertrophy." },
+          { metric: "Stabilized Endocrine Baseline", detail: "Optimal recovery windows and consistent hormone synthesis pathways." },
+          { metric: "Peak Aerobic Efficiency", detail: "Optimized stroke volume and cardiovascular capacity." },
         ],
       },
       solid_built: {
-        name: "Solid & Built",
-        message: "A strong starting point. We'll focus on recomposition and optimizing your energy.",
-        advantages: [
-          "Massive strength potential — already adapted to carrying load",
-          "High caloric baseline fuels rapid muscle building (hypertrophy)",
-          "Greater bone density and joint stability for heavy lifting",
+        name: "Power Reserve",
+        headline: "Strength Reserve Identified",
+        leverage: [
+          { metric: "High Force Output Potential", detail: "Neuromuscular system pre-adapted to substantial mechanical load." },
+          { metric: "Anabolic Surplus Reserve", detail: "Elevated caloric baseline accelerates myofibrillar hypertrophy under load." },
+          { metric: "Superior Skeletal Density", detail: "Increased bone mineral density and joint stability for maximal loading." },
         ],
       },
       focus_zone: {
-        name: "Focus Zone",
-        message: "Every sustainable step counts. We'll look after your metabolic health, together.",
-        advantages: [
-          "Massive strength potential — already adapted to carrying load",
-          "High caloric baseline fuels rapid muscle building (hypertrophy)",
-          "Greater bone density and joint stability for heavy lifting",
+        name: "High Capacity",
+        headline: "High-Capacity Profile Detected",
+        leverage: [
+          { metric: "High Force Output Potential", detail: "Neuromuscular system pre-adapted to substantial mechanical load." },
+          { metric: "Anabolic Surplus Reserve", detail: "Elevated caloric baseline accelerates myofibrillar hypertrophy under load." },
+          { metric: "Superior Skeletal Density", detail: "Increased bone mineral density and joint stability for maximal loading." },
         ],
       },
     },
@@ -122,48 +127,48 @@ const lt: Dict = {
     age: "Amžius", weight: "Svoris", height: "Ūgis", years: "metai",
   },
   bmi: {
-    title: "Jūsų kūno sudėjimas",
-    subtitle: "Apskaičiuojama iš ūgio ir svorio.",
+    title: "Sudėties analizė",
     label: "KMI",
-    advantagesTitle: "Jūsų biologiniai pliusai",
-    enterMetrics: "Įveskite svorį ir ūgį, kad pamatytumėte rezultatą.",
+    analysisComplete: "Kūno sudėties analizė baigta.",
+    leverageTitle: "Pagrindiniai biologiniai svertai",
+    enterMetrics: "Įveskite svorį ir ūgį analizei atlikti.",
     finishTitle: "Viskas paruošta",
     finishSubtitle: "Jūsų planas paruoštas. Valgykime sveikai.",
     tiers: {
       lean_light: {
-        name: "Lengvas ir tvirtas",
-        message: "Puikus pagrindas švariai jėgai ir tolygiai energijai. Pridėkime maistingo kuro.",
-        advantages: [
-          "Didesnis judrumas ir mažesnė sąnarių apkrova darant kardio",
-          "Ideali bazė švariam, estetiškam raumenų reljefui",
-          "Aukštas metabolinis lankstumas",
+        name: "Liesas fenotipas",
+        headline: "Liesa bazinė linija nustatyta",
+        leverage: [
+          { metric: "Maža mechaninė apkrova", detail: "Mažesnė sąnarių apkrova leidžia didelę treniruočių apimtį ir greitą atsigavimą." },
+          { metric: "Aukštas jautrumas insulinui", detail: "Efektyvus medžiagų paskirstymas skatina švarų raumenų augimą." },
+          { metric: "Padidintas metabolinis lankstumas", detail: "Greitas perėjimas tarp lipidų ir glikolizės energijos sistemų." },
         ],
       },
       optimal_balance: {
         name: "Optimali pusiausvyra",
-        message: "Puikiai subalansuota — sveikas pagrindas ilgalaikiams įpročiams.",
-        advantages: [
-          "Puiki metabolinė bazė vienu metu deginti riebalus ir auginti raumenis",
-          "Subalansuotas atsigavimas ir stabili hormonų gamyba",
-          "Puikus širdies ir kraujagyslių efektyvumas",
+        headline: "Metabolinė bazinė linija nustatyta",
+        leverage: [
+          { metric: "Aukštas metabolinis plastiškumas", detail: "Optimali aplinka vienu metu deginti lipidus ir auginti raumenis (hipertrofija)." },
+          { metric: "Stabili endokrininė bazė", detail: "Optimalūs atsigavimo langai ir nuoseklus hormonų sintezės kelias." },
+          { metric: "Aukščiausias aerobinis efektyvumas", detail: "Optimizuotas širdies smūgio tūris ir kraujagyslių pajėgumas." },
         ],
       },
       solid_built: {
-        name: "Tvirtas ir stiprus",
-        message: "Stiprus startas. Sutelksime dėmesį į kūno kompoziciją ir energijos optimizavimą.",
-        advantages: [
-          "Didžiulis jėgos potencialas — kūnas jau pripratęs nešti svorį",
-          "Aukšta kalorijų bazė skatina spartų raumenų augimą (hipertrofiją)",
-          "Didesnis kaulų tankis ir sąnarių stabilumas sunkiems pratimams",
+        name: "Jėgos rezervas",
+        headline: "Jėgos rezervas identifikuotas",
+        leverage: [
+          { metric: "Aukštas jėgos potencialas", detail: "Neuroraumeninė sistema pritaikyta didelei mechaninei apkrovai." },
+          { metric: "Anabolinis perteklius", detail: "Padidinta kalorijų bazė spartina raumenų hipertrofiją esant apkrovai." },
+          { metric: "Didesnis kaulų tankis", detail: "Didesnis kaulų mineralinis tankis ir sąnarių stabilumas didelėms apkrovoms." },
         ],
       },
       focus_zone: {
-        name: "Dėmesio zona",
-        message: "Kiekvienas tvarus žingsnis svarbus. Kartu rūpinsimės metaboline sveikata.",
-        advantages: [
-          "Didžiulis jėgos potencialas — kūnas jau pripratęs nešti svorį",
-          "Aukšta kalorijų bazė skatina spartų raumenų augimą (hipertrofiją)",
-          "Didesnis kaulų tankis ir sąnarių stabilumas sunkiems pratimams",
+        name: "Didelis pajėgumas",
+        headline: "Aptiktas didelio pajėgumo profilis",
+        leverage: [
+          { metric: "Aukštas jėgos potencialas", detail: "Neuroraumeninė sistema pritaikyta didelei mechaninei apkrovai." },
+          { metric: "Anabolinis perteklius", detail: "Padidinta kalorijų bazė spartina raumenų hipertrofiją esant apkrovai." },
+          { metric: "Didesnis kaulų tankis", detail: "Didesnis kaulų mineralinis tankis ir sąnarių stabilumas didelėms apkrovoms." },
         ],
       },
     },
@@ -180,48 +185,48 @@ const lv: Dict = {
     age: "Vecums", weight: "Svars", height: "Augums", years: "gadi",
   },
   bmi: {
-    title: "Jūsu ķermeņa uzbūve",
-    subtitle: "Aprēķināts no auguma un svara.",
+    title: "Sastāva analīze",
     label: "ĶMI",
-    advantagesTitle: "Jūsu bioloģiskās priekšrocības",
-    enterMetrics: "Ievadiet svaru un augumu, lai redzētu rezultātu.",
+    analysisComplete: "Ķermeņa sastāva analīze pabeigta.",
+    leverageTitle: "Galvenie bioloģiskie sviras punkti",
+    enterMetrics: "Ievadiet svaru un augumu, lai veiktu analīzi.",
     finishTitle: "Viss gatavs",
     finishSubtitle: "Jūsu plāns ir gatavs. Ēdīsim veselīgi.",
     tiers: {
       lean_light: {
-        name: "Viegls un spēcīgs",
-        message: "Lieliska bāze tīram spēkam un stabilai enerģijai. Pievienosim barojošu degvielu.",
-        advantages: [
-          "Augstāka veiklība un mazāka locītavu slodze kardio laikā",
-          "Ideāla bāze tīrai, estētiskai muskuļu definīcijai",
-          "Augsta metaboliskā elastība",
+        name: "Liesais fenotips",
+        headline: "Liesā bāzlīnija noteikta",
+        leverage: [
+          { metric: "Zema mehāniskā slodze", detail: "Mazāka locītavu slodze ļauj lielu treniņu apjomu un ātru atjaunošanos." },
+          { metric: "Augsta jutība pret insulīnu", detail: "Efektīva uzturvielu sadale veicina tīru muskuļu pieaugumu." },
+          { metric: "Paaugstināta metaboliskā elastība", detail: "Ātra pārslēgšanās starp lipīdu un glikolīzes enerģijas sistēmām." },
         ],
       },
       optimal_balance: {
         name: "Optimāls līdzsvars",
-        message: "Skaisti līdzsvarots — vesels pamats ilgtspējīgiem ieradumiem.",
-        advantages: [
-          "Lieliska metaboliskā bāze vienlaikus zaudēt taukus un augt muskuļus",
-          "Līdzsvarota atjaunošanās un stabila hormonu ražošana",
-          "Lieliska sirds un asinsvadu efektivitāte",
+        headline: "Metaboliskā bāzlīnija noteikta",
+        leverage: [
+          { metric: "Augsta metaboliskā plastika", detail: "Optimāla vide vienlaicīgai lipīdu oksidācijai un muskuļu hipertrofijai." },
+          { metric: "Stabila endokrīnā bāze", detail: "Optimāli atjaunošanās logi un konsekvents hormonu sintēzes ceļš." },
+          { metric: "Augstākā aerobā efektivitāte", detail: "Optimizēts sirds sitiena tilpums un asinsvadu kapacitāte." },
         ],
       },
       solid_built: {
-        name: "Stingrs un spēcīgs",
-        message: "Spēcīgs sākums. Koncentrēsimies uz ķermeņa kompozīciju un enerģiju.",
-        advantages: [
-          "Milzīgs spēka potenciāls — ķermenis jau pielāgots slodzes nešanai",
-          "Augsta kaloriju bāze veicina strauju muskuļu augšanu (hipertrofiju)",
-          "Lielāks kaulu blīvums un locītavu stabilitāte smagiem vingrinājumiem",
+        name: "Spēka rezerve",
+        headline: "Spēka rezerve identificēta",
+        leverage: [
+          { metric: "Augsts spēka potenciāls", detail: "Neiromuskulārā sistēma pielāgota būtiskai mehāniskai slodzei." },
+          { metric: "Anaboliskais pārpalikums", detail: "Paaugstināta kaloriju bāze paātrina muskuļu hipertrofiju zem slodzes." },
+          { metric: "Augstāks kaulu blīvums", detail: "Lielāks kaulu minerālblīvums un locītavu stabilitāte maksimālām slodzēm." },
         ],
       },
       focus_zone: {
-        name: "Fokusa zona",
-        message: "Katrs ilgtspējīgs solis ir svarīgs. Kopā rūpēsimies par metabolisko veselību.",
-        advantages: [
-          "Milzīgs spēka potenciāls — ķermenis jau pielāgots slodzes nešanai",
-          "Augsta kaloriju bāze veicina strauju muskuļu augšanu (hipertrofiju)",
-          "Lielāks kaulu blīvums un locītavu stabilitāte smagiem vingrinājumiem",
+        name: "Augsta kapacitāte",
+        headline: "Konstatēts augstas kapacitātes profils",
+        leverage: [
+          { metric: "Augsts spēka potenciāls", detail: "Neiromuskulārā sistēma pielāgota būtiskai mehāniskai slodzei." },
+          { metric: "Anaboliskais pārpalikums", detail: "Paaugstināta kaloriju bāze paātrina muskuļu hipertrofiju zem slodzes." },
+          { metric: "Augstāks kaulu blīvums", detail: "Lielāks kaulu minerālblīvums un locītavu stabilitāte maksimālām slodzēm." },
         ],
       },
     },
@@ -238,48 +243,48 @@ const pl: Dict = {
     age: "Wiek", weight: "Waga", height: "Wzrost", years: "lat",
   },
   bmi: {
-    title: "Twoja budowa ciała",
-    subtitle: "Obliczana na żywo z wzrostu i wagi.",
+    title: "Analiza składu",
     label: "BMI",
-    advantagesTitle: "Twoje przewagi biologiczne",
-    enterMetrics: "Podaj wagę i wzrost, aby zobaczyć wynik.",
+    analysisComplete: "Analiza składu ciała zakończona.",
+    leverageTitle: "Główne dźwignie biologiczne",
+    enterMetrics: "Podaj wagę i wzrost, aby wykonać analizę.",
     finishTitle: "Wszystko gotowe",
     finishSubtitle: "Twój plan jest gotowy. Jedzmy zdrowo.",
     tiers: {
       lean_light: {
-        name: "Lekki i silny",
-        message: "Świetna baza do budowania czystej siły i stabilnej energii. Dodajmy odżywczego paliwa.",
-        advantages: [
-          "Większa zwinność i mniejsze obciążenie stawów podczas cardio",
-          "Idealna baza dla czystej, estetycznej definicji mięśni",
-          "Wysoka elastyczność metaboliczna",
+        name: "Fenotyp szczupły",
+        headline: "Ustalono linię bazową masy szczupłej",
+        leverage: [
+          { metric: "Niskie obciążenie mechaniczne", detail: "Mniejsze obciążenie stawów umożliwia dużą objętość treningu i szybką regenerację." },
+          { metric: "Wysoka wrażliwość na insulinę", detail: "Efektywna dystrybucja składników sprzyja czystemu przyrostowi mięśni." },
+          { metric: "Podwyższona elastyczność metaboliczna", detail: "Szybkie przełączanie między układami lipidowym i glikolitycznym." },
         ],
       },
       optimal_balance: {
         name: "Optymalna równowaga",
-        message: "Pięknie zrównoważone — zdrowy fundament trwałych nawyków.",
-        advantages: [
-          "Doskonała baza metaboliczna do jednoczesnej redukcji i budowy mięśni",
-          "Zrównoważona regeneracja i stabilna produkcja hormonów",
-          "Świetna wydolność sercowo-naczyniowa",
+        headline: "Ustalono metaboliczną linię bazową",
+        leverage: [
+          { metric: "Wysoka plastyczność metaboliczna", detail: "Optymalne środowisko do jednoczesnej oksydacji lipidów i hipertrofii mięśni." },
+          { metric: "Stabilna baza endokrynna", detail: "Optymalne okna regeneracji i spójne szlaki syntezy hormonów." },
+          { metric: "Szczytowa wydolność tlenowa", detail: "Zoptymalizowana objętość wyrzutowa i wydolność sercowo-naczyniowa." },
         ],
       },
       solid_built: {
-        name: "Mocny i zbudowany",
-        message: "Silny początek. Skupimy się na rekompozycji i optymalizacji energii.",
-        advantages: [
-          "Ogromny potencjał siły — ciało już przystosowane do dźwigania",
-          "Wysoka baza kaloryczna napędza szybki wzrost mięśni (hipertrofię)",
-          "Większa gęstość kości i stabilność stawów przy ciężkich treningach",
+        name: "Rezerwa siły",
+        headline: "Zidentyfikowano rezerwę siły",
+        leverage: [
+          { metric: "Wysoki potencjał siły", detail: "Układ nerwowo-mięśniowy przystosowany do znacznego obciążenia." },
+          { metric: "Nadwyżka anaboliczna", detail: "Podwyższona baza kaloryczna przyspiesza hipertrofię pod obciążeniem." },
+          { metric: "Wyższa gęstość kości", detail: "Większa gęstość mineralna kości i stabilność stawów przy maks. obciążeniu." },
         ],
       },
       focus_zone: {
-        name: "Strefa skupienia",
-        message: "Każdy zrównoważony krok się liczy. Zadbamy o zdrowie metaboliczne razem.",
-        advantages: [
-          "Ogromny potencjał siły — ciało już przystosowane do dźwigania",
-          "Wysoka baza kaloryczna napędza szybki wzrost mięśni (hipertrofię)",
-          "Większa gęstość kości i stabilność stawów przy ciężkich treningach",
+        name: "Wysoka pojemność",
+        headline: "Wykryto profil wysokiej pojemności",
+        leverage: [
+          { metric: "Wysoki potencjał siły", detail: "Układ nerwowo-mięśniowy przystosowany do znacznego obciążenia." },
+          { metric: "Nadwyżka anaboliczna", detail: "Podwyższona baza kaloryczna przyspiesza hipertrofię pod obciążeniem." },
+          { metric: "Wyższa gęstość kości", detail: "Większa gęstość mineralna kości i stabilność stawów przy maks. obciążeniu." },
         ],
       },
     },
@@ -296,48 +301,48 @@ const de: Dict = {
     age: "Alter", weight: "Gewicht", height: "Größe", years: "Jahre",
   },
   bmi: {
-    title: "Deine Körperzusammensetzung",
-    subtitle: "Live aus Größe und Gewicht berechnet.",
+    title: "Zusammensetzungs-Analyse",
     label: "BMI",
-    advantagesTitle: "Deine biologischen Vorteile",
-    enterMetrics: "Gib Gewicht und Größe ein, um dein Ergebnis zu sehen.",
+    analysisComplete: "Analyse der Körperzusammensetzung abgeschlossen.",
+    leverageTitle: "Primäre biologische Hebelpunkte",
+    enterMetrics: "Gib Gewicht und Größe ein, um die Analyse zu starten.",
     finishTitle: "Alles bereit",
     finishSubtitle: "Dein Plan ist fertig. Lass uns gut essen.",
     tiers: {
       lean_light: {
-        name: "Leicht & Stark",
-        message: "Eine super Basis für saubere Kraft und stabile Energie. Geben wir nahrhaften Treibstoff dazu.",
-        advantages: [
-          "Höhere Agilität bei geringerer Gelenkbelastung beim Cardio",
-          "Ideale Basis für saubere, ästhetische Muskeldefinition",
-          "Hohe metabolische Flexibilität",
+        name: "Schlanker Phänotyp",
+        headline: "Schlanke Basislinie etabliert",
+        leverage: [
+          { metric: "Geringe mechanische Last", detail: "Reduzierte Gelenkbelastung ermöglicht hohes Trainingsvolumen und schnelle Regeneration." },
+          { metric: "Hohe Insulinsensitivität", detail: "Effiziente Nährstoffverteilung fördert sauberen Muskelaufbau." },
+          { metric: "Erhöhte metabolische Flexibilität", detail: "Schnelles Umschalten zwischen Lipid- und glykolytischen Energiesystemen." },
         ],
       },
       optimal_balance: {
         name: "Optimale Balance",
-        message: "Wunderbar ausgewogen — ein gesundes Fundament für dauerhafte Gewohnheiten.",
-        advantages: [
-          "Top-Stoffwechselbasis, um Fett zu verlieren und Muskeln aufzubauen",
-          "Ausgewogene Erholung und stabile Hormonproduktion",
-          "Hervorragende kardiovaskuläre Effizienz",
+        headline: "Metabolische Basislinie etabliert",
+        leverage: [
+          { metric: "Hohe metabolische Plastizität", detail: "Optimales Umfeld für gleichzeitige Lipidoxidation und Muskelhypertrophie." },
+          { metric: "Stabile endokrine Basis", detail: "Optimale Erholungsfenster und konsistente Hormonsynthese." },
+          { metric: "Maximale aerobe Effizienz", detail: "Optimiertes Schlagvolumen und kardiovaskuläre Kapazität." },
         ],
       },
       solid_built: {
-        name: "Solide & Kräftig",
-        message: "Starker Ausgangspunkt. Wir fokussieren auf Rekomposition und deine Energie.",
-        advantages: [
-          "Enormes Kraftpotenzial — bereits an das Tragen von Last angepasst",
-          "Hohe Kalorienbasis treibt schnellen Muskelaufbau (Hypertrophie)",
-          "Höhere Knochendichte und Gelenkstabilität für schweres Training",
+        name: "Kraftreserve",
+        headline: "Kraftreserve identifiziert",
+        leverage: [
+          { metric: "Hohes Kraftpotenzial", detail: "Neuromuskuläres System auf erhebliche mechanische Last vorbereitet." },
+          { metric: "Anaboler Überschuss", detail: "Erhöhte Kalorienbasis beschleunigt Muskelhypertrophie unter Last." },
+          { metric: "Höhere Knochendichte", detail: "Höhere Knochenmineraldichte und Gelenkstabilität für maximale Belastung." },
         ],
       },
       focus_zone: {
-        name: "Fokus-Zone",
-        message: "Jeder nachhaltige Schritt zählt. Wir kümmern uns gemeinsam um deine Stoffwechselgesundheit.",
-        advantages: [
-          "Enormes Kraftpotenzial — bereits an das Tragen von Last angepasst",
-          "Hohe Kalorienbasis treibt schnellen Muskelaufbau (Hypertrophie)",
-          "Höhere Knochendichte und Gelenkstabilität für schweres Training",
+        name: "Hohe Kapazität",
+        headline: "Hochkapazitäts-Profil erkannt",
+        leverage: [
+          { metric: "Hohes Kraftpotenzial", detail: "Neuromuskuläres System auf erhebliche mechanische Last vorbereitet." },
+          { metric: "Anaboler Überschuss", detail: "Erhöhte Kalorienbasis beschleunigt Muskelhypertrophie unter Last." },
+          { metric: "Höhere Knochendichte", detail: "Höhere Knochenmineraldichte und Gelenkstabilität für maximale Belastung." },
         ],
       },
     },
@@ -354,48 +359,48 @@ const es: Dict = {
     age: "Edad", weight: "Peso", height: "Altura", years: "años",
   },
   bmi: {
-    title: "Tu composición corporal",
-    subtitle: "Calculada en vivo desde tu altura y peso.",
+    title: "Análisis de composición",
     label: "IMC",
-    advantagesTitle: "Tus ventajas biológicas",
-    enterMetrics: "Introduce tu peso y altura para ver tu resultado.",
+    analysisComplete: "Análisis de composición corporal completado.",
+    leverageTitle: "Puntos de apalancamiento biológico",
+    enterMetrics: "Introduce tu peso y altura para ejecutar el análisis.",
     finishTitle: "Todo listo",
     finishSubtitle: "Tu plan está listo. Comamos bien.",
     tiers: {
       lean_light: {
-        name: "Ligero y Fuerte",
-        message: "Una gran base para construir fuerza limpia y energía estable. Añadamos combustible nutritivo.",
-        advantages: [
-          "Mayor agilidad y menor estrés articular durante el cardio",
-          "Base ideal para una definición muscular limpia y estética",
-          "Alta flexibilidad metabólica",
+        name: "Fenotipo magro",
+        headline: "Línea base magra establecida",
+        leverage: [
+          { metric: "Baja carga mecánica", detail: "Menor estrés articular permite alto volumen de entrenamiento y recuperación rápida." },
+          { metric: "Alta sensibilidad a la insulina", detail: "Partición eficiente de nutrientes para una ganancia muscular limpia." },
+          { metric: "Flexibilidad metabólica elevada", detail: "Cambio rápido entre sistemas energéticos lipídico y glucolítico." },
         ],
       },
       optimal_balance: {
-        name: "Equilibrio Óptimo",
-        message: "Bellamente equilibrado: una base sana para hábitos duraderos.",
-        advantages: [
-          "Base metabólica ideal para perder grasa y ganar músculo a la vez",
-          "Recuperación equilibrada y producción hormonal estable",
-          "Excelente eficiencia cardiovascular",
+        name: "Equilibrio óptimo",
+        headline: "Línea base metabólica establecida",
+        leverage: [
+          { metric: "Alta plasticidad metabólica", detail: "Entorno óptimo para oxidación lipídica e hipertrofia muscular simultáneas." },
+          { metric: "Base endocrina estabilizada", detail: "Ventanas de recuperación óptimas y síntesis hormonal consistente." },
+          { metric: "Máxima eficiencia aeróbica", detail: "Volumen sistólico y capacidad cardiovascular optimizados." },
         ],
       },
       solid_built: {
-        name: "Sólido y Fuerte",
-        message: "Un gran punto de partida. Nos centraremos en la recomposición y tu energía.",
-        advantages: [
-          "Enorme potencial de fuerza — ya adaptado a soportar carga",
-          "Alta base calórica que impulsa el crecimiento muscular (hipertrofia)",
-          "Mayor densidad ósea y estabilidad articular para levantar peso",
+        name: "Reserva de fuerza",
+        headline: "Reserva de fuerza identificada",
+        leverage: [
+          { metric: "Alto potencial de fuerza", detail: "Sistema neuromuscular preadaptado a carga mecánica considerable." },
+          { metric: "Superávit anabólico", detail: "Base calórica elevada acelera la hipertrofia muscular bajo carga." },
+          { metric: "Mayor densidad ósea", detail: "Mayor densidad mineral ósea y estabilidad articular para cargas máximas." },
         ],
       },
       focus_zone: {
-        name: "Zona de Enfoque",
-        message: "Cada paso sostenible cuenta. Cuidaremos tu salud metabólica, juntos.",
-        advantages: [
-          "Enorme potencial de fuerza — ya adaptado a soportar carga",
-          "Alta base calórica que impulsa el crecimiento muscular (hipertrofia)",
-          "Mayor densidad ósea y estabilidad articular para levantar peso",
+        name: "Alta capacidad",
+        headline: "Perfil de alta capacidad detectado",
+        leverage: [
+          { metric: "Alto potencial de fuerza", detail: "Sistema neuromuscular preadaptado a carga mecánica considerable." },
+          { metric: "Superávit anabólico", detail: "Base calórica elevada acelera la hipertrofia muscular bajo carga." },
+          { metric: "Mayor densidad ósea", detail: "Mayor densidad mineral ósea y estabilidad articular para cargas máximas." },
         ],
       },
     },
@@ -412,48 +417,48 @@ const fr: Dict = {
     age: "Âge", weight: "Poids", height: "Taille", years: "ans",
   },
   bmi: {
-    title: "Votre composition corporelle",
-    subtitle: "Calculée en direct selon votre taille et poids.",
+    title: "Analyse de composition",
     label: "IMC",
-    advantagesTitle: "Vos avantages biologiques",
-    enterMetrics: "Saisissez votre poids et taille pour voir votre résultat.",
+    analysisComplete: "Analyse de composition corporelle terminée.",
+    leverageTitle: "Points de levier biologiques",
+    enterMetrics: "Saisissez votre poids et taille pour lancer l'analyse.",
     finishTitle: "Tout est prêt",
     finishSubtitle: "Votre plan est prêt. Mangeons bien.",
     tiers: {
       lean_light: {
-        name: "Léger & Fort",
-        message: "Une super base pour bâtir une force saine et une énergie stable. Ajoutons du carburant nourrissant.",
-        advantages: [
-          "Plus d'agilité et moins de stress articulaire pendant le cardio",
-          "Base idéale pour une définition musculaire nette et esthétique",
-          "Grande flexibilité métabolique",
+        name: "Phénotype sec",
+        headline: "Ligne de base sèche établie",
+        leverage: [
+          { metric: "Faible charge mécanique", detail: "Stress articulaire réduit permettant un volume élevé et une récupération rapide." },
+          { metric: "Sensibilité élevée à l'insuline", detail: "Répartition efficace des nutriments pour un gain musculaire net." },
+          { metric: "Flexibilité métabolique élevée", detail: "Bascule rapide entre systèmes énergétiques lipidique et glycolytique." },
         ],
       },
       optimal_balance: {
-        name: "Équilibre Optimal",
-        message: "Joliment équilibré — une base saine pour des habitudes durables.",
-        advantages: [
-          "Base métabolique idéale pour perdre du gras et gagner du muscle",
-          "Récupération équilibrée et production hormonale stable",
-          "Excellente efficacité cardiovasculaire",
+        name: "Équilibre optimal",
+        headline: "Ligne de base métabolique établie",
+        leverage: [
+          { metric: "Haute plasticité métabolique", detail: "Environnement optimal pour l'oxydation lipidique et l'hypertrophie simultanées." },
+          { metric: "Base endocrinienne stabilisée", detail: "Fenêtres de récupération optimales et synthèse hormonale constante." },
+          { metric: "Efficacité aérobie maximale", detail: "Volume d'éjection systolique et capacité cardiovasculaire optimisés." },
         ],
       },
       solid_built: {
-        name: "Solide & Bâti",
-        message: "Un excellent point de départ. Concentrons-nous sur la recomposition et l'énergie.",
-        advantages: [
-          "Énorme potentiel de force — déjà adapté à porter des charges",
-          "Base calorique élevée favorisant une prise de muscle rapide (hypertrophie)",
-          "Densité osseuse et stabilité articulaire accrues pour les charges lourdes",
+        name: "Réserve de force",
+        headline: "Réserve de force identifiée",
+        leverage: [
+          { metric: "Fort potentiel de force", detail: "Système neuromusculaire préadapté à une charge mécanique importante." },
+          { metric: "Surplus anabolique", detail: "Base calorique élevée accélérant l'hypertrophie sous charge." },
+          { metric: "Densité osseuse supérieure", detail: "Densité minérale osseuse et stabilité articulaire accrues pour charges maximales." },
         ],
       },
       focus_zone: {
-        name: "Zone de Focus",
-        message: "Chaque pas durable compte. Prenons soin de votre santé métabolique, ensemble.",
-        advantages: [
-          "Énorme potentiel de force — déjà adapté à porter des charges",
-          "Base calorique élevée favorisant une prise de muscle rapide (hypertrophie)",
-          "Densité osseuse et stabilité articulaire accrues pour les charges lourdes",
+        name: "Haute capacité",
+        headline: "Profil haute capacité détecté",
+        leverage: [
+          { metric: "Fort potentiel de force", detail: "Système neuromusculaire préadapté à une charge mécanique importante." },
+          { metric: "Surplus anabolique", detail: "Base calorique élevée accélérant l'hypertrophie sous charge." },
+          { metric: "Densité osseuse supérieure", detail: "Densité minérale osseuse et stabilité articulaire accrues pour charges maximales." },
         ],
       },
     },
@@ -470,48 +475,48 @@ const ru: Dict = {
     age: "Возраст", weight: "Вес", height: "Рост", years: "лет",
   },
   bmi: {
-    title: "Ваш состав тела",
-    subtitle: "Рассчитывается вживую по росту и весу.",
+    title: "Анализ состава",
     label: "ИМТ",
-    advantagesTitle: "Ваши биологические преимущества",
-    enterMetrics: "Введите вес и рост, чтобы увидеть результат.",
+    analysisComplete: "Анализ состава тела завершён.",
+    leverageTitle: "Ключевые биологические точки опоры",
+    enterMetrics: "Введите вес и рост, чтобы запустить анализ.",
     finishTitle: "Всё готово",
     finishSubtitle: "Ваш план готов. Питаемся правильно.",
     tiers: {
       lean_light: {
-        name: "Лёгкий и сильный",
-        message: "Отличная база для чистой силы и стабильной энергии. Добавим питательного топлива.",
-        advantages: [
-          "Выше ловкость и меньше нагрузка на суставы во время кардио",
-          "Идеальная база для чистого, эстетичного рельефа мышц",
-          "Высокая метаболическая гибкость",
+        name: "Сухой фенотип",
+        headline: "Сухая базовая линия установлена",
+        leverage: [
+          { metric: "Низкая механическая нагрузка", detail: "Сниженная нагрузка на суставы допускает большой объём тренинга и быстрое восстановление." },
+          { metric: "Высокая чувствительность к инсулину", detail: "Эффективное распределение нутриентов для чистого роста мышц." },
+          { metric: "Повышенная метаболическая гибкость", detail: "Быстрое переключение между липидной и гликолитической системами." },
         ],
       },
       optimal_balance: {
         name: "Оптимальный баланс",
-        message: "Прекрасно сбалансировано — здоровая основа для устойчивых привычек.",
-        advantages: [
-          "Идеальная метаболическая база, чтобы терять жир и растить мышцы",
-          "Сбалансированное восстановление и стабильный гормональный фон",
-          "Отличная эффективность сердечно-сосудистой системы",
+        headline: "Метаболическая базовая линия установлена",
+        leverage: [
+          { metric: "Высокая метаболическая пластичность", detail: "Оптимальная среда для одновременного окисления жиров и гипертрофии." },
+          { metric: "Стабильная эндокринная база", detail: "Оптимальные окна восстановления и стабильный синтез гормонов." },
+          { metric: "Пиковая аэробная эффективность", detail: "Оптимизированный ударный объём и сердечно-сосудистая ёмкость." },
         ],
       },
       solid_built: {
-        name: "Крепкий и сильный",
-        message: "Сильная отправная точка. Сфокусируемся на рекомпозиции и энергии.",
-        advantages: [
-          "Огромный силовой потенциал — тело уже привыкло нести нагрузку",
-          "Высокая калорийная база ускоряет рост мышц (гипертрофию)",
-          "Выше плотность костей и стабильность суставов для тяжёлых нагрузок",
+        name: "Силовой резерв",
+        headline: "Силовой резерв определён",
+        leverage: [
+          { metric: "Высокий силовой потенциал", detail: "Нервно-мышечная система преадаптирована к значительной нагрузке." },
+          { metric: "Анаболический профицит", detail: "Повышенная калорийная база ускоряет гипертрофию под нагрузкой." },
+          { metric: "Высокая плотность костей", detail: "Повышенная минеральная плотность костей и стабильность суставов." },
         ],
       },
       focus_zone: {
-        name: "Зона фокуса",
-        message: "Каждый устойчивый шаг важен. Позаботимся о метаболическом здоровье вместе.",
-        advantages: [
-          "Огромный силовой потенциал — тело уже привыкло нести нагрузку",
-          "Высокая калорийная база ускоряет рост мышц (гипертрофию)",
-          "Выше плотность костей и стабильность суставов для тяжёлых нагрузок",
+        name: "Высокая ёмкость",
+        headline: "Обнаружен профиль высокой ёмкости",
+        leverage: [
+          { metric: "Высокий силовой потенциал", detail: "Нервно-мышечная система преадаптирована к значительной нагрузке." },
+          { metric: "Анаболический профицит", detail: "Повышенная калорийная база ускоряет гипертрофию под нагрузкой." },
+          { metric: "Высокая плотность костей", detail: "Повышенная минеральная плотность костей и стабильность суставов." },
         ],
       },
     },
