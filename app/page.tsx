@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { TabBar } from "@/components/ui/TabBar";
+import { SyncIndicator, SyncDirective } from "@/components/ui/SyncIndicator";
+import { computeSync } from "@/lib/syncStability";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { DICTIONARIES, type LocaleCode } from "@/lib/i18n/dictionary";
@@ -24,6 +26,7 @@ interface DashProfile {
   height_cm: number | null;
   calculated_bmi: number | null;
   bmi_status: BmiTierKey | null;
+  last_sync_at: string | null;
 }
 
 // Design-preview data so the layout renders without Supabase keys.
@@ -32,6 +35,7 @@ const DEMO_PROFILE: DashProfile = {
   preferred_language: "en",
   age: 29, weight_kg: 78, height_cm: 179,
   calculated_bmi: 24.3, bmi_status: "optimal_balance",
+  last_sync_at: new Date().toISOString(),
 };
 const DEMO_MEALS: MealRow[] = [
   { kcal: 520, protein_g: 38, carbs_g: 54, fat_g: 18, health_rating: "great" },
@@ -52,7 +56,7 @@ export default async function TodayPage() {
 
     const { data: p } = await supabase
       .from("profiles")
-      .select("display_name, preferred_language, age, weight_kg, height_cm, calculated_bmi, bmi_status, onboarded_at")
+      .select("display_name, preferred_language, age, weight_kg, height_cm, calculated_bmi, bmi_status, onboarded_at, last_sync_at")
       .eq("id", user.id)
       .maybeSingle();
     if (!p?.onboarded_at) redirect("/onboarding");
@@ -95,6 +99,7 @@ export default async function TodayPage() {
 
   const intake = sumIntake(meals);
   const health = healthIndex(meals);
+  const sync = computeSync(profile.last_sync_at);
   const remaining = Math.max(0, target.kcal - Math.round(intake.kcal));
   const energyPct = Math.min(100, Math.round((intake.kcal / target.kcal) * 100));
 
@@ -134,6 +139,14 @@ export default async function TodayPage() {
 
       {/* Energy instrument panel */}
       <section className="rounded-4xl bg-[#0C0D12] p-6 text-white shadow-card">
+        {/* Bio-Link telemetry header */}
+        <div className="mb-5 flex items-center justify-between gap-2">
+          <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.2em] text-white/30">
+            Bio-Link
+          </span>
+          <SyncIndicator sync={sync} />
+        </div>
+
         <div className="flex items-start justify-between">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
@@ -166,6 +179,8 @@ export default async function TodayPage() {
           <MacroReadout label="Carbs" value={intake.carbs_g} target={target.carbs_g} color={MACRO_COLOR.carbs} />
           <MacroReadout label="Fat" value={intake.fat_g} target={target.fat_g} color={MACRO_COLOR.fat} />
         </div>
+
+        <SyncDirective sync={sync} />
       </section>
 
       {/* Bento instruments */}
