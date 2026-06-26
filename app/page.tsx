@@ -224,9 +224,9 @@ export default async function TodayPage() {
         </div>
 
         {/* Scan plate — primary action, graphite */}
-        <ActionTile label={d.today.scan} glyph="⌖" graphite />
+        <ActionTile href="/scan" label={d.today.scan} glyph="⌖" graphite />
         {/* Fridge */}
-        <ActionTile label={d.today.fridge} glyph="❒" />
+        <ActionTile href="/fridge" label={d.today.fridge} glyph="❒" />
       </section>
 
       <TabBar active="today" />
@@ -266,14 +266,17 @@ function MacroReadout({
 function ActionTile({
   label,
   glyph,
+  href,
   graphite = false,
 }: {
   label: string;
   glyph: string;
+  href: string;
   graphite?: boolean;
 }) {
   return (
-    <button
+    <a
+      href={href}
       className={
         "flex h-28 flex-col justify-between rounded-3xl border p-5 text-left transition duration-300 ease-ios active:scale-[0.97] " +
         (graphite
@@ -286,6 +289,6 @@ function ActionTile({
         <span className="font-mono text-[11px] uppercase tracking-[0.14em]">{label}</span>
         <span className={graphite ? "text-white/40" : "text-ink-3"}>→</span>
       </span>
-    </button>
+    </a>
   );
 }

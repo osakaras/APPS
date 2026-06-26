@@ -73,12 +73,17 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        scanline: {
+          "0%": { transform: "translateY(0)" },
+          "100%": { transform: "translateY(100%)" },
+        },
       },
       animation: {
         shimmer: "shimmer 1.6s infinite",
         "pop-in": "pop-in 0.5s cubic-bezier(0.32,0.72,0,1) both",
         "pulse-ring": "pulse-ring 1.4s cubic-bezier(0.32,0.72,0,1) forwards",
         "fade-up": "fade-up 0.6s cubic-bezier(0.32,0.72,0,1) both",
+        scanline: "scanline 1.5s cubic-bezier(0.4,0,0.6,1) infinite alternate",
       },
     },
   },

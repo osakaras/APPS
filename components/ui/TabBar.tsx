@@ -29,15 +29,16 @@ export function TabBar({ active = "today" }: { active?: string }) {
     >
       {tabs.map((t) =>
         t.primary ? (
-          <button
+          <a
             key={t.key}
+            href="/scan"
             aria-label={t.label}
             className="-mt-6 flex h-14 w-14 items-center justify-center rounded-full
                        bg-[#0C0D12] text-2xl text-white shadow-card
                        transition active:scale-90 ease-ios"
           >
             {t.glyph}
-          </button>
+          </a>
         ) : (
           <button
             key={t.key}

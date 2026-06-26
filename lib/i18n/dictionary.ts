@@ -74,11 +74,27 @@ export interface Dict {
     fridge: string;
     awaitingScan: string;
   };
+  scan: {
+    capture: string;
+    capturePrompt: string;
+    analyzing: string;
+    retake: string;
+    analyze: string;
+    palateQ: string;
+    loved: string;
+    liked: string;
+    neutral: string;
+    disliked: string;
+    hated: string;
+    log: string;
+    logged: string;
+  };
 }
 
-// The per-locale objects below define the core copy; the success screen and
-// dashboard sections are merged in at the bottom to keep each block lean.
-type Base = Omit<Dict, "success" | "today">;
+// The per-locale objects below define the core copy; the success screen,
+// dashboard and scanner sections are merged in at the bottom to keep each
+// block lean.
+type Base = Omit<Dict, "success" | "today" | "scan">;
 
 const en: Base = {
   step: "Step {n} of {total}",
@@ -569,12 +585,25 @@ const TODAY: Record<LocaleCode, Dict["today"]> = {
   ru: { morning: "Доброе утро", afternoon: "Добрый день", evening: "Добрый вечер", remaining: "Осталось", composition: "Состав", health: "Индекс здоровья", scan: "Сканировать тарелку", fridge: "Холодильник", awaitingScan: "Ожидание первого скана" },
 };
 
+// Plate-scanner copy. Instrument labels (MACRO TELEMETRY, kcal…) stay English
+// mono in the component; only human-facing prose is localized here.
+const SCAN: Record<LocaleCode, Dict["scan"]> = {
+  en: { capture: "Position your meal in frame", capturePrompt: "Tap to capture or upload", analyzing: "Analyzing composition", retake: "Retake", analyze: "Analyze", palateQ: "Was it delicious?", loved: "Loved it", liked: "Liked it", neutral: "Neutral", disliked: "Disliked", hated: "Not for me", log: "Log Meal", logged: "Logged to core" },
+  lt: { capture: "Padėkite patiekalą kadre", capturePrompt: "Bakstelėkite nufotografuoti ar įkelti", analyzing: "Analizuojama sudėtis", retake: "Fotografuoti iš naujo", analyze: "Analizuoti", palateQ: "Ar buvo skanu?", loved: "Labai patiko", liked: "Patiko", neutral: "Neutralu", disliked: "Nepatiko", hated: "Ne man", log: "Registruoti patiekalą", logged: "Įrašyta į branduolį" },
+  lv: { capture: "Novietojiet ēdienu kadrā", capturePrompt: "Pieskarieties, lai uzņemtu vai augšupielādētu", analyzing: "Analizē sastāvu", retake: "Uzņemt vēlreiz", analyze: "Analizēt", palateQ: "Vai bija garšīgi?", loved: "Ļoti patika", liked: "Patika", neutral: "Neitrāli", disliked: "Nepatika", hated: "Ne man", log: "Reģistrēt ēdienu", logged: "Ierakstīts kodolā" },
+  pl: { capture: "Umieść posiłek w kadrze", capturePrompt: "Dotknij, aby zrobić zdjęcie lub wgrać", analyzing: "Analiza składu", retake: "Zrób ponownie", analyze: "Analizuj", palateQ: "Czy było pyszne?", loved: "Uwielbiam", liked: "Lubię", neutral: "Neutralnie", disliked: "Nie smakowało", hated: "Nie dla mnie", log: "Zarejestruj posiłek", logged: "Zapisano w rdzeniu" },
+  de: { capture: "Platziere dein Gericht im Rahmen", capturePrompt: "Tippen zum Aufnehmen oder Hochladen", analyzing: "Analysiere Zusammensetzung", retake: "Erneut aufnehmen", analyze: "Analysieren", palateQ: "War es lecker?", loved: "Geliebt", liked: "Gemocht", neutral: "Neutral", disliked: "Gemieden", hated: "Nichts für mich", log: "Mahlzeit erfassen", logged: "Im Kern gespeichert" },
+  es: { capture: "Coloca tu plato en el encuadre", capturePrompt: "Toca para capturar o subir", analyzing: "Analizando composición", retake: "Repetir", analyze: "Analizar", palateQ: "¿Estaba delicioso?", loved: "Me encantó", liked: "Me gustó", neutral: "Neutral", disliked: "No me gustó", hated: "No es para mí", log: "Registrar plato", logged: "Guardado en el núcleo" },
+  fr: { capture: "Placez votre plat dans le cadre", capturePrompt: "Touchez pour capturer ou importer", analyzing: "Analyse de la composition", retake: "Reprendre", analyze: "Analyser", palateQ: "Était-ce délicieux ?", loved: "Adoré", liked: "Aimé", neutral: "Neutre", disliked: "Pas aimé", hated: "Pas pour moi", log: "Enregistrer le repas", logged: "Enregistré dans le cœur" },
+  ru: { capture: "Поместите блюдо в кадр", capturePrompt: "Нажмите, чтобы снять или загрузить", analyzing: "Анализ состава", retake: "Переснять", analyze: "Анализировать", palateQ: "Было вкусно?", loved: "Обожаю", liked: "Понравилось", neutral: "Нейтрально", disliked: "Не понравилось", hated: "Не моё", log: "Записать приём", logged: "Записано в ядро" },
+};
+
 const BASES: Record<LocaleCode, Base> = { en, lt, lv, pl, de, es, fr, ru };
 
 export const DICTIONARIES = Object.fromEntries(
   (Object.keys(BASES) as LocaleCode[]).map((code) => [
     code,
-    { ...BASES[code], success: SUCCESS[code], today: TODAY[code] },
+    { ...BASES[code], success: SUCCESS[code], today: TODAY[code], scan: SCAN[code] },
   ]),
 ) as Record<LocaleCode, Dict>;
 
