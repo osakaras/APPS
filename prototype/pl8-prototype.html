@@ -4,494 +4,341 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Pl8 — Interactive Prototype</title>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.tailwindcss.com"></script>
 <style>
-  html,body{margin:0;background:#E9E9EF;-webkit-font-smoothing:antialiased}
-  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif}
+  :root{
+    --ink:#1C1C1E;--ink2:rgba(60,60,67,.62);--ink3:rgba(60,60,67,.32);--hair:rgba(60,60,67,.12);
+    --g:#0C0D12;--jade:#4E9E82;--neon:#3DF5A0;--coral:#C77A6E;--bronze:#B08A52;--slate:#8A77A8;--amber:#FFC24B;
+    --accent:#0A84FF;--bg:#F2F2F7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:#0C0D12;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  *{-webkit-tap-highlight-color:transparent}
-  @keyframes scan{0%{transform:translateY(0)}100%{transform:translateY(220px)}}
-  .scanline{animation:scan 1.4s cubic-bezier(.4,0,.6,1) infinite alternate}
-  @keyframes fadeup{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:none}}
+  .device{position:relative;max-width:440px;margin:0 auto;height:100vh;height:100dvh;background:var(--bg);overflow:hidden}
+  .scroll{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .pad{padding:48px 16px 120px}
+  .tap{transition:transform .2s cubic-bezier(.32,.72,0,1)}
+  .tap:active{transform:scale(.97)}
+  button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+  input{font-family:inherit}
+  .eyebrow{font-family:ui-monospace,monospace;font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}
+  .panel{background:var(--g);color:#fff;border-radius:36px;padding:24px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+  .card{background:#fff;border:1px solid var(--hair);border-radius:28px}
+  .row{display:flex;align-items:center}
+  .between{display:flex;align-items:center;justify-content:space-between}
+  .stepbtn{height:36px;width:36px;border:1px solid var(--hair);border-radius:999px;background:#fff;font-family:ui-monospace,monospace;font-size:18px;display:grid;place-items:center}
+  .btn-dark{display:block;width:100%;background:var(--g);color:#fff;border-radius:26px;padding:16px;font-family:ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;text-align:center}
+  .btn-accent{display:block;width:100%;background:var(--accent);color:#fff;border-radius:26px;padding:16px;font-size:16px;font-weight:600;text-align:center;box-shadow:0 12px 40px rgba(10,132,255,.22)}
+  .tabbar{position:absolute;left:0;right:0;bottom:0;margin:0 auto 16px;width:92%;max-width:408px;display:flex;align-items:center;justify-content:space-around;
+    background:rgba(255,255,255,.86);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--hair);border-radius:999px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:64px;padding:6px 0;font-family:ui-monospace,monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+  .tab.on{color:var(--ink)}
+  .tab .gl{font-size:16px;line-height:1}
+  .scanctr{margin-top:-24px;height:56px;width:56px;border-radius:999px;background:var(--g);color:#fff;font-size:24px;display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+  .progress{height:6px;flex:1;border-radius:999px;background:var(--hair);overflow:hidden}
+  .progress>i{display:block;height:100%;border-radius:999px;background:var(--accent);transition:width .5s cubic-bezier(.32,.72,0,1)}
+  .langcard{display:flex;align-items:center;gap:12px;border:1px solid var(--hair);background:#fff;border-radius:24px;padding:14px;text-align:left}
+  .leverage{display:flex;gap:16px;border:1px solid var(--hair);background:#fff;border-radius:28px;padding:16px}
+  .bar{display:block;width:3px;border-radius:999px;flex:none}
+  .chip{border:1px solid var(--hair);background:#fff;border-radius:16px;padding:8px 12px;font-size:14px;font-weight:500;text-transform:capitalize}
+  .dotping{position:relative;height:8px;width:8px;display:grid;place-items:center}
+  .dotping>.p{position:absolute;inset:0;border-radius:999px;opacity:.7;animation:ping 1.4s cubic-bezier(0,0,.2,1) infinite}
+  .dotping>.c{position:relative;height:8px;width:8px;border-radius:999px}
+  @keyframes ping{75%,100%{transform:scale(2.2);opacity:0}}
+  @keyframes scan{from{transform:translateY(0)}to{transform:translateY(200px)}}
+  .scanline{position:absolute;left:0;right:0;top:0;height:50%;animation:scan 1.4s cubic-bezier(.4,0,.6,1) infinite alternate}
+  @keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .fadeup{animation:fadeup .5s cubic-bezier(.32,.72,0,1) both}
-  @keyframes popin{0%{opacity:0;transform:scale(.97)}100%{opacity:1;transform:none}}
-  .popin{animation:popin .45s cubic-bezier(.32,.72,0,1) both}
+  @keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  .pop{animation:pop .45s cubic-bezier(.32,.72,0,1) both}
+  .sheetwrap{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,.4)}
+  .sheet{position:relative;max-height:92%;overflow-y:auto;border-radius:36px 36px 0 0;background:var(--bg);padding:16px 20px 40px}
+  .grab{width:40px;height:4px;border-radius:999px;background:rgba(60,60,67,.3);margin:0 auto 16px}
   ::-webkit-scrollbar{width:0;height:0}
-  .ease-ios{transition-timing-function:cubic-bezier(.32,.72,0,1)}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<!-- JSX kept in a non-auto-run block; we transform it with the CLASSIC runtime
-     (React.createElement) so it works against the React UMD global. The default
-     automatic runtime would emit `import "react/jsx-runtime"` and fail here. -->
-<script type="text/jsx" id="appsrc">
-const { useState, useMemo, useRef } = React;
-
-/* ─── design tokens ─── */
-const GRAPHITE = "#0C0D12";
-const NEON = "#3DF5A0", JADE = "#4E9E82", BRONZE = "#B08A52", SLATE = "#8A77A8", CORAL = "#C77A6E", AMBER = "#FFC24B";
-const MACRO = { protein: JADE, carbs: BRONZE, fat: SLATE };
-
-/* ─── BMI engine ─── */
-const TIERS = {
-  lean_light:{name:"Lean Phenotype",headline:"Lean Baseline Established",color:"#6E8CA8",leverage:[
-    {m:"Low Mechanical Load",d:"Reduced articular stress permits high training volume and rapid motor recovery."},
-    {m:"High Insulin Sensitivity",d:"Efficient nutrient partitioning primes clean myofibrillar accrual."},
-    {m:"Elevated Metabolic Flexibility",d:"Rapid substrate switching across lipid and glycolytic energy systems."}]},
-  optimal_balance:{name:"Optimal Balance",headline:"Metabolic Baseline Established",color:JADE,leverage:[
-    {m:"High Metabolic Plasticity",d:"Optimal environment for simultaneous lipid oxidation and myofibrillar hypertrophy."},
-    {m:"Stabilized Endocrine Baseline",d:"Optimal recovery windows and consistent hormone synthesis pathways."},
-    {m:"Peak Aerobic Efficiency",d:"Optimized stroke volume and cardiovascular capacity."}]},
-  solid_built:{name:"Power Reserve",headline:"Strength Reserve Identified",color:BRONZE,leverage:[
-    {m:"High Force Output Potential",d:"Neuromuscular system pre-adapted to substantial mechanical load."},
-    {m:"Anabolic Surplus Reserve",d:"Elevated caloric baseline accelerates myofibrillar hypertrophy under load."},
-    {m:"Superior Skeletal Density",d:"Increased bone mineral density and joint stability for maximal loading."}]},
-  focus_zone:{name:"High Capacity",headline:"High-Capacity Profile Detected",color:SLATE,leverage:[
-    {m:"High Force Output Potential",d:"Neuromuscular system pre-adapted to substantial mechanical load."},
-    {m:"Anabolic Surplus Reserve",d:"Elevated caloric baseline accelerates myofibrillar hypertrophy under load."},
-    {m:"Superior Skeletal Density",d:"Increased bone mineral density and joint stability for maximal loading."}]},
+<div class="device"><div class="scroll" id="app"></div></div>
+<script>
+/* ===== engines ===== */
+var GRAPHITE="#0C0D12",NEON="#3DF5A0",JADE="#4E9E82",BRONZE="#B08A52",SLATE="#8A77A8",CORAL="#C77A6E",AMBER="#FFC24B";
+var TIERS={
+  lean_light:{name:"Lean Phenotype",headline:"Lean Baseline Established",color:"#6E8CA8",lev:[
+    ["Low Mechanical Load","Reduced articular stress permits high training volume and rapid motor recovery."],
+    ["High Insulin Sensitivity","Efficient nutrient partitioning primes clean myofibrillar accrual."],
+    ["Elevated Metabolic Flexibility","Rapid substrate switching across lipid and glycolytic energy systems."]]},
+  optimal_balance:{name:"Optimal Balance",headline:"Metabolic Baseline Established",color:JADE,lev:[
+    ["High Metabolic Plasticity","Optimal environment for simultaneous lipid oxidation and myofibrillar hypertrophy."],
+    ["Stabilized Endocrine Baseline","Optimal recovery windows and consistent hormone synthesis pathways."],
+    ["Peak Aerobic Efficiency","Optimized stroke volume and cardiovascular capacity."]]},
+  solid_built:{name:"Power Reserve",headline:"Strength Reserve Identified",color:BRONZE,lev:[
+    ["High Force Output Potential","Neuromuscular system pre-adapted to substantial mechanical load."],
+    ["Anabolic Surplus Reserve","Elevated caloric baseline accelerates myofibrillar hypertrophy under load."],
+    ["Superior Skeletal Density","Increased bone mineral density and joint stability for maximal loading."]]},
+  focus_zone:{name:"High Capacity",headline:"High-Capacity Profile Detected",color:SLATE,lev:[
+    ["High Force Output Potential","Neuromuscular system pre-adapted to substantial mechanical load."],
+    ["Anabolic Surplus Reserve","Elevated caloric baseline accelerates myofibrillar hypertrophy under load."],
+    ["Superior Skeletal Density","Increased bone mineral density and joint stability for maximal loading."]]}
 };
-const tierFor = b => b<18.5?"lean_light":b<25?"optimal_balance":b<30?"solid_built":"focus_zone";
-function computeBmi(kg,cm){ if(!kg||!cm) return null; const bmi=Math.round(kg/((cm/100)**2)*10)/10; const key=tierFor(bmi);
-  const pos=(Math.max(12,Math.min(40,bmi))-12)/28; return {bmi,key,pos,...TIERS[key]}; }
-
-/* ─── sync engine ─── */
-function computeSync(h){ const pct=h<=24?100:Math.max(8,Math.round(100-(h-24)*1.15));
-  const status=pct>=90?"stable":pct>=35?"risk":"loss";
-  const tag=status==="stable"?"STABLE":status==="risk"?"DEGRADATION RISK":"SIGNAL LOSS";
-  const color=status==="stable"?NEON:status==="risk"?AMBER:"#FF6B5A";
-  return {pct,status,tag,color,directive:status==="stable"?null:"LOG BIOMETRIC DATA STREAM"}; }
-
-/* ─── price/geo engine ─── */
+function tierFor(b){return b<18.5?"lean_light":b<25?"optimal_balance":b<30?"solid_built":"focus_zone";}
+function bmiOf(kg,cm){var b=Math.round(kg/Math.pow(cm/100,2)*10)/10;var k=tierFor(b);var pos=(Math.max(12,Math.min(40,b))-12)/28;return{b:b,k:k,pos:pos,t:TIERS[k]};}
+function sync(h){var p=h<=24?100:Math.max(8,Math.round(100-(h-24)*1.15));var s=p>=90?"stable":p>=35?"risk":"loss";
+  return{p:p,s:s,tag:s==="stable"?"STABLE":s==="risk"?"DEGRADATION RISK":"SIGNAL LOSS",color:s==="stable"?NEON:s==="risk"?AMBER:"#FF6B5A",dir:s==="stable"?null:"LOG BIOMETRIC DATA STREAM"};}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 function quote(chain,name,addr,dist,mult,fetaOut){
-  const items=[
-    {label:"chicken breast",product:cap(chain)+" Chicken Breast 500g",price:+(3.79*mult).toFixed(2)},
-    {label:"quinoa",product:cap(chain)+" Quinoa 500g",price:+(2.49*mult).toFixed(2)},
-    {label:"feta",product:fetaOut?null:cap(chain)+" Feta 200g",price:fetaOut?null:+(1.99*mult).toFixed(2)}];
-  const total=+items.reduce((s,i)=>s+(i.price||0),0).toFixed(2);
-  const complete=items.every(i=>i.price!==null);
-  const score=+(total+0.35*(dist/1000)+(complete?0:6)).toFixed(2);
-  return {chain,name,addr,dist,items,total,complete,score};
+  var items=[["chicken breast",cap(chain)+" Chicken Breast 500g",+(3.79*mult).toFixed(2)],
+    ["quinoa",cap(chain)+" Quinoa 500g",+(2.49*mult).toFixed(2)],
+    ["feta",fetaOut?null:cap(chain)+" Feta 200g",fetaOut?null:+(1.99*mult).toFixed(2)]];
+  var total=+items.reduce(function(s,i){return s+(i[2]||0);},0).toFixed(2);
+  var complete=items.every(function(i){return i[2]!==null;});
+  var score=+(total+0.35*(dist/1000)+(complete?0:6)).toFixed(2);
+  return{chain:chain,name:name,addr:addr,dist:dist,items:items,total:total,complete:complete,score:score};
 }
-const cap=s=>s[0].toUpperCase()+s.slice(1);
-const RANKED=[
-  quote("lidl","Lidl Žirmūnai","Žirmūnų g. 64, Vilnius",540,0.95,false),
+var RANKED=[quote("lidl","Lidl Žirmūnai","Žirmūnų g. 64, Vilnius",540,0.95,false),
   quote("maxima","Maxima X Akropolis","Ozo g. 25, Vilnius",1200,1.0,false),
   quote("rimi","Rimi Europa","Konstitucijos pr. 7A, Vilnius",2100,1.05,false),
-  quote("iki","Iki Ozas","Ozo g. 18, Vilnius",1800,1.08,true),
-].sort((a,b)=>a.score-b.score);
-const eur=n=>"€"+n.toFixed(2);
-const dist=m=>m<950?Math.round(m/10)*10+" m":(m/1000).toFixed(1)+" km";
+  quote("iki","Iki Ozas","Ozo g. 18, Vilnius",1800,1.08,true)].sort(function(a,b){return a.score-b.score;});
+function eur(n){return "€"+n.toFixed(2);}
+function dst(m){return m<950?Math.round(m/10)*10+" m":(m/1000).toFixed(1)+" km";}
+function buzz(){try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}}
 
-/* ─── tiny ui helpers ─── */
-const Mono=({c="",s={},children})=><span className={"mono "+c} style={s}>{children}</span>;
-function haptic(){ if(navigator.vibrate) try{navigator.vibrate(12)}catch(e){} }
+/* ===== state ===== */
+var S={screen:"onb1",lang:"EN",age:29,weight:78,height:179,syncH:0,scan:"idle",
+  match:null,sel:0,mload:false,goals:{ "Muscle Gain":1,"High Protein":1 }};
+var app=document.getElementById("app");
+function set(p){for(var k in p)S[k]=p[k];render();}
 
-/* ─── BMI gauge (telemetry) ─── */
-function Gauge({res}){
-  const stops=[(18.5-12)/28,(25-12)/28,(30-12)/28];
-  return (<div className="select-none">
-    <div className="relative h-7">
-      <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2" style={{background:"rgba(255,255,255,.15)"}}/>
-      {stops.map((s,i)=><div key={i} className="absolute top-1/2 h-2 w-px -translate-y-1/2" style={{left:s*100+"%",transform:"translateY(-50%)",background:"rgba(255,255,255,.2)"}}/>)}
-      <div className="absolute top-1/2 transition-all duration-700 ease-ios" style={{left:(res?res.pos:.5)*100+"%",transform:"translate(-50%,-50%)",opacity:res?1:.3}}>
-        <div className="rounded-full" style={{height:26,width:2,background:res?res.color:"#fff"}}/>
-      </div>
-    </div>
-    <div className="mt-1 flex justify-between mono text-[10px] tabular-nums" style={{color:"rgba(255,255,255,.35)"}}>
-      {[12,18.5,25,30,40].map(t=><span key={t}>{t}</span>)}
-    </div>
-  </div>);
+/* ===== fragments ===== */
+var LOCALES=[["🇬🇧","English","EN"],["🇱🇹","Lietuvių","LT"],["🇱🇻","Latviešu","LV"],["🇵🇱","Polski","PL"],["🇩🇪","Deutsch","DE"],["🇪🇸","Español","ES"],["🇫🇷","Français","FR"],["🇷🇺","Русский","RU"]];
+function gauge(r){
+  var stops=[(18.5-12)/28,(25-12)/28,(30-12)/28];
+  var ticks=stops.map(function(s){return '<span style="position:absolute;top:50%;height:8px;width:1px;transform:translateY(-50%);left:'+(s*100)+'%;background:rgba(255,255,255,.2)"></span>';}).join("");
+  var needle='<span style="position:absolute;top:50%;left:'+(r?r.pos*100:50)+'%;transform:translate(-50%,-50%);height:26px;width:2px;border-radius:2px;background:'+(r?r.t.color:"#fff")+';transition:left .7s cubic-bezier(.32,.72,0,1);opacity:'+(r?1:.3)+'"></span>';
+  var scale=[12,18.5,25,30,40].map(function(t){return '<span>'+t+'</span>';}).join("");
+  return '<div><div style="position:relative;height:28px"><span style="position:absolute;left:0;right:0;top:50%;height:1px;transform:translateY(-50%);background:rgba(255,255,255,.15)"></span>'+ticks+needle+'</div>'+
+    '<div class="mono between" style="margin-top:4px;font-size:10px;color:rgba(255,255,255,.35)">'+scale+'</div></div>';
+}
+function tabbar(active){
+  var t=[["today","Today","◎"],["scan","Scan","⌖"],["fridge","Fridge","❒"],["taste","Taste","◆"]];
+  return '<div class="tabbar">'+t.map(function(x){
+    if(x[0]==="scan")return '<button class="scanctr tap" data-act="go" data-arg="scan">'+x[2]+'</button>';
+    return '<button class="tab tap'+(active===x[0]?" on":"")+'" data-act="go" data-arg="'+x[0]+'"><span class="gl">'+x[2]+'</span>'+x[1]+'</button>';
+  }).join("")+'</div>';
 }
 
-/* ─── ONBOARDING ─── */
-const LOCALES=[["🇬🇧","English","EN"],["🇱🇹","Lietuvių","LT"],["🇱🇻","Latviešu","LV"],["🇵🇱","Polski","PL"],["🇩🇪","Deutsch","DE"],["🇪🇸","Español","ES"],["🇫🇷","Français","FR"],["🇷🇺","Русский","RU"]];
-function Onboarding({onDone}){
-  const [step,setStep]=useState(1);
-  const [lang,setLang]=useState("EN");
-  const [m,setM]=useState({age:29,weight:78,height:179});
-  const res=computeBmi(m.weight,m.height);
-  const TOTAL=3;
-  const next=()=>{haptic(); step<TOTAL?setStep(step+1):onDone(m);};
-  const Step=({k,unit,step:st=1})=>(
-    <div>
-      <div className="mb-2 px-1 text-sm font-medium" style={{color:"rgba(60,60,67,.6)"}}>{k}</div>
-      <div className="flex items-center justify-between rounded-3xl border bg-white px-5 py-4" style={{borderColor:"rgba(60,60,67,.12)",boxShadow:"0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06)"}}>
-        <button onClick={()=>{haptic();setM(v=>({...v,[k.toLowerCase()==="height"?"height":k.toLowerCase()==="weight"?"weight":"age"]:Math.max(1,v[mapKey(k)]-st)}))}} className="grid h-9 w-9 place-items-center rounded-full border mono text-lg active:scale-90" style={{borderColor:"rgba(60,60,67,.12)"}}>−</button>
-        <div className="mono text-3xl font-semibold tabular-nums">{m[mapKey(k)]}<span className="text-base font-normal" style={{color:"rgba(60,60,67,.3)"}}> {unit}</span></div>
-        <button onClick={()=>{haptic();setM(v=>({...v,[mapKey(k)]:v[mapKey(k)]+st}))}} className="grid h-9 w-9 place-items-center rounded-full border mono text-lg active:scale-90" style={{borderColor:"rgba(60,60,67,.12)"}}>+</button>
-      </div>
-    </div>);
-  function mapKey(k){return k.toLowerCase()==="age"?"age":k.toLowerCase()==="weight"?"weight":"height";}
-  return (
-    <div className="flex min-h-full flex-col px-5 pb-8 pt-12">
-      <div className="mb-8">
-        <div className="flex gap-2">{[1,2,3].map(i=><div key={i} className="h-1.5 flex-1 overflow-hidden rounded-full" style={{background:"rgba(60,60,67,.12)"}}><div className="h-full rounded-full" style={{width:i<=step?"100%":"0%",background:"#0A84FF",transition:"width .5s"}}/></div>)}</div>
-        <Mono c="mt-3 block px-1 text-xs" s={{color:"rgba(60,60,67,.3)"}}>Step {step} of {TOTAL}</Mono>
-      </div>
-
-      <div className="flex-1">
-        {step===1 && <div className="popin">
-          <h1 className="text-3xl font-semibold tracking-tight">Choose your language</h1>
-          <p className="mt-2" style={{color:"rgba(60,60,67,.6)"}}>You can change this anytime in Settings.</p>
-          <div className="mt-6 grid grid-cols-2 gap-3">{LOCALES.map(([f,n,c])=>{const on=c===lang;return(
-            <button key={c} onClick={()=>{haptic();setLang(c)}} className="flex items-center gap-3 rounded-3xl border bg-white p-4 text-left active:scale-[.97]" style={{borderColor:on?"rgba(10,132,255,.7)":"rgba(60,60,67,.12)",boxShadow:on?"0 0 0 4px rgba(10,132,255,.12)":"0 1px 2px rgba(0,0,0,.04)"}}>
-              <span className="text-2xl">{f}</span><span className="flex-1"><span className="block font-semibold leading-tight">{n}</span><Mono c="text-[9px] uppercase" s={{color:"rgba(60,60,67,.3)"}}>{c}</Mono></span>
-              {on&&<span className="grid h-6 w-6 place-items-center rounded-full text-white text-xs" style={{background:"#0A84FF"}}>✓</span>}
-            </button>);})}</div>
-        </div>}
-
-        {step===2 && <div className="popin">
-          <h1 className="text-3xl font-semibold tracking-tight">A few details about you</h1>
-          <p className="mt-2" style={{color:"rgba(60,60,67,.6)"}}>We use these to personalize your nutrition.</p>
-          <div className="mt-7 space-y-4"><Step k="Age" unit="yrs"/><Step k="Weight" unit="kg"/><Step k="Height" unit="cm"/></div>
-        </div>}
-
-        {step===3 && <div className="popin">
-          <Mono c="text-[11px] uppercase" s={{letterSpacing:".22em",color:"rgba(60,60,67,.3)"}}>Composition Analysis</Mono>
-          <div className="mt-3 rounded-[2.25rem] p-6 text-white" style={{background:GRAPHITE,boxShadow:"0 8px 24px rgba(0,0,0,.18)"}}>
-            <div className="flex items-start justify-between">
-              <div><Mono c="text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(255,255,255,.4)"}}>BMI · Index</Mono>
-                <div className="mono mt-1.5 text-[52px] font-semibold leading-none tabular-nums">{res.bmi.toFixed(1)}</div></div>
-              <Mono c="mt-1 rounded-full border px-3 py-1.5 text-[11px] uppercase" s={{letterSpacing:".14em",color:res.color,borderColor:res.color+"55"}}>{res.name}</Mono>
-            </div>
-            <div className="mt-6"><Gauge res={res}/></div>
-          </div>
-          <h2 className="mt-7 text-xl font-semibold tracking-tight">{res.headline}</h2>
-          <Mono c="mt-1.5 block text-[11px] uppercase" s={{letterSpacing:".14em",color:"rgba(60,60,67,.3)"}}>Physical composition analysis complete.</Mono>
-          <Mono c="mb-3 mt-8 block text-[11px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Primary Biological Leverage Points</Mono>
-          <div className="space-y-2.5">{res.leverage.map((p,i)=>(
-            <div key={i} className="flex items-stretch gap-4 rounded-[1.75rem] border bg-white p-4 popin" style={{borderColor:"rgba(60,60,67,.12)",animationDelay:i*70+"ms"}}>
-              <div className="w-[3px] shrink-0 rounded-full" style={{background:res.color}}/>
-              <div className="flex-1"><div className="flex items-baseline justify-between"><span className="text-[15px] font-semibold">{p.m}</span><Mono c="text-[10px] tabular-nums" s={{color:"rgba(60,60,67,.3)"}}>{String(i+1).padStart(2,"0")}</Mono></div>
-                <p className="mt-1 text-[13px] leading-snug" style={{color:"rgba(60,60,67,.6)"}}>{p.d}</p></div>
-            </div>))}</div>
-        </div>}
-      </div>
-
-      <div className="mt-8 flex items-center gap-3">
-        {step>1&&<button onClick={()=>setStep(step-1)} className="rounded-2xl px-5 py-4 text-sm font-semibold active:scale-95" style={{color:"rgba(60,60,67,.6)"}}>Back</button>}
-        <button onClick={next} className="flex-1 rounded-3xl py-4 text-base font-semibold text-white active:scale-[.97]" style={{background:"#0A84FF",boxShadow:"0 12px 48px rgba(10,132,255,.18)"}}>{step<TOTAL?"Continue":"Get started"}</button>
-      </div>
-    </div>
-  );
+/* ===== screens ===== */
+function onbProgress(step){
+  var bars="";for(var i=1;i<=3;i++)bars+='<div class="progress"><i style="width:'+(i<=step?100:0)+'%"></i></div>';
+  return '<div class="row" style="gap:8px">'+bars+'</div><div class="eyebrow" style="margin-top:12px">Step '+step+' of 3</div>';
+}
+function onb1(){
+  return '<div class="pad">'+onbProgress(1)+
+    '<h1 style="font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:28px">Choose your language</h1>'+
+    '<p style="color:var(--ink2);margin-top:8px">You can change this anytime in Settings.</p>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px">'+
+    LOCALES.map(function(l){var on=l[2]===S.lang;
+      return '<button class="langcard tap" data-act="lang" data-arg="'+l[2]+'" style="'+(on?"border-color:rgba(10,132,255,.7);box-shadow:0 0 0 4px rgba(10,132,255,.12)":"")+'">'+
+        '<span style="font-size:26px">'+l[0]+'</span><span style="flex:1"><span style="display:block;font-weight:600;line-height:1.1">'+l[1]+'</span><span class="mono" style="font-size:9px;text-transform:uppercase;color:var(--ink3)">'+l[2]+'</span></span>'+
+        (on?'<span style="display:grid;place-items:center;height:24px;width:24px;border-radius:999px;background:var(--accent);color:#fff;font-size:12px">✓</span>':'')+'</button>';
+    }).join("")+'</div>'+
+    '<div style="margin-top:40px"><button class="btn-accent tap" data-act="onb" data-arg="2">Continue</button></div></div>';
+}
+function stepRow(label,key,unit,step){
+  return '<div><div style="margin-bottom:8px;padding:0 4px;font-size:14px;font-weight:500;color:var(--ink2)">'+label+'</div>'+
+    '<div class="card between" style="padding:14px 18px">'+
+    '<button class="stepbtn tap" data-act="step" data-arg="'+key+':-'+step+'">−</button>'+
+    '<div class="mono" style="font-size:30px;font-weight:600">'+S[key]+'<span style="font-size:16px;font-weight:400;color:var(--ink3)"> '+unit+'</span></div>'+
+    '<button class="stepbtn tap" data-act="step" data-arg="'+key+':'+step+'">+</button></div></div>';
+}
+function onb2(){
+  return '<div class="pad">'+onbProgress(2)+
+    '<h1 style="font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:28px">A few details about you</h1>'+
+    '<p style="color:var(--ink2);margin-top:8px">We use these to personalize your nutrition.</p>'+
+    '<div style="display:grid;gap:16px;margin-top:28px">'+stepRow("Age","age","yrs",1)+stepRow("Weight","weight","kg",1)+stepRow("Height","height","cm",1)+'</div>'+
+    '<div class="row" style="gap:12px;margin-top:36px"><button class="tap" data-act="onb" data-arg="1" style="padding:16px 20px;font-weight:600;color:var(--ink2)">Back</button>'+
+    '<button class="btn-accent tap" data-act="onb" data-arg="3" style="flex:1">Continue</button></div></div>';
+}
+function onb3(){
+  var r=bmiOf(S.weight,S.height),t=r.t;
+  return '<div class="pad">'+onbProgress(3)+
+    '<div class="eyebrow" style="margin-top:24px;letter-spacing:.22em">Composition Analysis</div>'+
+    '<div class="panel" style="margin-top:12px">'+
+      '<div class="between" style="align-items:flex-start"><div><div class="mono" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)">BMI · Index</div>'+
+      '<div class="mono" style="font-size:52px;font-weight:600;line-height:1;margin-top:6px">'+r.b.toFixed(1)+'</div></div>'+
+      '<span class="mono" style="margin-top:4px;border:1px solid '+t.color+'55;border-radius:999px;padding:6px 12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:'+t.color+'">'+t.name+'</span></div>'+
+      '<div style="margin-top:24px">'+gauge(r)+'</div></div>'+
+    '<h2 style="font-size:20px;font-weight:600;letter-spacing:-.01em;margin-top:28px">'+t.headline+'</h2>'+
+    '<div class="mono" style="margin-top:6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)">Physical composition analysis complete.</div>'+
+    '<div class="eyebrow" style="margin:32px 0 12px">Primary Biological Leverage Points</div>'+
+    t.lev.map(function(p,i){return '<div class="leverage pop" style="margin-bottom:10px;animation-delay:'+(i*70)+'ms"><span class="bar" style="background:'+t.color+'"></span>'+
+      '<div style="flex:1"><div class="between" style="align-items:baseline"><span style="font-size:15px;font-weight:600">'+p[0]+'</span><span class="mono" style="font-size:10px;color:var(--ink3)">0'+(i+1)+'</span></div>'+
+      '<p style="margin-top:4px;font-size:13px;line-height:1.35;color:var(--ink2)">'+p[1]+'</p></div></div>';}).join("")+
+    '<div class="row" style="gap:12px;margin-top:24px"><button class="tap" data-act="onb" data-arg="2" style="padding:16px 20px;font-weight:600;color:var(--ink2)">Back</button>'+
+    '<button class="btn-accent tap" data-act="go" data-arg="today" style="flex:1">Get started</button></div></div>';
+}
+function macro(label,v,target,color){
+  return '<div><div class="mono" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.4)">'+label+'</div>'+
+    '<div class="mono" style="margin-top:4px;font-size:14px;font-weight:600">'+v+'<span style="color:rgba(255,255,255,.35)"> / '+target+'g</span></div>'+
+    '<div style="margin-top:8px;height:1px;width:100%;background:rgba(255,255,255,.1);overflow:hidden"><i style="display:block;height:100%;width:'+Math.min(100,v/target*100)+'%;background:'+color+'"></i></div></div>';
+}
+function dash(){
+  var r=bmiOf(S.weight,S.height),sy=sync(S.syncH);
+  var date=new Date().toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short"}).toUpperCase();
+  var dir=sy.dir?'<div class="row" style="gap:8px;margin-top:20px;border:1px solid '+sy.color+'40;background:'+sy.color+'0F;border-radius:16px;padding:10px 12px">'+
+    '<span class="mono" style="color:'+sy.color+'">▸</span><span class="mono" style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.7)">'+sy.dir+'</span></div>':'';
+  return '<div class="pad">'+
+    '<div class="between mono" style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3)"><span>Pl8 · Today</span>'+
+    '<span class="row" style="gap:12px"><span>'+date+'</span><button class="tap" data-act="go" data-arg="onb1" style="font-size:14px;color:var(--ink2)">⚙</button></span></div>'+
+    '<div style="margin:12px 0 24px"><h1 style="font-size:30px;font-weight:600;letter-spacing:-.02em">Good evening, Operator</h1>'+
+    '<div class="mono" style="margin-top:6px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)"><span style="color:'+r.t.color+'">'+r.t.name+'</span> · BMI '+r.b.toFixed(1)+'</div></div>'+
+    '<div class="panel">'+
+      '<div class="between" style="margin-bottom:20px;gap:8px"><span class="mono" style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3);flex:none">Bio-Link</span>'+
+      '<button class="tap row" data-act="sync" style="gap:8px"><span class="dotping"><span class="p" style="background:'+sy.color+'"></span><span class="c" style="background:'+sy.color+';box-shadow:0 0 8px 1px '+sy.color+'"></span></span>'+
+      '<span class="mono" style="white-space:nowrap;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55)">System Sync: <span style="color:rgba(255,255,255,.8)">'+sy.p+'%</span> <span style="color:'+sy.color+'">['+sy.tag+']</span></span></button></div>'+
+      '<div class="between" style="align-items:flex-start"><div><div class="mono" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)">Energy · kcal</div>'+
+      '<div class="mono" style="font-size:44px;font-weight:600;line-height:1;margin-top:6px">950<span style="font-size:20px;font-weight:400;color:rgba(255,255,255,.35)"> / 2430</span></div></div>'+
+      '<div style="text-align:right"><div class="mono" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)">Remaining</div>'+
+      '<div class="mono" style="font-size:24px;font-weight:600;margin-top:6px">1480</div></div></div>'+
+      '<div style="margin-top:20px;height:1px;width:100%;background:rgba(255,255,255,.1);overflow:hidden"><i style="display:block;height:100%;width:39%;background:rgba(255,255,255,.7)"></i></div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px">'+macro("Protein",64,140,JADE)+macro("Carbs",95,310,BRONZE)+macro("Fat",34,70,SLATE)+'</div>'+dir+'</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">'+
+      '<div class="card" style="padding:20px"><div class="eyebrow">Composition</div><div class="mono" style="font-size:30px;font-weight:600;margin-top:12px">'+r.b.toFixed(1)+'</div><div style="margin-top:12px;height:3px;width:40px;border-radius:999px;background:'+r.t.color+'"></div><div class="mono" style="margin-top:8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+r.t.color+'">'+r.t.name+'</div></div>'+
+      '<div class="card" style="padding:20px"><div class="eyebrow">Health Index</div><div class="mono" style="font-size:30px;font-weight:600;margin-top:12px">79<span style="font-size:16px;font-weight:400;color:var(--ink3)"> / 100</span></div><div style="margin-top:12px;height:1px;width:100%;background:var(--hair);overflow:hidden"><i style="display:block;height:100%;width:79%;background:'+JADE+'"></i></div></div>'+
+      '<button class="tap" data-act="go" data-arg="scan" style="height:112px;display:flex;flex-direction:column;justify-content:space-between;border-radius:28px;background:var(--g);color:#fff;padding:20px;text-align:left"><span style="font-size:24px;color:rgba(255,255,255,.8)">⌖</span><span class="between"><span class="mono" style="font-size:11px;letter-spacing:.14em;text-transform:uppercase">Scan Plate</span><span style="color:rgba(255,255,255,.4)">→</span></span></button>'+
+      '<button class="tap card" data-act="go" data-arg="fridge" style="height:112px;display:flex;flex-direction:column;justify-content:space-between;padding:20px;text-align:left"><span style="font-size:24px;color:var(--ink2)">❒</span><span class="between"><span class="mono" style="font-size:11px;letter-spacing:.14em;text-transform:uppercase">Fridge</span><span style="color:var(--ink3)">→</span></span></button></div>'+
+    '<div class="mono" style="margin-top:24px;text-align:center;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)">↑ tap the sync chip to simulate data degradation</div>'+
+    '</div>'+tabbar("today");
+}
+function scan(){
+  if(S.scan==="done"){
+    return '<div class="pad" style="min-height:100%;display:flex;flex-direction:column">'+scanHead()+
+      '<div class="fadeup" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center">'+
+      '<div style="position:relative;height:80px;width:80px;display:grid;place-items:center"><span class="dotping" style="position:absolute;inset:0;height:80px;width:80px"><span class="p" style="background:'+JADE+'40"></span></span>'+
+      '<div style="display:grid;place-items:center;height:80px;width:80px;border-radius:999px;border:1px solid '+JADE+'99"><span style="height:12px;width:12px;border-radius:999px;background:'+JADE+';box-shadow:0 0 22px 4px rgba(78,158,130,.7)"></span></div></div>'+
+      '<div class="mono" style="margin-top:24px;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#3DA37A">Logged to core</div></div></div>';
+  }
+  if(S.scan==="result"){
+    var items=[["chicken breast","150g"],["quinoa","120g"],["baby spinach","40g"],["cherry tomato","60g"],["olive oil","10ml"]];
+    var sents=[["◆","Loved it"],["▲","Liked it"],["■","Neutral"],["▽","Disliked"],["○","Not for me"]];
+    return '<div class="pad pop">'+scanHead()+
+      '<div class="panel">'+
+        '<div class="between" style="align-items:flex-start"><div><div class="mono" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)">Macro Telemetry · kcal</div>'+
+        '<div class="mono" style="font-size:44px;font-weight:600;line-height:1;margin-top:6px">540</div></div>'+
+        '<span class="mono" style="margin-top:4px;border:1px solid '+JADE+'55;border-radius:999px;padding:6px 12px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:'+JADE+'">GREAT</span></div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px">'+
+        [["Protein",42,JADE],["Carbs",48,BRONZE],["Fat",18,SLATE]].map(function(m){return '<div><div class="mono" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.4)">'+m[0]+'</div><div class="mono" style="margin-top:4px;font-size:18px;font-weight:600">'+m[1]+'<span style="font-size:12px;color:rgba(255,255,255,.35)">g</span></div><div style="margin-top:8px;height:1px;background:'+m[2]+'"></div></div>';}).join("")+'</div></div>'+
+      '<h1 style="font-size:20px;font-weight:600;margin-top:20px">Grilled chicken &amp; quinoa bowl</h1>'+
+      '<p style="margin-top:6px;font-size:13px;line-height:1.35;color:var(--ink2)">Lean protein with complex carbohydrate and leafy micronutrients — strong recovery substrate.</p>'+
+      '<div class="eyebrow" style="margin:24px 0 8px">Detected · 5</div>'+
+      '<div style="display:grid;gap:6px">'+items.map(function(it){return '<div class="card between" style="padding:10px 16px"><span style="font-size:14px;font-weight:500;text-transform:capitalize">'+it[0]+'</span><span class="mono" style="font-size:11px;color:var(--ink3)">'+it[1]+'</span></div>';}).join("")+'</div>'+
+      '<div class="card" style="margin-top:28px;padding:20px"><div class="eyebrow">Palate Response</div><p style="margin-top:6px;font-size:15px;font-weight:600">Was it delicious?</p>'+
+      '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px">'+sents.map(function(s){return '<button class="tap" data-act="scanlog" style="display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--hair);background:#F2F2F7;border-radius:16px;padding:10px 0"><span style="font-size:16px">'+s[0]+'</span><span class="mono" style="font-size:8px;text-transform:uppercase;color:var(--ink2);text-align:center;line-height:1.2">'+s[1]+'</span></button>';}).join("")+'</div></div></div>';
+  }
+  var analyzing=S.scan==="analyzing";
+  var corners=[["left:16px;top:16px","border-left:2px solid;border-top:2px solid"],["right:16px;top:16px","border-right:2px solid;border-top:2px solid"],["left:16px;bottom:16px","border-left:2px solid;border-bottom:2px solid"],["right:16px;bottom:16px","border-right:2px solid;border-bottom:2px solid"]];
+  return '<div class="pad" style="min-height:100%;display:flex;flex-direction:column">'+scanHead()+
+    '<button class="tap" data-act="'+(analyzing?"":"scanstart")+'" style="position:relative;width:100%;aspect-ratio:4/5;overflow:hidden;border-radius:36px;border:1px solid rgba(255,255,255,.1);background:var(--g)">'+
+    (analyzing?'<span class="scanline" style="background:linear-gradient(to bottom,transparent,'+JADE+'4d,'+JADE+'99)"></span><span class="mono" style="position:absolute;left:0;right:0;bottom:24px;text-align:center;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:'+NEON+'">Analyzing composition…</span>'
+      :'<span class="mono" style="position:absolute;inset:0;display:grid;place-items:center;padding:0 40px;text-align:center;font-size:11px;letter-spacing:.16em;text-transform:uppercase;line-height:1.6;color:rgba(255,255,255,.4)">Tap to simulate capture</span>'+
+       corners.map(function(c){return '<span style="position:absolute;height:20px;width:20px;'+c[0]+';'+c[1]+';border-color:rgba(255,255,255,.3);border-radius:4px"></span>';}).join(""))+'</button>'+
+    '<div class="mono" style="margin-top:20px;text-align:center;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)">Position your meal in frame</div>'+
+    '<div style="margin-top:auto;padding-top:24px"><button class="btn-dark tap" data-act="'+(analyzing?"":"scanstart")+'" style="opacity:'+(analyzing?.6:1)+'">'+(analyzing?"…":"Tap to simulate capture")+'</button></div></div>';
+}
+function scanHead(){
+  return '<div class="between" style="margin-bottom:24px"><button class="tap" data-act="go" data-arg="today" style="display:grid;place-items:center;height:36px;width:36px;border:1px solid var(--hair);border-radius:999px;color:var(--ink2)">✕</button>'+
+    '<span class="mono" style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3)">Plate Scanner</span><span style="width:36px"></span></div>';
+}
+var INV=[["chicken breast","500g"],["baby spinach","200g"],["cherry tomato","250g"],["feta","200g"],["broccoli","1pcs"],["garlic","1pcs"],["olive oil","500ml"]];
+var SUGG=[["Chicken & Quinoa Power Bowl","Lean protein over quinoa with greens and feta.",5,6,540,42,25,1],
+  ["Salmon & Broccoli Plate","Omega-rich salmon with brown rice and roasted broccoli.",3,5,610,38,30,2],
+  ["Mediterranean Chickpea Bowl","Plant-forward chickpea bowl with peppers and feta.",3,6,470,18,20,3]];
+function fridge(){
+  return '<div class="pad">'+
+    '<div class="between mono" style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3)"><span>Pl8 · Fridge</span><span>'+INV.length+' ITEMS</span></div>'+
+    '<button class="tap between" data-act="go" data-arg="scan" style="width:100%;margin-top:16px;border-radius:28px;background:var(--g);color:#fff;padding:16px 20px"><span class="row" style="gap:12px"><span style="font-size:20px">❒</span><span class="mono" style="font-size:12px;letter-spacing:.14em;text-transform:uppercase">Inspect Fridge</span></span><span style="color:rgba(255,255,255,.4)">→</span></button>'+
+    '<div class="eyebrow" style="margin:28px 0 8px">Inventory · '+INV.length+'</div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:8px">'+INV.map(function(it){return '<span class="chip">'+it[0]+'<span class="mono" style="margin-left:6px;font-size:11px;color:var(--ink3)">'+it[1]+'</span></span>';}).join("")+'</div>'+
+    '<div class="eyebrow" style="margin:32px 0 12px">Suggested Protocols</div>'+
+    '<div style="display:grid;gap:12px">'+SUGG.map(function(r){return '<button class="tap card" data-act="match" data-arg="'+r[0]+'" style="width:100%;padding:20px;text-align:left;border-radius:36px">'+
+      '<div class="between" style="align-items:flex-start;gap:12px"><div><h3 style="font-size:17px;font-weight:600">'+r[0]+'</h3><p style="margin-top:2px;font-size:13px;line-height:1.35;color:var(--ink2)">'+r[1]+'</p></div><span class="mono" style="flex:none;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)">'+r[2]+'/'+r[3]+'</span></div>'+
+      '<div style="margin-top:12px;height:1px;width:100%;background:var(--hair);overflow:hidden"><i style="display:block;height:100%;width:'+(r[2]/r[3]*100)+'%;background:'+JADE+'"></i></div>'+
+      '<div class="between" style="margin-top:12px"><span class="mono" style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)">'+r[4]+' kcal · '+r[5]+'g P · '+r[6]+' min</span><span class="mono" style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+BRONZE+'">'+r[7]+' missing</span></div></button>';
+    }).join("")+'</div></div>'+tabbar("fridge")+(S.match?sheet():"");
+}
+function sheet(){
+  var q=RANKED[S.sel];
+  var inner;
+  if(S.mload){
+    inner='<div class="panel"><div class="row" style="gap:8px"><span class="dotping"><span class="p" style="background:'+NEON+'"></span><span class="c" style="background:'+NEON+'"></span></span><span class="mono" style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.5)">Locating signal…</span></div>'+
+      '<div style="margin-top:24px;border-radius:28px;background:rgba(255,255,255,.04);padding:16px">'+[0,1,2].map(function(){return '<div class="between" style="padding:6px 0"><span style="height:14px;width:120px;border-radius:6px;background:rgba(255,255,255,.1);display:block"></span><span style="height:14px;width:44px;border-radius:6px;background:rgba(255,255,255,.1);display:block"></span></div>';}).join("")+'</div></div>';
+  } else {
+    var rows="";q.items.forEach(function(it,i){
+      if(it[2]!==null)rows+='<div class="between" style="padding:10px 0;'+(i?"border-top:1px solid rgba(255,255,255,.1)":"")+'"><div style="min-width:0"><div style="font-size:14px;font-weight:500;text-transform:capitalize">'+it[0]+'</div><div class="mono" style="font-size:10px;color:rgba(255,255,255,.35)">'+it[1]+'</div></div><span class="mono" style="font-size:14px">'+eur(it[2])+'</span></div>';
+      else rows+='<div class="between" style="padding:10px 0;opacity:.6;'+(i?"border-top:1px solid rgba(255,255,255,.1)":"")+'"><span style="font-size:14px;font-weight:500;text-transform:capitalize">'+it[0]+'</span><span class="mono" style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#FF6B5A">not here</span></div>';
+    });
+    var matrix=RANKED.map(function(s,i){var on=i===S.sel;
+      return '<button class="tap" data-act="sel" data-arg="'+i+'" style="display:flex;align-items:center;gap:12px;width:100%;border:1px solid '+(on?"rgba(28,28,30,.7)":"var(--hair)")+';background:#fff;border-radius:16px;padding:12px 16px;text-align:left;opacity:'+(on?1:.85)+';'+(on?"box-shadow:0 8px 24px rgba(0,0,0,.06)":"")+'">'+
+        '<span class="mono" style="font-size:11px;color:var(--ink3)">0'+(i+1)+'</span><div style="min-width:0;flex:1"><div style="font-size:14px;font-weight:600">'+cap(s.chain)+'<span style="margin-left:8px;font-weight:400;color:var(--ink3)">'+dst(s.dist)+'</span></div>'+
+        '<div class="row" style="gap:6px"><span style="height:6px;width:6px;border-radius:999px;background:'+(s.complete?"#3DA37A":AMBER)+'"></span><span class="mono" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:'+(s.complete?"#3DA37A":BRONZE)+'">'+(s.complete?"in stock":"partial")+'</span></div></div>'+
+        '<span class="mono" style="font-size:16px;font-weight:600">'+eur(s.total)+'</span></button>';
+    }).join("");
+    inner='<div class="panel pop"><div class="between" style="align-items:flex-start;gap:16px"><div><div class="mono" style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:'+NEON+'">Optimal Match · '+cap(q.chain)+'</div>'+
+      '<h3 style="font-size:20px;font-weight:600;margin-top:6px">'+q.name+'</h3><div class="mono" style="font-size:11px;color:rgba(255,255,255,.4)">'+q.addr+'</div></div>'+
+      '<div style="text-align:right"><div class="mono" style="font-size:32px;font-weight:600;line-height:1">'+eur(q.total)+'</div><div class="mono" style="margin-top:4px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.4)">Missing cost</div></div></div>'+
+      '<div class="row" style="gap:8px;margin-top:16px"><span class="mono" style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:'+(q.complete?NEON:AMBER)+'">● '+(q.complete?"All items in stock":"Partial stock")+'</span><span class="mono" style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">· '+dst(q.dist)+'</span></div>'+
+      '<div style="margin-top:20px;border-radius:28px;background:rgba(255,255,255,.04);padding:16px">'+rows+'</div>'+
+      '<button class="tap" style="margin-top:20px;display:block;width:100%;background:#fff;color:'+GRAPHITE+';border-radius:16px;padding:14px;font-family:ui-monospace,monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase">Get directions →</button></div>'+
+      '<div class="eyebrow" style="margin:16px 4px 8px">Price Matrix · '+RANKED.length+'</div><div style="display:grid;gap:8px">'+matrix+'</div>'+
+      '<div class="mono" style="margin-top:16px;text-align:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)">tap Iki — cheaper sticker, ranks last (missing feta)</div>';
+  }
+  return '<div class="sheetwrap"><button data-act="closematch" style="position:absolute;inset:0"></button>'+
+    '<div class="sheet fadeup"><div class="grab"></div><div class="eyebrow">Find cheapest store</div><h2 style="margin:4px 0 16px;font-size:18px;font-weight:600">'+S.match+'</h2>'+inner+'</div></div>';
+}
+var AFF=[["chicken breast",.82],["quinoa",.64],["baby spinach",.5],["feta",.38]];
+var AVE=[["olive oil",-.22],["cherry tomato",-.45]];
+var GOALS=["Fat Loss","Maintain","Muscle Gain","High Protein","Low Carb","Low Sugar","Heart Health","Gut Health"];
+function tbar(label,sc,pos){var color=pos?JADE:CORAL,mag=Math.min(1,Math.abs(sc));
+  var fill=pos?'left:50%;width:'+(mag*50)+'%':'right:50%;width:'+(mag*50)+'%';
+  return '<div class="row" style="gap:12px"><span style="width:96px;flex:none;font-size:14px;font-weight:500;text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+label+'</span>'+
+    '<div style="position:relative;height:6px;flex:1;border-radius:999px;background:var(--hair)"><span style="position:absolute;left:50%;top:0;height:100%;width:1px;background:rgba(60,60,67,.3)"></span><span style="position:absolute;top:0;height:100%;border-radius:999px;'+fill+';background:'+color+'"></span></div>'+
+    '<span class="mono" style="width:44px;flex:none;text-align:right;font-size:11px;color:'+color+'">'+(sc>0?"+":"")+sc.toFixed(2)+'</span></div>';
+}
+function taste(){
+  return '<div class="pad">'+
+    '<div class="between mono" style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3)"><span>Pl8 · Matrix</span><span style="color:#3DA37A">OPTIMAL BALANCE</span></div>'+
+    '<h1 style="font-size:30px;font-weight:600;letter-spacing:-.02em;margin:12px 0 24px">Taste &amp; Health Matrix</h1>'+
+    '<div class="eyebrow" style="margin-bottom:8px">Affinity Index</div><div class="card" style="padding:16px;display:grid;gap:10px;margin-bottom:24px">'+AFF.map(function(a){return tbar(a[0],a[1],true);}).join("")+'</div>'+
+    '<div class="eyebrow" style="margin-bottom:8px">Aversion Index</div><div class="card" style="padding:16px;display:grid;gap:10px;margin-bottom:24px">'+AVE.map(function(a){return tbar(a[0],a[1],false);}).join("")+'</div>'+
+    '<div class="eyebrow" style="margin:32px 0 12px">Active Protocols</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+    GOALS.map(function(g){var on=S.goals[g];return '<button class="tap between" data-act="goal" data-arg="'+g+'" style="border:1px solid '+(on?"transparent":"var(--hair)")+';background:'+(on?GRAPHITE:"#fff")+';color:'+(on?"#fff":"var(--ink2)")+';border-radius:16px;padding:14px 16px;font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase">'+g+'<span style="height:8px;width:8px;border-radius:999px;background:'+(on?NEON:"rgba(60,60,67,.2)")+'"></span></button>';}).join("")+'</div></div>'+tabbar("taste");
 }
 
-/* ─── SYNC INDICATOR ─── */
-function SyncIndicator({sync,onTap}){
-  return (<button onClick={onTap} className="flex items-center gap-2">
-    <span className="relative grid h-2 w-2 place-items-center">
-      <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70" style={{background:sync.color}}/>
-      <span className="relative h-2 w-2 rounded-full" style={{background:sync.color,boxShadow:"0 0 8px 1px "+sync.color}}/>
-    </span>
-    <Mono c="whitespace-nowrap text-[9px] uppercase tabular-nums" s={{letterSpacing:".14em",color:"rgba(255,255,255,.55)"}}>System Sync: <span style={{color:"rgba(255,255,255,.8)"}}>{sync.pct}%</span> <span style={{color:sync.color}}>[{sync.tag}]</span></Mono>
-  </button>);
+/* ===== render + events ===== */
+function render(){
+  var html;
+  switch(S.screen){
+    case "onb1":html=onb1();break; case "onb2":html=onb2();break; case "onb3":html=onb3();break;
+    case "today":html=dash();break; case "scan":html=scan();break; case "fridge":html=fridge();break; case "taste":html=taste();break;
+    default:html=dash();
+  }
+  app.innerHTML=html;
 }
-
-/* ─── DASHBOARD ─── */
-function MacroReadout({label,val,target,color}){
-  return (<div><Mono c="text-[10px] uppercase" s={{letterSpacing:".16em",color:"rgba(255,255,255,.4)"}}>{label}</Mono>
-    <div className="mono mt-1 text-sm font-semibold tabular-nums">{val}<span style={{color:"rgba(255,255,255,.35)"}}> / {target}g</span></div>
-    <div className="mt-2 h-px w-full overflow-hidden" style={{background:"rgba(255,255,255,.1)"}}><div className="h-full" style={{width:Math.min(100,val/target*100)+"%",background:color,transition:"width .7s"}}/></div></div>);
-}
-function Dashboard({profile,sync,onSync,go}){
-  const res=computeBmi(profile.weight,profile.height);
-  const intake={kcal:950,p:64,c:95,f:34}, target={kcal:2430,p:140,c:310,f:70};
-  const date=new Date().toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short"}).toUpperCase();
-  return (<div className="px-4 pb-28 pt-12">
-    <div className="flex items-center justify-between mono text-[10px] uppercase" style={{letterSpacing:".22em",color:"rgba(60,60,67,.3)"}}>
-      <span>Pl8 · Today</span><span className="flex items-center gap-3"><span className="tabular-nums">{date}</span><button onClick={()=>go("onboarding")} className="text-sm active:scale-90" style={{color:"rgba(60,60,67,.6)"}}>⚙</button></span>
-    </div>
-    <header className="mb-6 mt-3"><h1 className="text-3xl font-semibold tracking-tight">Good evening, Operator</h1>
-      <Mono c="mt-1.5 block text-[11px] uppercase" s={{letterSpacing:".16em",color:"rgba(60,60,67,.3)"}}><span style={{color:res.color}}>{res.name}</span> · BMI {res.bmi.toFixed(1)}</Mono></header>
-
-    <section className="rounded-[2.25rem] p-6 text-white" style={{background:GRAPHITE,boxShadow:"0 8px 24px rgba(0,0,0,.18)"}}>
-      <div className="mb-5 flex items-center justify-between gap-2">
-        <Mono c="shrink-0 text-[9px] uppercase" s={{letterSpacing:".2em",color:"rgba(255,255,255,.3)"}}>Bio-Link</Mono>
-        <SyncIndicator sync={sync} onTap={onSync}/>
-      </div>
-      <div className="flex items-start justify-between">
-        <div><Mono c="text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(255,255,255,.4)"}}>Energy · kcal</Mono>
-          <div className="mono mt-1.5 text-[44px] font-semibold leading-none tabular-nums">{intake.kcal}<span className="text-xl font-normal" style={{color:"rgba(255,255,255,.35)"}}> / {target.kcal}</span></div></div>
-        <div className="text-right"><Mono c="text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(255,255,255,.4)"}}>Remaining</Mono>
-          <div className="mono mt-1.5 text-2xl font-semibold tabular-nums">{target.kcal-intake.kcal}</div></div>
-      </div>
-      <div className="mt-5 h-px w-full overflow-hidden" style={{background:"rgba(255,255,255,.1)"}}><div className="h-full" style={{width:intake.kcal/target.kcal*100+"%",background:"rgba(255,255,255,.7)",transition:"width .7s"}}/></div>
-      <div className="mt-6 grid grid-cols-3 gap-4">
-        <MacroReadout label="Protein" val={intake.p} target={target.p} color={MACRO.protein}/>
-        <MacroReadout label="Carbs" val={intake.c} target={target.c} color={MACRO.carbs}/>
-        <MacroReadout label="Fat" val={intake.f} target={target.f} color={MACRO.fat}/>
-      </div>
-      {sync.directive&&<div className="mt-5 flex items-center gap-2 rounded-2xl border px-3 py-2.5" style={{borderColor:sync.color+"40",background:sync.color+"0F"}}>
-        <Mono s={{color:sync.color}}>▸</Mono><Mono c="text-[10px] uppercase leading-none" s={{letterSpacing:".12em",color:"rgba(255,255,255,.7)"}}>{sync.directive}</Mono></div>}
-    </section>
-
-    <section className="mt-3 grid grid-cols-2 gap-3">
-      <div className="rounded-[1.75rem] border bg-white p-5" style={{borderColor:"rgba(60,60,67,.12)"}}>
-        <Mono c="text-[10px] uppercase" s={{letterSpacing:".18em",color:"rgba(60,60,67,.3)"}}>Composition</Mono>
-        <div className="mono mt-3 text-3xl font-semibold tabular-nums">{res.bmi.toFixed(1)}</div>
-        <div className="mt-3 h-[3px] w-10 rounded-full" style={{background:res.color}}/>
-        <Mono c="mt-2 block text-[10px] uppercase" s={{letterSpacing:".12em",color:res.color}}>{res.name}</Mono>
-      </div>
-      <div className="rounded-[1.75rem] border bg-white p-5" style={{borderColor:"rgba(60,60,67,.12)"}}>
-        <Mono c="text-[10px] uppercase" s={{letterSpacing:".18em",color:"rgba(60,60,67,.3)"}}>Health Index</Mono>
-        <div className="mono mt-3 text-3xl font-semibold tabular-nums">79<span className="text-base font-normal" style={{color:"rgba(60,60,67,.3)"}}> / 100</span></div>
-        <div className="mt-3 h-px w-full overflow-hidden" style={{background:"rgba(60,60,67,.12)"}}><div className="h-full" style={{width:"79%",background:JADE}}/></div>
-      </div>
-      <button onClick={()=>go("scan")} className="flex h-28 flex-col justify-between rounded-[1.75rem] p-5 text-left text-white active:scale-[.97]" style={{background:GRAPHITE}}>
-        <span className="text-2xl" style={{color:"rgba(255,255,255,.8)"}}>⌖</span>
-        <span className="flex items-center justify-between"><Mono c="text-[11px] uppercase" s={{letterSpacing:".14em"}}>Scan Plate</Mono><span style={{color:"rgba(255,255,255,.4)"}}>→</span></span>
-      </button>
-      <button onClick={()=>go("fridge")} className="flex h-28 flex-col justify-between rounded-[1.75rem] border bg-white p-5 text-left active:scale-[.97]" style={{borderColor:"rgba(60,60,67,.12)"}}>
-        <span className="text-2xl" style={{color:"rgba(60,60,67,.6)"}}>❒</span>
-        <span className="flex items-center justify-between"><Mono c="text-[11px] uppercase" s={{letterSpacing:".14em"}}>Fridge</Mono><span style={{color:"rgba(60,60,67,.3)"}}>→</span></span>
-      </button>
-    </section>
-    <Mono c="mt-6 block text-center text-[10px] uppercase" s={{letterSpacing:".18em",color:"rgba(60,60,67,.3)"}}>tap the sync chip to simulate data degradation ↑</Mono>
-  </div>);
-}
-
-/* ─── SCANNER ─── */
-function Scanner({go,onLogged}){
-  const [phase,setPhase]=useState("idle"); // idle, analyzing, result, done
-  const analysis={title:"Grilled chicken & quinoa bowl",kcal:540,p:42,c:48,f:18,rating:"GREAT",
-    notes:"Lean protein with complex carbohydrate and leafy micronutrients — strong recovery substrate.",
-    items:[["chicken breast","150g"],["quinoa","120g"],["baby spinach","40g"],["cherry tomato","60g"],["olive oil","10ml"]]};
-  const start=()=>{haptic();setPhase("analyzing");setTimeout(()=>setPhase("result"),1500);};
-  const log=()=>{haptic();setPhase("done");setTimeout(()=>{onLogged();go("today");},1100);};
-  const sentiments=[["◆","Loved it"],["▲","Liked it"],["■","Neutral"],["▽","Disliked"],["○","Not for me"]];
-  return (<div className="flex min-h-full flex-col px-5 pb-8 pt-12">
-    <div className="mb-6 flex items-center justify-between">
-      <button onClick={()=>go("today")} className="grid h-9 w-9 place-items-center rounded-full border active:scale-90" style={{borderColor:"rgba(60,60,67,.12)",color:"rgba(60,60,67,.6)"}}>✕</button>
-      <Mono c="text-[10px] uppercase" s={{letterSpacing:".22em",color:"rgba(60,60,67,.3)"}}>Plate Scanner</Mono><span className="h-9 w-9"/>
-    </div>
-    {phase==="done"?(
-      <div className="flex flex-1 flex-col items-center justify-center fadeup">
-        <div className="relative grid h-20 w-20 place-items-center">
-          <span className="absolute inset-0 rounded-full animate-ping" style={{background:JADE+"40"}}/>
-          <div className="grid h-20 w-20 place-items-center rounded-full border" style={{borderColor:JADE+"99"}}><span className="h-3 w-3 rounded-full" style={{background:JADE,boxShadow:"0 0 22px 4px rgba(78,158,130,.7)"}}/></div>
-        </div>
-        <Mono c="mt-6 text-[12px] uppercase" s={{letterSpacing:".24em",color:"#3DA37A"}}>Logged to core</Mono>
-      </div>
-    ):phase==="result"?(
-      <div className="popin">
-        <section className="rounded-[2.25rem] p-6 text-white" style={{background:GRAPHITE}}>
-          <div className="flex items-start justify-between">
-            <div><Mono c="text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(255,255,255,.4)"}}>Macro Telemetry · kcal</Mono>
-              <div className="mono mt-1.5 text-[44px] font-semibold leading-none tabular-nums">{analysis.kcal}</div></div>
-            <Mono c="mt-1 rounded-full border px-3 py-1.5 text-[10px] uppercase" s={{letterSpacing:".14em",color:JADE,borderColor:JADE+"55"}}>{analysis.rating}</Mono>
-          </div>
-          <div className="mt-6 grid grid-cols-3 gap-4">
-            {[["Protein",analysis.p,MACRO.protein],["Carbs",analysis.c,MACRO.carbs],["Fat",analysis.f,MACRO.fat]].map(([l,v,c])=>(
-              <div key={l}><Mono c="text-[10px] uppercase" s={{letterSpacing:".16em",color:"rgba(255,255,255,.4)"}}>{l}</Mono>
-                <div className="mono mt-1 text-lg font-semibold tabular-nums">{v}<span className="text-xs" style={{color:"rgba(255,255,255,.35)"}}>g</span></div>
-                <div className="mt-2 h-px w-full" style={{background:c}}/></div>))}
-          </div>
-        </section>
-        <h1 className="mt-5 text-xl font-semibold tracking-tight">{analysis.title}</h1>
-        <p className="mt-1.5 text-[13px] leading-snug" style={{color:"rgba(60,60,67,.6)"}}>{analysis.notes}</p>
-        <Mono c="mb-2 mt-6 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Detected · {analysis.items.length}</Mono>
-        <div className="space-y-1.5">{analysis.items.map(([n,q])=>(
-          <div key={n} className="flex items-center justify-between rounded-2xl border bg-white px-4 py-2.5" style={{borderColor:"rgba(60,60,67,.12)"}}>
-            <span className="text-sm font-medium capitalize">{n}</span><Mono c="text-[11px] tabular-nums" s={{color:"rgba(60,60,67,.3)"}}>{q}</Mono></div>))}</div>
-        <div className="mt-7 rounded-[2.25rem] border bg-white p-5" style={{borderColor:"rgba(60,60,67,.12)"}}>
-          <Mono c="text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Palate Response</Mono>
-          <p className="mt-1.5 text-[15px] font-semibold">Was it delicious?</p>
-          <div className="mt-4 grid grid-cols-5 gap-2">{sentiments.map(([g,l])=>(
-            <button key={l} onClick={log} className="flex flex-col items-center gap-1 rounded-2xl border py-2.5 active:scale-95" style={{borderColor:"rgba(60,60,67,.12)",background:"#F2F2F7"}}>
-              <span className="text-base">{g}</span><Mono c="text-center text-[8px] uppercase leading-tight" s={{color:"rgba(60,60,67,.6)"}}>{l}</Mono></button>))}</div>
-        </div>
-      </div>
-    ):(
-      <div className="flex flex-1 flex-col">
-        <div onClick={phase==="idle"?start:undefined} className="relative w-full overflow-hidden rounded-[2.25rem] border" style={{aspectRatio:"4/5",background:GRAPHITE,borderColor:"rgba(255,255,255,.1)"}}>
-          {phase==="analyzing"?(<>
-            <div className="absolute inset-x-0 top-0 h-1/2 scanline" style={{background:"linear-gradient(to bottom,transparent,"+JADE+"4d,"+JADE+"99)"}}/>
-            <Mono c="absolute inset-x-0 bottom-6 text-center text-[11px] uppercase" s={{letterSpacing:".18em",color:NEON}}>Analyzing composition…</Mono>
-          </>):(<>
-            <Mono c="absolute inset-0 grid place-items-center px-10 text-center text-[11px] uppercase leading-relaxed" s={{letterSpacing:".16em",color:"rgba(255,255,255,.4)"}}>Tap to simulate capture</Mono>
-            {[["left-4 top-4","border-l-2 border-t-2"],["right-4 top-4","border-r-2 border-t-2"],["bottom-4 left-4","border-b-2 border-l-2"],["bottom-4 right-4","border-b-2 border-r-2"]].map(([p,b],i)=>
-              <span key={i} className={"absolute h-5 w-5 "+p+" "+b} style={{borderColor:"rgba(255,255,255,.3)"}}/>)}
-          </>)}
-        </div>
-        <Mono c="mt-5 text-center text-[10px] uppercase" s={{letterSpacing:".16em",color:"rgba(60,60,67,.3)"}}>Position your meal in frame</Mono>
-        <div className="mt-auto pt-6"><button onClick={start} disabled={phase==="analyzing"} className="w-full rounded-[1.75rem] py-4 text-white mono text-[12px] uppercase active:scale-[.97]" style={{letterSpacing:".14em",background:GRAPHITE,opacity:phase==="analyzing"?.6:1}}>{phase==="analyzing"?"…":"Tap to simulate capture"}</button></div>
-      </div>
-    )}
-  </div>);
-}
-
-/* ─── FRIDGE + MATCH SHEET ─── */
-const INVENTORY=[["chicken breast","500g"],["baby spinach","200g"],["cherry tomato","250g"],["feta","200g"],["broccoli","1pcs"],["garlic","1pcs"],["olive oil","500ml"]];
-const SUGGESTIONS=[
-  {t:"Chicken & Quinoa Power Bowl",s:"Lean protein over quinoa with greens and feta.",have:5,total:6,kcal:540,p:42,min:25,miss:1},
-  {t:"Salmon & Broccoli Plate",s:"Omega-rich salmon with brown rice and roasted broccoli.",have:3,total:5,kcal:610,p:38,min:30,miss:2},
-  {t:"Mediterranean Chickpea Bowl",s:"Plant-forward chickpea bowl with peppers and feta.",have:3,total:6,kcal:470,p:18,min:20,miss:3}];
-function MatchSheet({title,onClose}){
-  const [loading,setLoading]=useState(true);
-  const [sel,setSel]=useState(RANKED[0]);
-  React.useEffect(()=>{const t=setTimeout(()=>{setLoading(false);haptic();},900);return()=>clearTimeout(t);},[]);
-  const purchasable=sel.items.filter(i=>i.price!==null), gone=sel.items.filter(i=>i.price===null);
-  return (<div className="absolute inset-0 z-50 flex flex-col justify-end" style={{background:"rgba(0,0,0,.4)"}}>
-    <button className="absolute inset-0" onClick={onClose}/>
-    <div className="relative max-h-[90%] overflow-y-auto rounded-t-[2.25rem] px-5 pb-10 pt-4 fadeup" style={{background:"#F2F2F7"}}>
-      <div className="mx-auto mb-4 h-1 w-10 rounded-full" style={{background:"rgba(60,60,67,.3)"}}/>
-      <Mono c="block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Find cheapest store</Mono>
-      <h2 className="mt-1 mb-4 text-lg font-semibold tracking-tight">{title}</h2>
-      {loading?(
-        <div className="rounded-[2.25rem] p-6" style={{background:GRAPHITE}}>
-          <div className="flex items-center gap-2"><span className="h-2 w-2 animate-ping rounded-full" style={{background:NEON}}/><Mono c="text-[10px] uppercase" s={{letterSpacing:".18em",color:"rgba(255,255,255,.5)"}}>Locating signal…</Mono></div>
-          <div className="mt-6 space-y-3 rounded-[1.75rem] p-4" style={{background:"rgba(255,255,255,.04)"}}>{[0,1,2].map(i=><div key={i} className="flex justify-between"><div className="h-4 w-32 rounded" style={{background:"rgba(255,255,255,.1)"}}/><div className="h-4 w-12 rounded" style={{background:"rgba(255,255,255,.1)"}}/></div>)}</div>
-        </div>
-      ):(<>
-        <div className="rounded-[2.25rem] p-6 text-white popin" style={{background:GRAPHITE}}>
-          <div className="flex items-start justify-between gap-4">
-            <div><Mono c="text-[9px] uppercase" s={{letterSpacing:".2em",color:NEON}}>Optimal Match · {cap(sel.chain)}</Mono>
-              <h3 className="mt-1.5 text-xl font-semibold tracking-tight">{sel.name}</h3>
-              <Mono c="text-[11px]" s={{color:"rgba(255,255,255,.4)"}}>{sel.addr}</Mono></div>
-            <div className="text-right"><div className="mono text-[32px] font-semibold leading-none tabular-nums">{eur(sel.total)}</div>
-              <Mono c="mt-1 block text-[9px] uppercase" s={{letterSpacing:".16em",color:"rgba(255,255,255,.4)"}}>Missing cost</Mono></div>
-          </div>
-          <div className="mt-4 flex items-center gap-2">
-            <Mono c="text-[9px] uppercase" s={{letterSpacing:".14em",color:sel.complete?NEON:AMBER}}>● {sel.complete?"All items in stock":"Partial stock"}</Mono>
-            <Mono c="text-[9px] uppercase" s={{letterSpacing:".14em",color:"rgba(255,255,255,.45)"}}>· {dist(sel.dist)}</Mono>
-          </div>
-          <div className="mt-5 rounded-[1.75rem] p-4" style={{background:"rgba(255,255,255,.04)"}}>
-            <div style={{borderColor:"rgba(255,255,255,.1)"}}>
-              {purchasable.map((it,i)=>(<div key={i} className="flex items-center justify-between py-2.5" style={{borderTop:i?"1px solid rgba(255,255,255,.1)":"none"}}>
-                <div className="min-w-0"><p className="truncate text-sm font-medium capitalize">{it.label}</p><Mono c="block truncate text-[10px]" s={{color:"rgba(255,255,255,.35)"}}>{it.product}</Mono></div>
-                <Mono c="text-sm tabular-nums">{eur(it.price)}</Mono></div>))}
-              {gone.map((it,i)=>(<div key={i} className="flex items-center justify-between py-2.5" style={{opacity:.6,borderTop:"1px solid rgba(255,255,255,.1)"}}>
-                <p className="text-sm font-medium capitalize">{it.label}</p><Mono c="text-[9px] uppercase" s={{letterSpacing:".12em",color:"#FF6B5A"}}>not here</Mono></div>))}
-            </div>
-          </div>
-          <button className="mt-5 flex w-full items-center justify-center rounded-2xl bg-white py-3.5 mono text-[12px] uppercase active:scale-[.97]" style={{letterSpacing:".14em",color:GRAPHITE}}>Get directions →</button>
-        </div>
-        <Mono c="mb-2 mt-4 block px-1 text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Price Matrix · {RANKED.length}</Mono>
-        <div className="space-y-2">{RANKED.map((q,i)=>{const on=q.chain===sel.chain;return(
-          <button key={q.chain} onClick={()=>{haptic();setSel(q);}} className="flex w-full items-center gap-3 rounded-2xl border bg-white px-4 py-3 text-left active:scale-[.98]"
-            style={{borderColor:on?"rgba(28,28,30,.7)":"rgba(60,60,67,.12)",boxShadow:on?"0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06)":"none",opacity:on?1:.85}}>
-            <Mono c="text-[11px] tabular-nums" s={{color:"rgba(60,60,67,.3)"}}>{String(i+1).padStart(2,"0")}</Mono>
-            <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{cap(q.chain)}<span className="ml-2 font-normal" style={{color:"rgba(60,60,67,.3)"}}>{dist(q.dist)}</span></p>
-              <p className="flex items-center gap-1.5"><span className="inline-block h-1.5 w-1.5 rounded-full" style={{background:q.complete?"#3DA37A":AMBER}}/><Mono c="text-[10px] uppercase" s={{letterSpacing:".1em",color:q.complete?"#3DA37A":BRONZE}}>{q.complete?"in stock":"partial"}</Mono></p></div>
-            <Mono c="text-base font-semibold tabular-nums">{eur(q.total)}</Mono>
-          </button>);})}</div>
-        <Mono c="mt-4 block text-center text-[10px] uppercase" s={{letterSpacing:".14em",color:"rgba(60,60,67,.3)"}}>tap Iki — cheaper sticker, ranks last (missing feta)</Mono>
-      </>)}
-    </div>
-  </div>);
-}
-function Fridge({go}){
-  const [sel,setSel]=useState(null);
-  return (<div className="px-4 pb-28 pt-12">
-    <div className="flex items-center justify-between mono text-[10px] uppercase" style={{letterSpacing:".22em",color:"rgba(60,60,67,.3)"}}><span>Pl8 · Fridge</span><span className="tabular-nums">{INVENTORY.length} ITEMS</span></div>
-    <button onClick={()=>go("scan")} className="mt-4 flex w-full items-center justify-between rounded-[1.75rem] px-5 py-4 text-white active:scale-[.98]" style={{background:GRAPHITE}}>
-      <span className="flex items-center gap-3"><span className="text-xl">❒</span><Mono c="text-[12px] uppercase" s={{letterSpacing:".14em"}}>Inspect Fridge</Mono></span><span style={{color:"rgba(255,255,255,.4)"}}>→</span></button>
-    <Mono c="mb-2 mt-7 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Inventory · {INVENTORY.length}</Mono>
-    <div className="flex flex-wrap gap-2">{INVENTORY.map(([n,q])=>(
-      <span key={n} className="rounded-2xl border bg-white px-3 py-2 text-sm font-medium capitalize" style={{borderColor:"rgba(60,60,67,.12)"}}>{n}<Mono c="ml-1.5 text-[11px]" s={{color:"rgba(60,60,67,.3)"}}>{q}</Mono></span>))}</div>
-    <Mono c="mb-3 mt-8 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Suggested Protocols</Mono>
-    <div className="space-y-3">{SUGGESTIONS.map(r=>(
-      <button key={r.t} onClick={()=>{haptic();setSel(r.t);}} className="w-full rounded-[2.25rem] border bg-white p-5 text-left active:scale-[.98]" style={{borderColor:"rgba(60,60,67,.12)"}}>
-        <div className="flex items-start justify-between gap-3"><div className="min-w-0"><h3 className="text-[17px] font-semibold tracking-tight">{r.t}</h3><p className="mt-0.5 text-[13px] leading-snug" style={{color:"rgba(60,60,67,.6)"}}>{r.s}</p></div>
-          <Mono c="shrink-0 text-[10px] uppercase" s={{letterSpacing:".1em",color:"rgba(60,60,67,.3)"}}>{r.have}/{r.total}</Mono></div>
-        <div className="mt-3 h-px w-full overflow-hidden" style={{background:"rgba(60,60,67,.12)"}}><div className="h-full" style={{width:r.have/r.total*100+"%",background:JADE}}/></div>
-        <div className="mt-3 flex items-center justify-between"><Mono c="text-[10px] uppercase" s={{letterSpacing:".12em",color:"rgba(60,60,67,.3)"}}>{r.kcal} kcal · {r.p}g P · {r.min} min</Mono>
-          <Mono c="text-[10px] uppercase" s={{letterSpacing:".12em",color:r.miss===0?"#3DA37A":BRONZE}}>{r.miss} missing</Mono></div>
-      </button>))}</div>
-    {sel&&<MatchSheet title={sel} onClose={()=>setSel(null)}/>}
-  </div>);
-}
-
-/* ─── TASTE ─── */
-const AFF=[["chicken breast",.82],["quinoa",.64],["baby spinach",.5],["feta",.38]];
-const AVE=[["olive oil",-.22],["cherry tomato",-.45]];
-const GOALS=["Fat Loss","Maintain","Muscle Gain","High Protein","Low Carb","Low Sugar","Heart Health","Gut Health"];
-function TasteBar({label,score,positive}){const color=positive?JADE:CORAL,mag=Math.min(1,Math.abs(score));return(
-  <div className="flex items-center gap-3"><span className="w-24 shrink-0 truncate text-sm font-medium capitalize">{label}</span>
-    <div className="relative h-1.5 flex-1 rounded-full" style={{background:"rgba(60,60,67,.12)"}}>
-      <div className="absolute left-1/2 top-0 h-full w-px" style={{background:"rgba(60,60,67,.3)"}}/>
-      <div className="absolute top-0 h-full rounded-full" style={positive?{left:"50%",width:mag*50+"%",background:color}:{right:"50%",width:mag*50+"%",background:color}}/></div>
-    <Mono c="w-11 shrink-0 text-right text-[11px] tabular-nums" s={{color}}>{score>0?"+":""}{score.toFixed(2)}</Mono></div>);}
-function Taste(){
-  const [active,setActive]=useState(new Set(["Muscle Gain","High Protein"]));
-  const toggle=g=>{haptic();setActive(p=>{const n=new Set(p);n.has(g)?n.delete(g):n.add(g);return n;});};
-  return (<div className="px-4 pb-28 pt-12">
-    <div className="flex items-center justify-between mono text-[10px] uppercase" style={{letterSpacing:".22em",color:"rgba(60,60,67,.3)"}}><span>Pl8 · Matrix</span><span style={{color:"#3DA37A"}}>OPTIMAL BALANCE</span></div>
-    <h1 className="mb-6 mt-3 text-3xl font-semibold tracking-tight">Taste &amp; Health Matrix</h1>
-    <Mono c="mb-2 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Affinity Index</Mono>
-    <div className="mb-6 space-y-2.5 rounded-[1.75rem] border bg-white p-4" style={{borderColor:"rgba(60,60,67,.12)"}}>{AFF.map(([l,s])=><TasteBar key={l} label={l} score={s} positive/>)}</div>
-    <Mono c="mb-2 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Aversion Index</Mono>
-    <div className="mb-6 space-y-2.5 rounded-[1.75rem] border bg-white p-4" style={{borderColor:"rgba(60,60,67,.12)"}}>{AVE.map(([l,s])=><TasteBar key={l} label={l} score={s} positive={false}/>)}</div>
-    <Mono c="mb-3 mt-8 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Active Protocols</Mono>
-    <div className="grid grid-cols-2 gap-2.5">{GOALS.map(g=>{const on=active.has(g);return(
-      <button key={g} onClick={()=>toggle(g)} className="flex items-center justify-between rounded-2xl border px-4 py-3.5 mono text-[11px] uppercase active:scale-[.97]"
-        style={{letterSpacing:".1em",borderColor:on?"transparent":"rgba(60,60,67,.12)",background:on?GRAPHITE:"#fff",color:on?"#fff":"rgba(60,60,67,.6)"}}>
-        {g}<span className="h-2 w-2 rounded-full" style={{background:on?NEON:"rgba(60,60,67,.2)"}}/></button>);})}</div>
-  </div>);
-}
-
-/* ─── TAB BAR ─── */
-function TabBar({active,go}){
-  const tabs=[["today","Today","◎"],["scan","Scan","⌖"],["fridge","Fridge","❒"],["taste","Taste","◆"]];
-  return (<nav className="absolute inset-x-0 bottom-0 z-40 mx-auto mb-4 flex w-[92%] items-center justify-around rounded-full border px-2 py-2"
-    style={{borderColor:"rgba(60,60,67,.12)",background:"rgba(255,255,255,.8)",backdropFilter:"blur(20px)",boxShadow:"0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06)"}}>
-    {tabs.map(([k,l,g])=>k==="scan"?(
-      <button key={k} onClick={()=>{haptic();go("scan");}} className="-mt-6 grid h-14 w-14 place-items-center rounded-full text-2xl text-white active:scale-90" style={{background:GRAPHITE,boxShadow:"0 8px 24px rgba(0,0,0,.18)"}}>{g}</button>
-    ):(
-      <button key={k} onClick={()=>{haptic();go(k);}} className="flex min-w-[64px] flex-col items-center gap-1 py-1.5 mono text-[9px] uppercase" style={{letterSpacing:".12em",color:active===k?"#1C1C1E":"rgba(60,60,67,.3)"}}>
-        <span className="text-base leading-none">{g}</span>{l}</button>))}
-  </nav>);
-}
-
-/* ─── ROOT ─── */
-function App(){
-  const [screen,setScreen]=useState("onboarding");
-  const [profile,setProfile]=useState({age:29,weight:78,height:179});
-  const [syncH,setSyncH]=useState(0);
-  const sync=computeSync(syncH);
-  const cycleSync=()=>{haptic();setSyncH(h=>h===0?48:h===48?96:0);};
-  const go=s=>setScreen(s);
-  const onboarded=p=>{setProfile(p);setSyncH(0);setScreen("today");};
-  const showTabs=["today","fridge","taste"].includes(screen);
-  return (
-    <div className="mx-auto flex min-h-screen max-w-[440px] items-stretch justify-center" style={{padding:"0"}}>
-      <div className="relative w-full overflow-hidden" style={{background:"#F2F2F7",minHeight:"100vh"}}>
-        <div className="h-full overflow-y-auto" style={{minHeight:"100vh"}}>
-          {screen==="onboarding"&&<Onboarding onDone={onboarded}/>}
-          {screen==="today"&&<Dashboard profile={profile} sync={sync} onSync={cycleSync} go={go}/>}
-          {screen==="scan"&&<Scanner go={go} onLogged={()=>setSyncH(0)}/>}
-          {screen==="fridge"&&<Fridge go={go}/>}
-          {screen==="taste"&&<Taste/>}
-        </div>
-        {showTabs&&<TabBar active={screen} go={go}/>}
-      </div>
-    </div>
-  );
-}
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
-<script>
-  // Transform the JSX with the classic runtime and run it.
-  (function () {
-    function boot() {
-      try {
-        var src = document.getElementById("appsrc").textContent;
-        var out = Babel.transform(src, { presets: [["react", { runtime: "classic" }]] }).code;
-        (0, eval)(out);
-      } catch (e) {
-        document.getElementById("root").innerHTML =
-          '<pre style="padding:24px;font:13px ui-monospace,monospace;color:#c00;white-space:pre-wrap">' +
-          (e && e.message ? e.message : e) + "</pre>";
-      }
-    }
-    if (window.Babel) boot();
-    else window.addEventListener("load", boot);
-  })();
+document.addEventListener("click",function(e){
+  var el=e.target.closest&&e.target.closest("[data-act]");if(!el)return;
+  var act=el.getAttribute("data-act"),arg=el.getAttribute("data-arg");buzz();
+  if(act==="lang")set({lang:arg});
+  else if(act==="onb")set({screen:"onb"+arg});
+  else if(act==="step"){var parts=arg.split(":");var key=parts[0];var d=parseInt(parts[1],10);var v={};v[key]=Math.max(1,S[key]+d);set(v);}
+  else if(act==="go")set({screen:arg==="onb1"?"onb1":arg});
+  else if(act==="sync")set({syncH:S.syncH===0?48:S.syncH===48?96:0});
+  else if(act==="scanstart"){set({scan:"analyzing"});setTimeout(function(){set({scan:"result"});},1500);}
+  else if(act==="scanlog"){set({scan:"done"});setTimeout(function(){set({scan:"idle",screen:"today",syncH:0});},1100);}
+  else if(act==="match"){set({match:arg,sel:0,mload:true});setTimeout(function(){set({mload:false});},950);}
+  else if(act==="sel")set({sel:parseInt(arg,10)});
+  else if(act==="closematch")set({match:null});
+  else if(act==="goal"){var g={};for(var k in S.goals)g[k]=S.goals[k];if(g[arg])delete g[arg];else g[arg]=1;set({goals:g});}
+});
+render();
 </script>
 </body>
 </html>
