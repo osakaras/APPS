@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Pl8 — Interactive Prototype</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  html,body{margin:0;background:#E9E9EF;-webkit-font-smoothing:antialiased}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  *{-webkit-tap-highlight-color:transparent}
+  @keyframes scan{0%{transform:translateY(0)}100%{transform:translateY(220px)}}
+  .scanline{animation:scan 1.4s cubic-bezier(.4,0,.6,1) infinite alternate}
+  @keyframes fadeup{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:none}}
+  .fadeup{animation:fadeup .5s cubic-bezier(.32,.72,0,1) both}
+  @keyframes popin{0%{opacity:0;transform:scale(.97)}100%{opacity:1;transform:none}}
+  .popin{animation:popin .45s cubic-bezier(.32,.72,0,1) both}
+  ::-webkit-scrollbar{width:0;height:0}
+  .ease-ios{transition-timing-function:cubic-bezier(.32,.72,0,1)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<!-- JSX kept in a non-auto-run block; we transform it with the CLASSIC runtime
+     (React.createElement) so it works against the React UMD global. The default
+     automatic runtime would emit `import "react/jsx-runtime"` and fail here. -->
+<script type="text/jsx" id="appsrc">
+const { useState, useMemo, useRef } = React;
+
+/* ─── design tokens ─── */
+const GRAPHITE = "#0C0D12";
+const NEON = "#3DF5A0", JADE = "#4E9E82", BRONZE = "#B08A52", SLATE = "#8A77A8", CORAL = "#C77A6E", AMBER = "#FFC24B";
+const MACRO = { protein: JADE, carbs: BRONZE, fat: SLATE };
+
+/* ─── BMI engine ─── */
+const TIERS = {
+  lean_light:{name:"Lean Phenotype",headline:"Lean Baseline Established",color:"#6E8CA8",leverage:[
+    {m:"Low Mechanical Load",d:"Reduced articular stress permits high training volume and rapid motor recovery."},
+    {m:"High Insulin Sensitivity",d:"Efficient nutrient partitioning primes clean myofibrillar accrual."},
+    {m:"Elevated Metabolic Flexibility",d:"Rapid substrate switching across lipid and glycolytic energy systems."}]},
+  optimal_balance:{name:"Optimal Balance",headline:"Metabolic Baseline Established",color:JADE,leverage:[
+    {m:"High Metabolic Plasticity",d:"Optimal environment for simultaneous lipid oxidation and myofibrillar hypertrophy."},
+    {m:"Stabilized Endocrine Baseline",d:"Optimal recovery windows and consistent hormone synthesis pathways."},
+    {m:"Peak Aerobic Efficiency",d:"Optimized stroke volume and cardiovascular capacity."}]},
+  solid_built:{name:"Power Reserve",headline:"Strength Reserve Identified",color:BRONZE,leverage:[
+    {m:"High Force Output Potential",d:"Neuromuscular system pre-adapted to substantial mechanical load."},
+    {m:"Anabolic Surplus Reserve",d:"Elevated caloric baseline accelerates myofibrillar hypertrophy under load."},
+    {m:"Superior Skeletal Density",d:"Increased bone mineral density and joint stability for maximal loading."}]},
+  focus_zone:{name:"High Capacity",headline:"High-Capacity Profile Detected",color:SLATE,leverage:[
+    {m:"High Force Output Potential",d:"Neuromuscular system pre-adapted to substantial mechanical load."},
+    {m:"Anabolic Surplus Reserve",d:"Elevated caloric baseline accelerates myofibrillar hypertrophy under load."},
+    {m:"Superior Skeletal Density",d:"Increased bone mineral density and joint stability for maximal loading."}]},
+};
+const tierFor = b => b<18.5?"lean_light":b<25?"optimal_balance":b<30?"solid_built":"focus_zone";
+function computeBmi(kg,cm){ if(!kg||!cm) return null; const bmi=Math.round(kg/((cm/100)**2)*10)/10; const key=tierFor(bmi);
+  const pos=(Math.max(12,Math.min(40,bmi))-12)/28; return {bmi,key,pos,...TIERS[key]}; }
+
+/* ─── sync engine ─── */
+function computeSync(h){ const pct=h<=24?100:Math.max(8,Math.round(100-(h-24)*1.15));
+  const status=pct>=90?"stable":pct>=35?"risk":"loss";
+  const tag=status==="stable"?"STABLE":status==="risk"?"DEGRADATION RISK":"SIGNAL LOSS";
+  const color=status==="stable"?NEON:status==="risk"?AMBER:"#FF6B5A";
+  return {pct,status,tag,color,directive:status==="stable"?null:"LOG BIOMETRIC DATA STREAM"}; }
+
+/* ─── price/geo engine ─── */
+function quote(chain,name,addr,dist,mult,fetaOut){
+  const items=[
+    {label:"chicken breast",product:cap(chain)+" Chicken Breast 500g",price:+(3.79*mult).toFixed(2)},
+    {label:"quinoa",product:cap(chain)+" Quinoa 500g",price:+(2.49*mult).toFixed(2)},
+    {label:"feta",product:fetaOut?null:cap(chain)+" Feta 200g",price:fetaOut?null:+(1.99*mult).toFixed(2)}];
+  const total=+items.reduce((s,i)=>s+(i.price||0),0).toFixed(2);
+  const complete=items.every(i=>i.price!==null);
+  const score=+(total+0.35*(dist/1000)+(complete?0:6)).toFixed(2);
+  return {chain,name,addr,dist,items,total,complete,score};
+}
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+const RANKED=[
+  quote("lidl","Lidl Žirmūnai","Žirmūnų g. 64, Vilnius",540,0.95,false),
+  quote("maxima","Maxima X Akropolis","Ozo g. 25, Vilnius",1200,1.0,false),
+  quote("rimi","Rimi Europa","Konstitucijos pr. 7A, Vilnius",2100,1.05,false),
+  quote("iki","Iki Ozas","Ozo g. 18, Vilnius",1800,1.08,true),
+].sort((a,b)=>a.score-b.score);
+const eur=n=>"€"+n.toFixed(2);
+const dist=m=>m<950?Math.round(m/10)*10+" m":(m/1000).toFixed(1)+" km";
+
+/* ─── tiny ui helpers ─── */
+const Mono=({c="",s={},children})=><span className={"mono "+c} style={s}>{children}</span>;
+function haptic(){ if(navigator.vibrate) try{navigator.vibrate(12)}catch(e){} }
+
+/* ─── BMI gauge (telemetry) ─── */
+function Gauge({res}){
+  const stops=[(18.5-12)/28,(25-12)/28,(30-12)/28];
+  return (<div className="select-none">
+    <div className="relative h-7">
+      <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2" style={{background:"rgba(255,255,255,.15)"}}/>
+      {stops.map((s,i)=><div key={i} className="absolute top-1/2 h-2 w-px -translate-y-1/2" style={{left:s*100+"%",transform:"translateY(-50%)",background:"rgba(255,255,255,.2)"}}/>)}
+      <div className="absolute top-1/2 transition-all duration-700 ease-ios" style={{left:(res?res.pos:.5)*100+"%",transform:"translate(-50%,-50%)",opacity:res?1:.3}}>
+        <div className="rounded-full" style={{height:26,width:2,background:res?res.color:"#fff"}}/>
+      </div>
+    </div>
+    <div className="mt-1 flex justify-between mono text-[10px] tabular-nums" style={{color:"rgba(255,255,255,.35)"}}>
+      {[12,18.5,25,30,40].map(t=><span key={t}>{t}</span>)}
+    </div>
+  </div>);
+}
+
+/* ─── ONBOARDING ─── */
+const LOCALES=[["🇬🇧","English","EN"],["🇱🇹","Lietuvių","LT"],["🇱🇻","Latviešu","LV"],["🇵🇱","Polski","PL"],["🇩🇪","Deutsch","DE"],["🇪🇸","Español","ES"],["🇫🇷","Français","FR"],["🇷🇺","Русский","RU"]];
+function Onboarding({onDone}){
+  const [step,setStep]=useState(1);
+  const [lang,setLang]=useState("EN");
+  const [m,setM]=useState({age:29,weight:78,height:179});
+  const res=computeBmi(m.weight,m.height);
+  const TOTAL=3;
+  const next=()=>{haptic(); step<TOTAL?setStep(step+1):onDone(m);};
+  const Step=({k,unit,step:st=1})=>(
+    <div>
+      <div className="mb-2 px-1 text-sm font-medium" style={{color:"rgba(60,60,67,.6)"}}>{k}</div>
+      <div className="flex items-center justify-between rounded-3xl border bg-white px-5 py-4" style={{borderColor:"rgba(60,60,67,.12)",boxShadow:"0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06)"}}>
+        <button onClick={()=>{haptic();setM(v=>({...v,[k.toLowerCase()==="height"?"height":k.toLowerCase()==="weight"?"weight":"age"]:Math.max(1,v[mapKey(k)]-st)}))}} className="grid h-9 w-9 place-items-center rounded-full border mono text-lg active:scale-90" style={{borderColor:"rgba(60,60,67,.12)"}}>−</button>
+        <div className="mono text-3xl font-semibold tabular-nums">{m[mapKey(k)]}<span className="text-base font-normal" style={{color:"rgba(60,60,67,.3)"}}> {unit}</span></div>
+        <button onClick={()=>{haptic();setM(v=>({...v,[mapKey(k)]:v[mapKey(k)]+st}))}} className="grid h-9 w-9 place-items-center rounded-full border mono text-lg active:scale-90" style={{borderColor:"rgba(60,60,67,.12)"}}>+</button>
+      </div>
+    </div>);
+  function mapKey(k){return k.toLowerCase()==="age"?"age":k.toLowerCase()==="weight"?"weight":"height";}
+  return (
+    <div className="flex min-h-full flex-col px-5 pb-8 pt-12">
+      <div className="mb-8">
+        <div className="flex gap-2">{[1,2,3].map(i=><div key={i} className="h-1.5 flex-1 overflow-hidden rounded-full" style={{background:"rgba(60,60,67,.12)"}}><div className="h-full rounded-full" style={{width:i<=step?"100%":"0%",background:"#0A84FF",transition:"width .5s"}}/></div>)}</div>
+        <Mono c="mt-3 block px-1 text-xs" s={{color:"rgba(60,60,67,.3)"}}>Step {step} of {TOTAL}</Mono>
+      </div>
+
+      <div className="flex-1">
+        {step===1 && <div className="popin">
+          <h1 className="text-3xl font-semibold tracking-tight">Choose your language</h1>
+          <p className="mt-2" style={{color:"rgba(60,60,67,.6)"}}>You can change this anytime in Settings.</p>
+          <div className="mt-6 grid grid-cols-2 gap-3">{LOCALES.map(([f,n,c])=>{const on=c===lang;return(
+            <button key={c} onClick={()=>{haptic();setLang(c)}} className="flex items-center gap-3 rounded-3xl border bg-white p-4 text-left active:scale-[.97]" style={{borderColor:on?"rgba(10,132,255,.7)":"rgba(60,60,67,.12)",boxShadow:on?"0 0 0 4px rgba(10,132,255,.12)":"0 1px 2px rgba(0,0,0,.04)"}}>
+              <span className="text-2xl">{f}</span><span className="flex-1"><span className="block font-semibold leading-tight">{n}</span><Mono c="text-[9px] uppercase" s={{color:"rgba(60,60,67,.3)"}}>{c}</Mono></span>
+              {on&&<span className="grid h-6 w-6 place-items-center rounded-full text-white text-xs" style={{background:"#0A84FF"}}>✓</span>}
+            </button>);})}</div>
+        </div>}
+
+        {step===2 && <div className="popin">
+          <h1 className="text-3xl font-semibold tracking-tight">A few details about you</h1>
+          <p className="mt-2" style={{color:"rgba(60,60,67,.6)"}}>We use these to personalize your nutrition.</p>
+          <div className="mt-7 space-y-4"><Step k="Age" unit="yrs"/><Step k="Weight" unit="kg"/><Step k="Height" unit="cm"/></div>
+        </div>}
+
+        {step===3 && <div className="popin">
+          <Mono c="text-[11px] uppercase" s={{letterSpacing:".22em",color:"rgba(60,60,67,.3)"}}>Composition Analysis</Mono>
+          <div className="mt-3 rounded-[2.25rem] p-6 text-white" style={{background:GRAPHITE,boxShadow:"0 8px 24px rgba(0,0,0,.18)"}}>
+            <div className="flex items-start justify-between">
+              <div><Mono c="text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(255,255,255,.4)"}}>BMI · Index</Mono>
+                <div className="mono mt-1.5 text-[52px] font-semibold leading-none tabular-nums">{res.bmi.toFixed(1)}</div></div>
+              <Mono c="mt-1 rounded-full border px-3 py-1.5 text-[11px] uppercase" s={{letterSpacing:".14em",color:res.color,borderColor:res.color+"55"}}>{res.name}</Mono>
+            </div>
+            <div className="mt-6"><Gauge res={res}/></div>
+          </div>
+          <h2 className="mt-7 text-xl font-semibold tracking-tight">{res.headline}</h2>
+          <Mono c="mt-1.5 block text-[11px] uppercase" s={{letterSpacing:".14em",color:"rgba(60,60,67,.3)"}}>Physical composition analysis complete.</Mono>
+          <Mono c="mb-3 mt-8 block text-[11px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Primary Biological Leverage Points</Mono>
+          <div className="space-y-2.5">{res.leverage.map((p,i)=>(
+            <div key={i} className="flex items-stretch gap-4 rounded-[1.75rem] border bg-white p-4 popin" style={{borderColor:"rgba(60,60,67,.12)",animationDelay:i*70+"ms"}}>
+              <div className="w-[3px] shrink-0 rounded-full" style={{background:res.color}}/>
+              <div className="flex-1"><div className="flex items-baseline justify-between"><span className="text-[15px] font-semibold">{p.m}</span><Mono c="text-[10px] tabular-nums" s={{color:"rgba(60,60,67,.3)"}}>{String(i+1).padStart(2,"0")}</Mono></div>
+                <p className="mt-1 text-[13px] leading-snug" style={{color:"rgba(60,60,67,.6)"}}>{p.d}</p></div>
+            </div>))}</div>
+        </div>}
+      </div>
+
+      <div className="mt-8 flex items-center gap-3">
+        {step>1&&<button onClick={()=>setStep(step-1)} className="rounded-2xl px-5 py-4 text-sm font-semibold active:scale-95" style={{color:"rgba(60,60,67,.6)"}}>Back</button>}
+        <button onClick={next} className="flex-1 rounded-3xl py-4 text-base font-semibold text-white active:scale-[.97]" style={{background:"#0A84FF",boxShadow:"0 12px 48px rgba(10,132,255,.18)"}}>{step<TOTAL?"Continue":"Get started"}</button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── SYNC INDICATOR ─── */
+function SyncIndicator({sync,onTap}){
+  return (<button onClick={onTap} className="flex items-center gap-2">
+    <span className="relative grid h-2 w-2 place-items-center">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70" style={{background:sync.color}}/>
+      <span className="relative h-2 w-2 rounded-full" style={{background:sync.color,boxShadow:"0 0 8px 1px "+sync.color}}/>
+    </span>
+    <Mono c="whitespace-nowrap text-[9px] uppercase tabular-nums" s={{letterSpacing:".14em",color:"rgba(255,255,255,.55)"}}>System Sync: <span style={{color:"rgba(255,255,255,.8)"}}>{sync.pct}%</span> <span style={{color:sync.color}}>[{sync.tag}]</span></Mono>
+  </button>);
+}
+
+/* ─── DASHBOARD ─── */
+function MacroReadout({label,val,target,color}){
+  return (<div><Mono c="text-[10px] uppercase" s={{letterSpacing:".16em",color:"rgba(255,255,255,.4)"}}>{label}</Mono>
+    <div className="mono mt-1 text-sm font-semibold tabular-nums">{val}<span style={{color:"rgba(255,255,255,.35)"}}> / {target}g</span></div>
+    <div className="mt-2 h-px w-full overflow-hidden" style={{background:"rgba(255,255,255,.1)"}}><div className="h-full" style={{width:Math.min(100,val/target*100)+"%",background:color,transition:"width .7s"}}/></div></div>);
+}
+function Dashboard({profile,sync,onSync,go}){
+  const res=computeBmi(profile.weight,profile.height);
+  const intake={kcal:950,p:64,c:95,f:34}, target={kcal:2430,p:140,c:310,f:70};
+  const date=new Date().toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short"}).toUpperCase();
+  return (<div className="px-4 pb-28 pt-12">
+    <div className="flex items-center justify-between mono text-[10px] uppercase" style={{letterSpacing:".22em",color:"rgba(60,60,67,.3)"}}>
+      <span>Pl8 · Today</span><span className="flex items-center gap-3"><span className="tabular-nums">{date}</span><button onClick={()=>go("onboarding")} className="text-sm active:scale-90" style={{color:"rgba(60,60,67,.6)"}}>⚙</button></span>
+    </div>
+    <header className="mb-6 mt-3"><h1 className="text-3xl font-semibold tracking-tight">Good evening, Operator</h1>
+      <Mono c="mt-1.5 block text-[11px] uppercase" s={{letterSpacing:".16em",color:"rgba(60,60,67,.3)"}}><span style={{color:res.color}}>{res.name}</span> · BMI {res.bmi.toFixed(1)}</Mono></header>
+
+    <section className="rounded-[2.25rem] p-6 text-white" style={{background:GRAPHITE,boxShadow:"0 8px 24px rgba(0,0,0,.18)"}}>
+      <div className="mb-5 flex items-center justify-between gap-2">
+        <Mono c="shrink-0 text-[9px] uppercase" s={{letterSpacing:".2em",color:"rgba(255,255,255,.3)"}}>Bio-Link</Mono>
+        <SyncIndicator sync={sync} onTap={onSync}/>
+      </div>
+      <div className="flex items-start justify-between">
+        <div><Mono c="text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(255,255,255,.4)"}}>Energy · kcal</Mono>
+          <div className="mono mt-1.5 text-[44px] font-semibold leading-none tabular-nums">{intake.kcal}<span className="text-xl font-normal" style={{color:"rgba(255,255,255,.35)"}}> / {target.kcal}</span></div></div>
+        <div className="text-right"><Mono c="text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(255,255,255,.4)"}}>Remaining</Mono>
+          <div className="mono mt-1.5 text-2xl font-semibold tabular-nums">{target.kcal-intake.kcal}</div></div>
+      </div>
+      <div className="mt-5 h-px w-full overflow-hidden" style={{background:"rgba(255,255,255,.1)"}}><div className="h-full" style={{width:intake.kcal/target.kcal*100+"%",background:"rgba(255,255,255,.7)",transition:"width .7s"}}/></div>
+      <div className="mt-6 grid grid-cols-3 gap-4">
+        <MacroReadout label="Protein" val={intake.p} target={target.p} color={MACRO.protein}/>
+        <MacroReadout label="Carbs" val={intake.c} target={target.c} color={MACRO.carbs}/>
+        <MacroReadout label="Fat" val={intake.f} target={target.f} color={MACRO.fat}/>
+      </div>
+      {sync.directive&&<div className="mt-5 flex items-center gap-2 rounded-2xl border px-3 py-2.5" style={{borderColor:sync.color+"40",background:sync.color+"0F"}}>
+        <Mono s={{color:sync.color}}>▸</Mono><Mono c="text-[10px] uppercase leading-none" s={{letterSpacing:".12em",color:"rgba(255,255,255,.7)"}}>{sync.directive}</Mono></div>}
+    </section>
+
+    <section className="mt-3 grid grid-cols-2 gap-3">
+      <div className="rounded-[1.75rem] border bg-white p-5" style={{borderColor:"rgba(60,60,67,.12)"}}>
+        <Mono c="text-[10px] uppercase" s={{letterSpacing:".18em",color:"rgba(60,60,67,.3)"}}>Composition</Mono>
+        <div className="mono mt-3 text-3xl font-semibold tabular-nums">{res.bmi.toFixed(1)}</div>
+        <div className="mt-3 h-[3px] w-10 rounded-full" style={{background:res.color}}/>
+        <Mono c="mt-2 block text-[10px] uppercase" s={{letterSpacing:".12em",color:res.color}}>{res.name}</Mono>
+      </div>
+      <div className="rounded-[1.75rem] border bg-white p-5" style={{borderColor:"rgba(60,60,67,.12)"}}>
+        <Mono c="text-[10px] uppercase" s={{letterSpacing:".18em",color:"rgba(60,60,67,.3)"}}>Health Index</Mono>
+        <div className="mono mt-3 text-3xl font-semibold tabular-nums">79<span className="text-base font-normal" style={{color:"rgba(60,60,67,.3)"}}> / 100</span></div>
+        <div className="mt-3 h-px w-full overflow-hidden" style={{background:"rgba(60,60,67,.12)"}}><div className="h-full" style={{width:"79%",background:JADE}}/></div>
+      </div>
+      <button onClick={()=>go("scan")} className="flex h-28 flex-col justify-between rounded-[1.75rem] p-5 text-left text-white active:scale-[.97]" style={{background:GRAPHITE}}>
+        <span className="text-2xl" style={{color:"rgba(255,255,255,.8)"}}>⌖</span>
+        <span className="flex items-center justify-between"><Mono c="text-[11px] uppercase" s={{letterSpacing:".14em"}}>Scan Plate</Mono><span style={{color:"rgba(255,255,255,.4)"}}>→</span></span>
+      </button>
+      <button onClick={()=>go("fridge")} className="flex h-28 flex-col justify-between rounded-[1.75rem] border bg-white p-5 text-left active:scale-[.97]" style={{borderColor:"rgba(60,60,67,.12)"}}>
+        <span className="text-2xl" style={{color:"rgba(60,60,67,.6)"}}>❒</span>
+        <span className="flex items-center justify-between"><Mono c="text-[11px] uppercase" s={{letterSpacing:".14em"}}>Fridge</Mono><span style={{color:"rgba(60,60,67,.3)"}}>→</span></span>
+      </button>
+    </section>
+    <Mono c="mt-6 block text-center text-[10px] uppercase" s={{letterSpacing:".18em",color:"rgba(60,60,67,.3)"}}>tap the sync chip to simulate data degradation ↑</Mono>
+  </div>);
+}
+
+/* ─── SCANNER ─── */
+function Scanner({go,onLogged}){
+  const [phase,setPhase]=useState("idle"); // idle, analyzing, result, done
+  const analysis={title:"Grilled chicken & quinoa bowl",kcal:540,p:42,c:48,f:18,rating:"GREAT",
+    notes:"Lean protein with complex carbohydrate and leafy micronutrients — strong recovery substrate.",
+    items:[["chicken breast","150g"],["quinoa","120g"],["baby spinach","40g"],["cherry tomato","60g"],["olive oil","10ml"]]};
+  const start=()=>{haptic();setPhase("analyzing");setTimeout(()=>setPhase("result"),1500);};
+  const log=()=>{haptic();setPhase("done");setTimeout(()=>{onLogged();go("today");},1100);};
+  const sentiments=[["◆","Loved it"],["▲","Liked it"],["■","Neutral"],["▽","Disliked"],["○","Not for me"]];
+  return (<div className="flex min-h-full flex-col px-5 pb-8 pt-12">
+    <div className="mb-6 flex items-center justify-between">
+      <button onClick={()=>go("today")} className="grid h-9 w-9 place-items-center rounded-full border active:scale-90" style={{borderColor:"rgba(60,60,67,.12)",color:"rgba(60,60,67,.6)"}}>✕</button>
+      <Mono c="text-[10px] uppercase" s={{letterSpacing:".22em",color:"rgba(60,60,67,.3)"}}>Plate Scanner</Mono><span className="h-9 w-9"/>
+    </div>
+    {phase==="done"?(
+      <div className="flex flex-1 flex-col items-center justify-center fadeup">
+        <div className="relative grid h-20 w-20 place-items-center">
+          <span className="absolute inset-0 rounded-full animate-ping" style={{background:JADE+"40"}}/>
+          <div className="grid h-20 w-20 place-items-center rounded-full border" style={{borderColor:JADE+"99"}}><span className="h-3 w-3 rounded-full" style={{background:JADE,boxShadow:"0 0 22px 4px rgba(78,158,130,.7)"}}/></div>
+        </div>
+        <Mono c="mt-6 text-[12px] uppercase" s={{letterSpacing:".24em",color:"#3DA37A"}}>Logged to core</Mono>
+      </div>
+    ):phase==="result"?(
+      <div className="popin">
+        <section className="rounded-[2.25rem] p-6 text-white" style={{background:GRAPHITE}}>
+          <div className="flex items-start justify-between">
+            <div><Mono c="text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(255,255,255,.4)"}}>Macro Telemetry · kcal</Mono>
+              <div className="mono mt-1.5 text-[44px] font-semibold leading-none tabular-nums">{analysis.kcal}</div></div>
+            <Mono c="mt-1 rounded-full border px-3 py-1.5 text-[10px] uppercase" s={{letterSpacing:".14em",color:JADE,borderColor:JADE+"55"}}>{analysis.rating}</Mono>
+          </div>
+          <div className="mt-6 grid grid-cols-3 gap-4">
+            {[["Protein",analysis.p,MACRO.protein],["Carbs",analysis.c,MACRO.carbs],["Fat",analysis.f,MACRO.fat]].map(([l,v,c])=>(
+              <div key={l}><Mono c="text-[10px] uppercase" s={{letterSpacing:".16em",color:"rgba(255,255,255,.4)"}}>{l}</Mono>
+                <div className="mono mt-1 text-lg font-semibold tabular-nums">{v}<span className="text-xs" style={{color:"rgba(255,255,255,.35)"}}>g</span></div>
+                <div className="mt-2 h-px w-full" style={{background:c}}/></div>))}
+          </div>
+        </section>
+        <h1 className="mt-5 text-xl font-semibold tracking-tight">{analysis.title}</h1>
+        <p className="mt-1.5 text-[13px] leading-snug" style={{color:"rgba(60,60,67,.6)"}}>{analysis.notes}</p>
+        <Mono c="mb-2 mt-6 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Detected · {analysis.items.length}</Mono>
+        <div className="space-y-1.5">{analysis.items.map(([n,q])=>(
+          <div key={n} className="flex items-center justify-between rounded-2xl border bg-white px-4 py-2.5" style={{borderColor:"rgba(60,60,67,.12)"}}>
+            <span className="text-sm font-medium capitalize">{n}</span><Mono c="text-[11px] tabular-nums" s={{color:"rgba(60,60,67,.3)"}}>{q}</Mono></div>))}</div>
+        <div className="mt-7 rounded-[2.25rem] border bg-white p-5" style={{borderColor:"rgba(60,60,67,.12)"}}>
+          <Mono c="text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Palate Response</Mono>
+          <p className="mt-1.5 text-[15px] font-semibold">Was it delicious?</p>
+          <div className="mt-4 grid grid-cols-5 gap-2">{sentiments.map(([g,l])=>(
+            <button key={l} onClick={log} className="flex flex-col items-center gap-1 rounded-2xl border py-2.5 active:scale-95" style={{borderColor:"rgba(60,60,67,.12)",background:"#F2F2F7"}}>
+              <span className="text-base">{g}</span><Mono c="text-center text-[8px] uppercase leading-tight" s={{color:"rgba(60,60,67,.6)"}}>{l}</Mono></button>))}</div>
+        </div>
+      </div>
+    ):(
+      <div className="flex flex-1 flex-col">
+        <div onClick={phase==="idle"?start:undefined} className="relative w-full overflow-hidden rounded-[2.25rem] border" style={{aspectRatio:"4/5",background:GRAPHITE,borderColor:"rgba(255,255,255,.1)"}}>
+          {phase==="analyzing"?(<>
+            <div className="absolute inset-x-0 top-0 h-1/2 scanline" style={{background:"linear-gradient(to bottom,transparent,"+JADE+"4d,"+JADE+"99)"}}/>
+            <Mono c="absolute inset-x-0 bottom-6 text-center text-[11px] uppercase" s={{letterSpacing:".18em",color:NEON}}>Analyzing composition…</Mono>
+          </>):(<>
+            <Mono c="absolute inset-0 grid place-items-center px-10 text-center text-[11px] uppercase leading-relaxed" s={{letterSpacing:".16em",color:"rgba(255,255,255,.4)"}}>Tap to simulate capture</Mono>
+            {[["left-4 top-4","border-l-2 border-t-2"],["right-4 top-4","border-r-2 border-t-2"],["bottom-4 left-4","border-b-2 border-l-2"],["bottom-4 right-4","border-b-2 border-r-2"]].map(([p,b],i)=>
+              <span key={i} className={"absolute h-5 w-5 "+p+" "+b} style={{borderColor:"rgba(255,255,255,.3)"}}/>)}
+          </>)}
+        </div>
+        <Mono c="mt-5 text-center text-[10px] uppercase" s={{letterSpacing:".16em",color:"rgba(60,60,67,.3)"}}>Position your meal in frame</Mono>
+        <div className="mt-auto pt-6"><button onClick={start} disabled={phase==="analyzing"} className="w-full rounded-[1.75rem] py-4 text-white mono text-[12px] uppercase active:scale-[.97]" style={{letterSpacing:".14em",background:GRAPHITE,opacity:phase==="analyzing"?.6:1}}>{phase==="analyzing"?"…":"Tap to simulate capture"}</button></div>
+      </div>
+    )}
+  </div>);
+}
+
+/* ─── FRIDGE + MATCH SHEET ─── */
+const INVENTORY=[["chicken breast","500g"],["baby spinach","200g"],["cherry tomato","250g"],["feta","200g"],["broccoli","1pcs"],["garlic","1pcs"],["olive oil","500ml"]];
+const SUGGESTIONS=[
+  {t:"Chicken & Quinoa Power Bowl",s:"Lean protein over quinoa with greens and feta.",have:5,total:6,kcal:540,p:42,min:25,miss:1},
+  {t:"Salmon & Broccoli Plate",s:"Omega-rich salmon with brown rice and roasted broccoli.",have:3,total:5,kcal:610,p:38,min:30,miss:2},
+  {t:"Mediterranean Chickpea Bowl",s:"Plant-forward chickpea bowl with peppers and feta.",have:3,total:6,kcal:470,p:18,min:20,miss:3}];
+function MatchSheet({title,onClose}){
+  const [loading,setLoading]=useState(true);
+  const [sel,setSel]=useState(RANKED[0]);
+  React.useEffect(()=>{const t=setTimeout(()=>{setLoading(false);haptic();},900);return()=>clearTimeout(t);},[]);
+  const purchasable=sel.items.filter(i=>i.price!==null), gone=sel.items.filter(i=>i.price===null);
+  return (<div className="absolute inset-0 z-50 flex flex-col justify-end" style={{background:"rgba(0,0,0,.4)"}}>
+    <button className="absolute inset-0" onClick={onClose}/>
+    <div className="relative max-h-[90%] overflow-y-auto rounded-t-[2.25rem] px-5 pb-10 pt-4 fadeup" style={{background:"#F2F2F7"}}>
+      <div className="mx-auto mb-4 h-1 w-10 rounded-full" style={{background:"rgba(60,60,67,.3)"}}/>
+      <Mono c="block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Find cheapest store</Mono>
+      <h2 className="mt-1 mb-4 text-lg font-semibold tracking-tight">{title}</h2>
+      {loading?(
+        <div className="rounded-[2.25rem] p-6" style={{background:GRAPHITE}}>
+          <div className="flex items-center gap-2"><span className="h-2 w-2 animate-ping rounded-full" style={{background:NEON}}/><Mono c="text-[10px] uppercase" s={{letterSpacing:".18em",color:"rgba(255,255,255,.5)"}}>Locating signal…</Mono></div>
+          <div className="mt-6 space-y-3 rounded-[1.75rem] p-4" style={{background:"rgba(255,255,255,.04)"}}>{[0,1,2].map(i=><div key={i} className="flex justify-between"><div className="h-4 w-32 rounded" style={{background:"rgba(255,255,255,.1)"}}/><div className="h-4 w-12 rounded" style={{background:"rgba(255,255,255,.1)"}}/></div>)}</div>
+        </div>
+      ):(<>
+        <div className="rounded-[2.25rem] p-6 text-white popin" style={{background:GRAPHITE}}>
+          <div className="flex items-start justify-between gap-4">
+            <div><Mono c="text-[9px] uppercase" s={{letterSpacing:".2em",color:NEON}}>Optimal Match · {cap(sel.chain)}</Mono>
+              <h3 className="mt-1.5 text-xl font-semibold tracking-tight">{sel.name}</h3>
+              <Mono c="text-[11px]" s={{color:"rgba(255,255,255,.4)"}}>{sel.addr}</Mono></div>
+            <div className="text-right"><div className="mono text-[32px] font-semibold leading-none tabular-nums">{eur(sel.total)}</div>
+              <Mono c="mt-1 block text-[9px] uppercase" s={{letterSpacing:".16em",color:"rgba(255,255,255,.4)"}}>Missing cost</Mono></div>
+          </div>
+          <div className="mt-4 flex items-center gap-2">
+            <Mono c="text-[9px] uppercase" s={{letterSpacing:".14em",color:sel.complete?NEON:AMBER}}>● {sel.complete?"All items in stock":"Partial stock"}</Mono>
+            <Mono c="text-[9px] uppercase" s={{letterSpacing:".14em",color:"rgba(255,255,255,.45)"}}>· {dist(sel.dist)}</Mono>
+          </div>
+          <div className="mt-5 rounded-[1.75rem] p-4" style={{background:"rgba(255,255,255,.04)"}}>
+            <div style={{borderColor:"rgba(255,255,255,.1)"}}>
+              {purchasable.map((it,i)=>(<div key={i} className="flex items-center justify-between py-2.5" style={{borderTop:i?"1px solid rgba(255,255,255,.1)":"none"}}>
+                <div className="min-w-0"><p className="truncate text-sm font-medium capitalize">{it.label}</p><Mono c="block truncate text-[10px]" s={{color:"rgba(255,255,255,.35)"}}>{it.product}</Mono></div>
+                <Mono c="text-sm tabular-nums">{eur(it.price)}</Mono></div>))}
+              {gone.map((it,i)=>(<div key={i} className="flex items-center justify-between py-2.5" style={{opacity:.6,borderTop:"1px solid rgba(255,255,255,.1)"}}>
+                <p className="text-sm font-medium capitalize">{it.label}</p><Mono c="text-[9px] uppercase" s={{letterSpacing:".12em",color:"#FF6B5A"}}>not here</Mono></div>))}
+            </div>
+          </div>
+          <button className="mt-5 flex w-full items-center justify-center rounded-2xl bg-white py-3.5 mono text-[12px] uppercase active:scale-[.97]" style={{letterSpacing:".14em",color:GRAPHITE}}>Get directions →</button>
+        </div>
+        <Mono c="mb-2 mt-4 block px-1 text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Price Matrix · {RANKED.length}</Mono>
+        <div className="space-y-2">{RANKED.map((q,i)=>{const on=q.chain===sel.chain;return(
+          <button key={q.chain} onClick={()=>{haptic();setSel(q);}} className="flex w-full items-center gap-3 rounded-2xl border bg-white px-4 py-3 text-left active:scale-[.98]"
+            style={{borderColor:on?"rgba(28,28,30,.7)":"rgba(60,60,67,.12)",boxShadow:on?"0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06)":"none",opacity:on?1:.85}}>
+            <Mono c="text-[11px] tabular-nums" s={{color:"rgba(60,60,67,.3)"}}>{String(i+1).padStart(2,"0")}</Mono>
+            <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{cap(q.chain)}<span className="ml-2 font-normal" style={{color:"rgba(60,60,67,.3)"}}>{dist(q.dist)}</span></p>
+              <p className="flex items-center gap-1.5"><span className="inline-block h-1.5 w-1.5 rounded-full" style={{background:q.complete?"#3DA37A":AMBER}}/><Mono c="text-[10px] uppercase" s={{letterSpacing:".1em",color:q.complete?"#3DA37A":BRONZE}}>{q.complete?"in stock":"partial"}</Mono></p></div>
+            <Mono c="text-base font-semibold tabular-nums">{eur(q.total)}</Mono>
+          </button>);})}</div>
+        <Mono c="mt-4 block text-center text-[10px] uppercase" s={{letterSpacing:".14em",color:"rgba(60,60,67,.3)"}}>tap Iki — cheaper sticker, ranks last (missing feta)</Mono>
+      </>)}
+    </div>
+  </div>);
+}
+function Fridge({go}){
+  const [sel,setSel]=useState(null);
+  return (<div className="px-4 pb-28 pt-12">
+    <div className="flex items-center justify-between mono text-[10px] uppercase" style={{letterSpacing:".22em",color:"rgba(60,60,67,.3)"}}><span>Pl8 · Fridge</span><span className="tabular-nums">{INVENTORY.length} ITEMS</span></div>
+    <button onClick={()=>go("scan")} className="mt-4 flex w-full items-center justify-between rounded-[1.75rem] px-5 py-4 text-white active:scale-[.98]" style={{background:GRAPHITE}}>
+      <span className="flex items-center gap-3"><span className="text-xl">❒</span><Mono c="text-[12px] uppercase" s={{letterSpacing:".14em"}}>Inspect Fridge</Mono></span><span style={{color:"rgba(255,255,255,.4)"}}>→</span></button>
+    <Mono c="mb-2 mt-7 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Inventory · {INVENTORY.length}</Mono>
+    <div className="flex flex-wrap gap-2">{INVENTORY.map(([n,q])=>(
+      <span key={n} className="rounded-2xl border bg-white px-3 py-2 text-sm font-medium capitalize" style={{borderColor:"rgba(60,60,67,.12)"}}>{n}<Mono c="ml-1.5 text-[11px]" s={{color:"rgba(60,60,67,.3)"}}>{q}</Mono></span>))}</div>
+    <Mono c="mb-3 mt-8 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Suggested Protocols</Mono>
+    <div className="space-y-3">{SUGGESTIONS.map(r=>(
+      <button key={r.t} onClick={()=>{haptic();setSel(r.t);}} className="w-full rounded-[2.25rem] border bg-white p-5 text-left active:scale-[.98]" style={{borderColor:"rgba(60,60,67,.12)"}}>
+        <div className="flex items-start justify-between gap-3"><div className="min-w-0"><h3 className="text-[17px] font-semibold tracking-tight">{r.t}</h3><p className="mt-0.5 text-[13px] leading-snug" style={{color:"rgba(60,60,67,.6)"}}>{r.s}</p></div>
+          <Mono c="shrink-0 text-[10px] uppercase" s={{letterSpacing:".1em",color:"rgba(60,60,67,.3)"}}>{r.have}/{r.total}</Mono></div>
+        <div className="mt-3 h-px w-full overflow-hidden" style={{background:"rgba(60,60,67,.12)"}}><div className="h-full" style={{width:r.have/r.total*100+"%",background:JADE}}/></div>
+        <div className="mt-3 flex items-center justify-between"><Mono c="text-[10px] uppercase" s={{letterSpacing:".12em",color:"rgba(60,60,67,.3)"}}>{r.kcal} kcal · {r.p}g P · {r.min} min</Mono>
+          <Mono c="text-[10px] uppercase" s={{letterSpacing:".12em",color:r.miss===0?"#3DA37A":BRONZE}}>{r.miss} missing</Mono></div>
+      </button>))}</div>
+    {sel&&<MatchSheet title={sel} onClose={()=>setSel(null)}/>}
+  </div>);
+}
+
+/* ─── TASTE ─── */
+const AFF=[["chicken breast",.82],["quinoa",.64],["baby spinach",.5],["feta",.38]];
+const AVE=[["olive oil",-.22],["cherry tomato",-.45]];
+const GOALS=["Fat Loss","Maintain","Muscle Gain","High Protein","Low Carb","Low Sugar","Heart Health","Gut Health"];
+function TasteBar({label,score,positive}){const color=positive?JADE:CORAL,mag=Math.min(1,Math.abs(score));return(
+  <div className="flex items-center gap-3"><span className="w-24 shrink-0 truncate text-sm font-medium capitalize">{label}</span>
+    <div className="relative h-1.5 flex-1 rounded-full" style={{background:"rgba(60,60,67,.12)"}}>
+      <div className="absolute left-1/2 top-0 h-full w-px" style={{background:"rgba(60,60,67,.3)"}}/>
+      <div className="absolute top-0 h-full rounded-full" style={positive?{left:"50%",width:mag*50+"%",background:color}:{right:"50%",width:mag*50+"%",background:color}}/></div>
+    <Mono c="w-11 shrink-0 text-right text-[11px] tabular-nums" s={{color}}>{score>0?"+":""}{score.toFixed(2)}</Mono></div>);}
+function Taste(){
+  const [active,setActive]=useState(new Set(["Muscle Gain","High Protein"]));
+  const toggle=g=>{haptic();setActive(p=>{const n=new Set(p);n.has(g)?n.delete(g):n.add(g);return n;});};
+  return (<div className="px-4 pb-28 pt-12">
+    <div className="flex items-center justify-between mono text-[10px] uppercase" style={{letterSpacing:".22em",color:"rgba(60,60,67,.3)"}}><span>Pl8 · Matrix</span><span style={{color:"#3DA37A"}}>OPTIMAL BALANCE</span></div>
+    <h1 className="mb-6 mt-3 text-3xl font-semibold tracking-tight">Taste &amp; Health Matrix</h1>
+    <Mono c="mb-2 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Affinity Index</Mono>
+    <div className="mb-6 space-y-2.5 rounded-[1.75rem] border bg-white p-4" style={{borderColor:"rgba(60,60,67,.12)"}}>{AFF.map(([l,s])=><TasteBar key={l} label={l} score={s} positive/>)}</div>
+    <Mono c="mb-2 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Aversion Index</Mono>
+    <div className="mb-6 space-y-2.5 rounded-[1.75rem] border bg-white p-4" style={{borderColor:"rgba(60,60,67,.12)"}}>{AVE.map(([l,s])=><TasteBar key={l} label={l} score={s} positive={false}/>)}</div>
+    <Mono c="mb-3 mt-8 block text-[10px] uppercase" s={{letterSpacing:".2em",color:"rgba(60,60,67,.3)"}}>Active Protocols</Mono>
+    <div className="grid grid-cols-2 gap-2.5">{GOALS.map(g=>{const on=active.has(g);return(
+      <button key={g} onClick={()=>toggle(g)} className="flex items-center justify-between rounded-2xl border px-4 py-3.5 mono text-[11px] uppercase active:scale-[.97]"
+        style={{letterSpacing:".1em",borderColor:on?"transparent":"rgba(60,60,67,.12)",background:on?GRAPHITE:"#fff",color:on?"#fff":"rgba(60,60,67,.6)"}}>
+        {g}<span className="h-2 w-2 rounded-full" style={{background:on?NEON:"rgba(60,60,67,.2)"}}/></button>);})}</div>
+  </div>);
+}
+
+/* ─── TAB BAR ─── */
+function TabBar({active,go}){
+  const tabs=[["today","Today","◎"],["scan","Scan","⌖"],["fridge","Fridge","❒"],["taste","Taste","◆"]];
+  return (<nav className="absolute inset-x-0 bottom-0 z-40 mx-auto mb-4 flex w-[92%] items-center justify-around rounded-full border px-2 py-2"
+    style={{borderColor:"rgba(60,60,67,.12)",background:"rgba(255,255,255,.8)",backdropFilter:"blur(20px)",boxShadow:"0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06)"}}>
+    {tabs.map(([k,l,g])=>k==="scan"?(
+      <button key={k} onClick={()=>{haptic();go("scan");}} className="-mt-6 grid h-14 w-14 place-items-center rounded-full text-2xl text-white active:scale-90" style={{background:GRAPHITE,boxShadow:"0 8px 24px rgba(0,0,0,.18)"}}>{g}</button>
+    ):(
+      <button key={k} onClick={()=>{haptic();go(k);}} className="flex min-w-[64px] flex-col items-center gap-1 py-1.5 mono text-[9px] uppercase" style={{letterSpacing:".12em",color:active===k?"#1C1C1E":"rgba(60,60,67,.3)"}}>
+        <span className="text-base leading-none">{g}</span>{l}</button>))}
+  </nav>);
+}
+
+/* ─── ROOT ─── */
+function App(){
+  const [screen,setScreen]=useState("onboarding");
+  const [profile,setProfile]=useState({age:29,weight:78,height:179});
+  const [syncH,setSyncH]=useState(0);
+  const sync=computeSync(syncH);
+  const cycleSync=()=>{haptic();setSyncH(h=>h===0?48:h===48?96:0);};
+  const go=s=>setScreen(s);
+  const onboarded=p=>{setProfile(p);setSyncH(0);setScreen("today");};
+  const showTabs=["today","fridge","taste"].includes(screen);
+  return (
+    <div className="mx-auto flex min-h-screen max-w-[440px] items-stretch justify-center" style={{padding:"0"}}>
+      <div className="relative w-full overflow-hidden" style={{background:"#F2F2F7",minHeight:"100vh"}}>
+        <div className="h-full overflow-y-auto" style={{minHeight:"100vh"}}>
+          {screen==="onboarding"&&<Onboarding onDone={onboarded}/>}
+          {screen==="today"&&<Dashboard profile={profile} sync={sync} onSync={cycleSync} go={go}/>}
+          {screen==="scan"&&<Scanner go={go} onLogged={()=>setSyncH(0)}/>}
+          {screen==="fridge"&&<Fridge go={go}/>}
+          {screen==="taste"&&<Taste/>}
+        </div>
+        {showTabs&&<TabBar active={screen} go={go}/>}
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+<script>
+  // Transform the JSX with the classic runtime and run it.
+  (function () {
+    function boot() {
+      try {
+        var src = document.getElementById("appsrc").textContent;
+        var out = Babel.transform(src, { presets: [["react", { runtime: "classic" }]] }).code;
+        (0, eval)(out);
+      } catch (e) {
+        document.getElementById("root").innerHTML =
+          '<pre style="padding:24px;font:13px ui-monospace,monospace;color:#c00;white-space:pre-wrap">' +
+          (e && e.message ? e.message : e) + "</pre>";
+      }
+    }
+    if (window.Babel) boot();
+    else window.addEventListener("load", boot);
+  })();
+</script>
+</body>
+</html>
