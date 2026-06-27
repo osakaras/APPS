@@ -89,12 +89,24 @@ export interface Dict {
     log: string;
     logged: string;
   };
+  fridge: {
+    inspect: string;
+    capturePrompt: string;
+    analyzing: string;
+    empty: string;
+    inventory: string;
+    suggestions: string;
+    missing: string;
+    findStore: string;
+    locating: string;
+    allInStock: string;
+  };
 }
 
 // The per-locale objects below define the core copy; the success screen,
-// dashboard and scanner sections are merged in at the bottom to keep each
-// block lean.
-type Base = Omit<Dict, "success" | "today" | "scan">;
+// dashboard, scanner and fridge sections are merged in at the bottom to keep
+// each block lean.
+type Base = Omit<Dict, "success" | "today" | "scan" | "fridge">;
 
 const en: Base = {
   step: "Step {n} of {total}",
@@ -598,12 +610,24 @@ const SCAN: Record<LocaleCode, Dict["scan"]> = {
   ru: { capture: "Поместите блюдо в кадр", capturePrompt: "Нажмите, чтобы снять или загрузить", analyzing: "Анализ состава", retake: "Переснять", analyze: "Анализировать", palateQ: "Было вкусно?", loved: "Обожаю", liked: "Понравилось", neutral: "Нейтрально", disliked: "Не понравилось", hated: "Не моё", log: "Записать приём", logged: "Записано в ядро" },
 };
 
+// Fridge Inspector copy. Instrument labels stay English mono in the component.
+const FRIDGE: Record<LocaleCode, Dict["fridge"]> = {
+  en: { inspect: "Inspect Fridge", capturePrompt: "Tap to capture or upload", analyzing: "Reading inventory", empty: "No inventory yet — inspect your fridge to begin.", inventory: "Inventory", suggestions: "Suggested Protocols", missing: "missing", findStore: "Find cheapest store", locating: "Locating signal", allInStock: "All items in stock" },
+  lt: { inspect: "Tikrinti šaldytuvą", capturePrompt: "Bakstelėkite nufotografuoti ar įkelti", analyzing: "Nuskaitoma atsarga", empty: "Atsargų dar nėra — pradėkite patikrinę šaldytuvą.", inventory: "Atsargos", suggestions: "Siūlomi protokolai", missing: "trūksta", findStore: "Rasti pigiausią parduotuvę", locating: "Ieškoma signalo", allInStock: "Visos prekės sandėlyje" },
+  lv: { inspect: "Pārbaudīt ledusskapi", capturePrompt: "Pieskarieties, lai uzņemtu vai augšupielādētu", analyzing: "Nolasa krājumus", empty: "Vēl nav krājumu — sāciet, pārbaudot ledusskapi.", inventory: "Krājumi", suggestions: "Ieteiktie protokoli", missing: "trūkst", findStore: "Atrast lētāko veikalu", locating: "Meklē signālu", allInStock: "Visas preces noliktavā" },
+  pl: { inspect: "Sprawdź lodówkę", capturePrompt: "Dotknij, aby zrobić zdjęcie lub wgrać", analyzing: "Odczyt zapasów", empty: "Brak zapasów — zacznij od sprawdzenia lodówki.", inventory: "Zapasy", suggestions: "Sugerowane protokoły", missing: "brakuje", findStore: "Znajdź najtańszy sklep", locating: "Lokalizowanie sygnału", allInStock: "Wszystko dostępne" },
+  de: { inspect: "Kühlschrank prüfen", capturePrompt: "Tippen zum Aufnehmen oder Hochladen", analyzing: "Bestand wird gelesen", empty: "Noch kein Bestand — prüfe deinen Kühlschrank.", inventory: "Bestand", suggestions: "Empfohlene Protokolle", missing: "fehlt", findStore: "Günstigsten Laden finden", locating: "Signal wird geortet", allInStock: "Alles auf Lager" },
+  es: { inspect: "Inspeccionar nevera", capturePrompt: "Toca para capturar o subir", analyzing: "Leyendo inventario", empty: "Sin inventario — inspecciona tu nevera para empezar.", inventory: "Inventario", suggestions: "Protocolos sugeridos", missing: "falta", findStore: "Encontrar tienda más barata", locating: "Localizando señal", allInStock: "Todo en stock" },
+  fr: { inspect: "Inspecter le frigo", capturePrompt: "Touchez pour capturer ou importer", analyzing: "Lecture de l'inventaire", empty: "Aucun inventaire — inspectez votre frigo pour commencer.", inventory: "Inventaire", suggestions: "Protocoles suggérés", missing: "manquant", findStore: "Trouver le magasin le moins cher", locating: "Localisation du signal", allInStock: "Tout en stock" },
+  ru: { inspect: "Проверить холодильник", capturePrompt: "Нажмите, чтобы снять или загрузить", analyzing: "Чтение запасов", empty: "Запасов пока нет — проверьте холодильник.", inventory: "Запасы", suggestions: "Рекомендуемые протоколы", missing: "не хватает", findStore: "Найти самый дешёвый магазин", locating: "Поиск сигнала", allInStock: "Всё в наличии" },
+};
+
 const BASES: Record<LocaleCode, Base> = { en, lt, lv, pl, de, es, fr, ru };
 
 export const DICTIONARIES = Object.fromEntries(
   (Object.keys(BASES) as LocaleCode[]).map((code) => [
     code,
-    { ...BASES[code], success: SUCCESS[code], today: TODAY[code], scan: SCAN[code] },
+    { ...BASES[code], success: SUCCESS[code], today: TODAY[code], scan: SCAN[code], fridge: FRIDGE[code] },
   ]),
 ) as Record<LocaleCode, Dict>;
 

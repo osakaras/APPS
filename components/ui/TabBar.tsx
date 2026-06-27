@@ -6,13 +6,14 @@ interface Tab {
   key: string;
   label: string;
   glyph: string;
+  href?: string;
   primary?: boolean;
 }
 
 const tabs: Tab[] = [
-  { key: "today", label: "Today", glyph: "◎" },
+  { key: "today", label: "Today", glyph: "◎", href: "/" },
   { key: "scan", label: "Scan", glyph: "⌖", primary: true },
-  { key: "fridge", label: "Fridge", glyph: "❒" },
+  { key: "fridge", label: "Fridge", glyph: "❒", href: "/fridge" },
   { key: "taste", label: "Taste", glyph: "◆" },
 ];
 
@@ -40,8 +41,9 @@ export function TabBar({ active = "today" }: { active?: string }) {
             {t.glyph}
           </a>
         ) : (
-          <button
+          <a
             key={t.key}
+            href={t.href ?? "#"}
             className={clsx(
               "flex min-w-[64px] flex-col items-center gap-1 rounded-2xl py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] transition ease-ios",
               active === t.key ? "text-ink" : "text-ink-3",
@@ -49,7 +51,7 @@ export function TabBar({ active = "today" }: { active?: string }) {
           >
             <span className="text-base leading-none">{t.glyph}</span>
             {t.label}
-          </button>
+          </a>
         ),
       )}
     </nav>
