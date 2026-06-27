@@ -101,12 +101,20 @@ export interface Dict {
     locating: string;
     allInStock: string;
   };
+  taste: {
+    title: string;
+    affinities: string;
+    aversions: string;
+    goals: string;
+    noTaste: string;
+    samples: string;
+  };
 }
 
 // The per-locale objects below define the core copy; the success screen,
-// dashboard, scanner and fridge sections are merged in at the bottom to keep
-// each block lean.
-type Base = Omit<Dict, "success" | "today" | "scan" | "fridge">;
+// dashboard, scanner, fridge and matrix sections are merged in at the bottom
+// to keep each block lean.
+type Base = Omit<Dict, "success" | "today" | "scan" | "fridge" | "taste">;
 
 const en: Base = {
   step: "Step {n} of {total}",
@@ -622,12 +630,25 @@ const FRIDGE: Record<LocaleCode, Dict["fridge"]> = {
   ru: { inspect: "Проверить холодильник", capturePrompt: "Нажмите, чтобы снять или загрузить", analyzing: "Чтение запасов", empty: "Запасов пока нет — проверьте холодильник.", inventory: "Запасы", suggestions: "Рекомендуемые протоколы", missing: "не хватает", findStore: "Найти самый дешёвый магазин", locating: "Поиск сигнала", allInStock: "Всё в наличии" },
 };
 
+// Taste & Health Matrix copy. Goal-protocol labels stay English mono in the
+// component (technical readouts), consistent with the rest of the system.
+const TASTE: Record<LocaleCode, Dict["taste"]> = {
+  en: { title: "Taste & Health Matrix", affinities: "Affinity Index", aversions: "Aversion Index", goals: "Active Protocols", noTaste: "No taste data yet — scan and rate meals to build your matrix.", samples: "samples" },
+  lt: { title: "Skonio ir sveikatos matrica", affinities: "Mėgstamumo indeksas", aversions: "Vengimo indeksas", goals: "Aktyvūs protokolai", noTaste: "Skonio duomenų dar nėra — skenuokite ir vertinkite patiekalus.", samples: "imčių" },
+  lv: { title: "Garšas un veselības matrica", affinities: "Patikas indekss", aversions: "Nepatikas indekss", goals: "Aktīvie protokoli", noTaste: "Vēl nav garšas datu — skenējiet un vērtējiet ēdienus.", samples: "paraugi" },
+  pl: { title: "Matryca smaku i zdrowia", affinities: "Indeks upodobań", aversions: "Indeks awersji", goals: "Aktywne protokoły", noTaste: "Brak danych smaku — skanuj i oceniaj posiłki.", samples: "próbek" },
+  de: { title: "Geschmacks- & Gesundheitsmatrix", affinities: "Affinitätsindex", aversions: "Aversionsindex", goals: "Aktive Protokolle", noTaste: "Noch keine Geschmacksdaten — scanne und bewerte Mahlzeiten.", samples: "Stichproben" },
+  es: { title: "Matriz de gusto y salud", affinities: "Índice de afinidad", aversions: "Índice de aversión", goals: "Protocolos activos", noTaste: "Sin datos de gusto — escanea y valora comidas.", samples: "muestras" },
+  fr: { title: "Matrice goût & santé", affinities: "Indice d'affinité", aversions: "Indice d'aversion", goals: "Protocoles actifs", noTaste: "Aucune donnée de goût — scannez et notez vos repas.", samples: "échantillons" },
+  ru: { title: "Матрица вкуса и здоровья", affinities: "Индекс предпочтений", aversions: "Индекс неприятия", goals: "Активные протоколы", noTaste: "Нет данных о вкусе — сканируйте и оценивайте блюда.", samples: "выборок" },
+};
+
 const BASES: Record<LocaleCode, Base> = { en, lt, lv, pl, de, es, fr, ru };
 
 export const DICTIONARIES = Object.fromEntries(
   (Object.keys(BASES) as LocaleCode[]).map((code) => [
     code,
-    { ...BASES[code], success: SUCCESS[code], today: TODAY[code], scan: SCAN[code], fridge: FRIDGE[code] },
+    { ...BASES[code], success: SUCCESS[code], today: TODAY[code], scan: SCAN[code], fridge: FRIDGE[code], taste: TASTE[code] },
   ]),
 ) as Record<LocaleCode, Dict>;
 

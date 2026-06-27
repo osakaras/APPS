@@ -14,7 +14,7 @@ const tabs: Tab[] = [
   { key: "today", label: "Today", glyph: "◎", href: "/" },
   { key: "scan", label: "Scan", glyph: "⌖", primary: true },
   { key: "fridge", label: "Fridge", glyph: "❒", href: "/fridge" },
-  { key: "taste", label: "Taste", glyph: "◆" },
+  { key: "taste", label: "Taste", glyph: "◆", href: "/taste" },
 ];
 
 /**
