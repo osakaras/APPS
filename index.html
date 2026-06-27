@@ -1,522 +1,725 @@
 <!DOCTYPE html>
-<html lang="lt">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pro Baletas — Baleto Akademija</title>
-  <meta name="description" content="Pro Baletas — profesionali baleto akademija Vilniuje ir Šiauliuose. Įkvėpimas, entuzijazmas, atsidavimas." />
+  <title>Data Unfucker — Messy data, instantly clean</title>
+  <meta name="description" content="Data Unfucker turns messy PDF and raw text into clean Excel/CSV tables using AI. Paste, drop, unfuck, export." />
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React + Babel -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Force Babel's React preset to the classic runtime (React.createElement),
+       so the in-browser transform never emits ESM `import` statements. -->
+  <script>
+    if (window.Babel) {
+      Babel.registerPreset('react-classic', {
+        presets: [[Babel.availablePresets.react, { runtime: 'classic' }]],
+      });
+    }
+  </script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            ink: {
+              950: '#08090b',
+              900: '#0c0e11',
+              850: '#111418',
+              800: '#171b20',
+              750: '#1d2228',
+              700: '#252b32',
+              600: '#343b44',
+            },
+            em: {
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            },
+          },
+          boxShadow: {
+            glow: '0 0 0 1px rgba(16,185,129,0.25), 0 8px 40px -8px rgba(16,185,129,0.35)',
+          },
+        },
+      },
+    };
+  </script>
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --bg:#07070B;
-      --surf:#0D0D14;
-      --gold:#C8A96E;
-      --gold-l:#E8D0A0;
-      --gold-d:#9A7A42;
-      --w:#F2EEE8;
-      --m:rgba(242,238,232,0.45);
-      --b:rgba(200,169,110,0.18);
-      --fd:'Cormorant Garamond',Georgia,serif;
-      --fb:'DM Sans',system-ui,sans-serif;
+    *,*::before,*::after { box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body { background: #08090b; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: #0c0e11; }
+    ::-webkit-scrollbar-thumb { background: #252b32; border-radius: 6px; border: 2px solid #0c0e11; }
+    ::-webkit-scrollbar-thumb:hover { background: #343b44; }
+
+    .bg-mesh {
+      background:
+        radial-gradient(60% 50% at 80% 0%, rgba(16,185,129,0.10) 0%, transparent 60%),
+        radial-gradient(50% 40% at 0% 10%, rgba(16,185,129,0.06) 0%, transparent 55%),
+        #08090b;
     }
-    html{scroll-behavior:smooth;font-size:16px}
-    body{background:var(--bg);color:var(--w);font-family:var(--fb);overflow-x:hidden;-webkit-font-smoothing:antialiased}
-    ::-webkit-scrollbar{width:3px}
-    ::-webkit-scrollbar-track{background:var(--bg)}
-    ::-webkit-scrollbar-thumb{background:var(--gold-d)}
-
-    /* PRELOADER */
-    #pl{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,visibility .8s ease}
-    #pl.out{opacity:0;visibility:hidden}
-    #pl span{font-family:var(--fd);font-size:clamp(2rem,6vw,4.5rem);font-weight:300;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);animation:pulse 1.4s ease-in-out infinite}
-    @keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
-
-    /* NAV */
-    nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.75rem 5rem;display:flex;align-items:center;justify-content:space-between;transition:background .5s,backdrop-filter .5s,padding .4s}
-    nav.sx{background:rgba(7,7,11,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);padding:1rem 5rem;border-bottom:1px solid var(--b)}
-    .logo{font-family:var(--fd);font-size:1.35rem;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--w);text-decoration:none}
-    .logo b{color:var(--gold);font-weight:600}
-    .nl{display:flex;gap:2.5rem;list-style:none}
-    .nl a{font-size:.72rem;font-weight:400;letter-spacing:.22em;text-transform:uppercase;color:var(--m);text-decoration:none;transition:color .3s}
-    .nl a:hover{color:var(--gold)}
-    .ncta{font-size:.68rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);padding:.6rem 1.6rem;text-decoration:none;transition:background .3s,color .3s}
-    .ncta:hover{background:var(--gold);color:var(--bg)}
-
-    /* HERO */
-    #hero{position:relative;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
-    .hbg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 50% 42%,rgba(200,169,110,.07) 0%,transparent 68%);transition:background .1s}
-    .hring{position:absolute;border-radius:50%;border:1px solid rgba(200,169,110,.09);pointer-events:none;top:50%;left:50%;transform:translate(-50%,-50%)}
-    .hring:nth-child(2){width:min(560px,75vw);height:min(560px,75vw);animation:spin 45s linear infinite}
-    .hring:nth-child(3){width:min(850px,110vw);height:min(850px,110vw);animation:spin 65s linear infinite reverse;border-color:rgba(200,169,110,.05)}
-    .hring:nth-child(4){width:min(1150px,145vw);height:min(1150px,145vw);animation:spin 90s linear infinite;border-color:rgba(200,169,110,.03)}
-    @keyframes spin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
-    .hvline{position:absolute;left:50%;top:0;width:1px;height:28%;background:linear-gradient(to bottom,transparent,rgba(200,169,110,.15));transform:translateX(-50%)}
-    .hvline2{position:absolute;left:50%;bottom:0;width:1px;height:28%;background:linear-gradient(to top,transparent,rgba(200,169,110,.12));transform:translateX(-50%)}
-
-    .hc{position:relative;z-index:1;text-align:center;padding:0 2rem}
-    .hey{font-size:.68rem;font-weight:400;letter-spacing:.55em;text-transform:uppercase;color:var(--gold);margin-bottom:2.2rem;opacity:0;transform:translateY(18px)}
-    .htitle{font-family:var(--fd);font-size:clamp(5.5rem,15vw,15rem);font-weight:300;letter-spacing:.12em;text-transform:uppercase;line-height:.88;overflow:hidden}
-    .hw{display:block;transform:translateY(110%);opacity:0}
-    .hw.gi{color:var(--gold);font-style:italic}
-    .hsub{font-family:var(--fd);font-size:clamp(1rem,1.8vw,1.5rem);font-weight:300;font-style:italic;color:var(--m);margin-top:2.2rem;letter-spacing:.08em;opacity:0;transform:translateY(18px)}
-    .hbar{width:50px;height:1px;background:var(--gold);margin:2rem auto;opacity:0;transform:scaleX(0)}
-    .hdesc{font-size:.82rem;font-weight:300;letter-spacing:.18em;color:var(--m);margin-bottom:3rem;opacity:0;transform:translateY(18px)}
-    .hbtns{display:flex;gap:1.5rem;justify-content:center;opacity:0;transform:translateY(18px)}
-    .btn-g{font-size:.7rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;background:var(--gold);color:var(--bg);padding:1rem 2.5rem;border:none;text-decoration:none;cursor:pointer;display:inline-block;transition:background .3s,transform .3s}
-    .btn-g:hover{background:var(--gold-l);transform:translateY(-3px)}
-    .btn-o{font-size:.7rem;font-weight:400;letter-spacing:.22em;text-transform:uppercase;background:transparent;color:var(--w);padding:1rem 2.5rem;border:1px solid rgba(242,238,232,.22);text-decoration:none;display:inline-block;transition:border-color .3s,color .3s,transform .3s}
-    .btn-o:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-3px)}
-    .hscroll{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:0}
-    .hscroll span{font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;color:var(--m)}
-    .sline{width:1px;height:48px;overflow:hidden}
-    .sline::after{content:'';display:block;width:100%;height:100%;background:linear-gradient(to bottom,var(--gold),transparent);animation:sl 2s ease-in-out infinite}
-    @keyframes sl{0%{transform:translateY(-100%)}100%{transform:translateY(200%)}}
-
-    /* MARQUEE */
-    .mq{background:var(--gold);padding:.85rem 0;overflow:hidden;white-space:nowrap}
-    .mqt{display:inline-flex;animation:mqa 22s linear infinite}
-    .mqt span{font-family:var(--fd);font-size:1.05rem;font-weight:500;letter-spacing:.32em;text-transform:uppercase;color:var(--bg);padding:0 1.8rem}
-    .dot{opacity:.3;font-size:.45rem;vertical-align:middle}
-    @keyframes mqa{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-
-    /* SHARED */
-    section{padding:8rem 5rem}
-    .sl{font-size:.63rem;font-weight:400;letter-spacing:.55em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
-    .sl::before{content:'';width:28px;height:1px;background:var(--gold);flex-shrink:0}
-    .st{font-family:var(--fd);font-size:clamp(2.5rem,5.5vw,5.5rem);font-weight:300;line-height:1.06;letter-spacing:.02em}
-    .st em{font-style:italic;color:var(--gold)}
-
-    .rv{opacity:0;transform:translateY(42px);transition:opacity .95s cubic-bezier(.16,1,.3,1),transform .95s cubic-bezier(.16,1,.3,1)}
-    .on{opacity:1!important;transform:none!important}
-    .d1{transition-delay:.12s}.d2{transition-delay:.24s}.d3{transition-delay:.36s}.d4{transition-delay:.48s}.d5{transition-delay:.6s}.d6{transition-delay:.72s}
-
-    /* ABOUT */
-    #about{background:var(--surf);display:grid;grid-template-columns:1fr 1fr;gap:7rem;align-items:start}
-    .abig{font-family:var(--fd);font-size:clamp(1.6rem,2.8vw,2.7rem);font-weight:300;font-style:italic;line-height:1.35;color:var(--w);margin-top:2.2rem;padding-left:2rem;border-left:1px solid var(--gold)}
-    .bt{font-size:.93rem;font-weight:300;line-height:1.95;color:var(--m);margin-bottom:1.8rem}
-    .afound{margin-top:3rem;padding-top:2.2rem;border-top:1px solid var(--b)}
-    .fn{font-family:var(--fd);font-size:1.55rem;font-weight:500;color:var(--gold);margin-bottom:.3rem}
-    .fr{font-size:.68rem;letter-spacing:.28em;text-transform:uppercase;color:var(--m)}
-    .fb{margin-top:1rem;font-size:.88rem;font-weight:300;line-height:1.85;color:rgba(242,238,232,.55)}
-
-    /* STATS */
-    #stats{background:var(--bg);border-top:1px solid var(--b);border-bottom:1px solid var(--b);padding:6rem 5rem}
-    .sg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--b)}
-    .si{background:var(--bg);text-align:center;padding:3.5rem 2rem;transition:background .4s}
-    .si:hover{background:rgba(200,169,110,.03)}
-    .sn{font-family:var(--fd);font-size:clamp(3.5rem,7vw,7rem);font-weight:300;color:var(--gold);line-height:1;margin-bottom:.6rem}
-    .sk{font-size:.68rem;letter-spacing:.32em;text-transform:uppercase;color:var(--m)}
-
-    /* PROGRAMS */
-    #programs{background:var(--surf)}
-    .ph{max-width:650px;margin-bottom:5rem}
-    .pg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--b);border:1px solid var(--b)}
-    .pc{background:var(--surf);padding:2.8rem;transition:background .4s;position:relative;overflow:hidden;cursor:default}
-    .pc::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .45s cubic-bezier(.16,1,.3,1)}
-    .pc:hover{background:rgba(200,169,110,.035)}
-    .pc:hover::before{transform:scaleX(1)}
-    .pn{font-family:var(--fd);font-size:4.5rem;font-weight:300;color:rgba(200,169,110,.1);line-height:1;margin-bottom:.8rem;transition:color .4s}
-    .pc:hover .pn{color:rgba(200,169,110,.22)}
-    .pt{font-family:var(--fd);font-size:1.4rem;font-weight:400;color:var(--w);margin-bottom:.7rem;line-height:1.25}
-    .pd{font-size:.82rem;font-weight:300;color:var(--m);line-height:1.75}
-    .pa{margin-top:1.5rem;font-size:.67rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);opacity:0;transform:translateX(-10px);transition:opacity .3s,transform .3s}
-    .pc:hover .pa{opacity:1;transform:translateX(0)}
-    .pc-cta{display:flex;align-items:flex-end;padding:2.8rem;background:rgba(200,169,110,.04)}
-
-    /* QUOTE */
-    #quote{background:var(--gold);padding:11rem 5rem;text-align:center;position:relative;overflow:hidden}
-    #quote::before{content:'\201C';position:absolute;top:-4rem;left:50%;transform:translateX(-50%);font-family:var(--fd);font-size:22rem;font-weight:700;color:rgba(7,7,11,.08);line-height:1;pointer-events:none;user-select:none}
-    .qq{font-family:var(--fd);font-size:clamp(1.6rem,3.2vw,3.4rem);font-weight:300;font-style:italic;color:var(--bg);max-width:950px;margin:0 auto 2.2rem;line-height:1.4;position:relative}
-    .qa{font-size:.72rem;font-weight:500;letter-spacing:.32em;text-transform:uppercase;color:rgba(7,7,11,.45)}
-
-    /* ACHIEVEMENTS */
-    #ach{background:var(--bg)}
-    .ag{display:grid;grid-template-columns:1fr 1fr;gap:3rem 5rem;margin-top:4.5rem}
-    .ai{padding-bottom:2.5rem;border-bottom:1px solid var(--b)}
-    .aico{width:38px;height:38px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem;color:var(--gold);font-size:1rem}
-    .at{font-family:var(--fd);font-size:1.55rem;font-weight:400;color:var(--w);margin-bottom:.7rem;line-height:1.2}
-    .ad{font-size:.87rem;font-weight:300;line-height:1.85;color:var(--m)}
-
-    /* LOCATIONS */
-    #loc{background:var(--surf)}
-    .lg{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:4.5rem}
-    .lc{background:var(--bg);padding:4.5rem;position:relative;overflow:hidden;transition:transform .5s cubic-bezier(.16,1,.3,1)}
-    .lc:hover{transform:translateY(-4px)}
-    .lc::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:2px;background:linear-gradient(to right,var(--gold),transparent)}
-    .lnum{font-family:var(--fd);font-size:7rem;font-weight:300;color:rgba(200,169,110,.07);line-height:1;margin-bottom:1.2rem}
-    .lci{font-family:var(--fd);font-size:2.8rem;font-weight:400;color:var(--gold);margin-bottom:1rem}
-    .ladr{font-size:.9rem;font-weight:300;color:var(--m);line-height:1.85;margin-bottom:2rem}
-    .lcon{display:flex;flex-direction:column;gap:.6rem}
-    .lci2{font-size:.82rem;font-weight:300;color:rgba(242,238,232,.45);display:flex;align-items:center;gap:.75rem}
-    .lci2 a{color:inherit;text-decoration:none;transition:color .3s}
-    .lci2 a:hover{color:var(--gold)}
-
-    /* CONTACT */
-    #contact{background:var(--bg);padding:8rem 5rem 5rem;border-top:1px solid var(--b)}
-    .ci{display:grid;grid-template-columns:1fr 1fr;gap:7rem;margin-bottom:6rem}
-    .cbig{font-family:var(--fd);font-size:clamp(2.5rem,5vw,5.2rem);font-weight:300;line-height:1.08}
-    .cbig em{color:var(--gold);font-style:italic}
-    .csub{margin-top:2rem;font-size:.88rem;font-weight:300;line-height:1.85;color:var(--m)}
-    .clinks{margin-top:2.5rem;display:flex;flex-direction:column;gap:.7rem}
-    .clinks a{font-size:.9rem;color:var(--gold);text-decoration:none;font-weight:300;letter-spacing:.05em;transition:opacity .3s}
-    .clinks a:hover{opacity:.7}
-    .cf{display:flex;flex-direction:column;gap:1rem}
-    .cf input,.cf textarea{background:var(--surf);border:1px solid var(--b);color:var(--w);font-family:var(--fb);font-size:.87rem;font-weight:300;padding:1.05rem 1.3rem;outline:none;transition:border-color .3s;resize:none}
-    .cf input::placeholder,.cf textarea::placeholder{color:rgba(242,238,232,.28);font-size:.72rem;letter-spacing:.12em}
-    .cf input:focus,.cf textarea:focus{border-color:var(--gold)}
-    .fbot{padding-top:3rem;border-top:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
-    .fcopy{font-size:.7rem;letter-spacing:.1em;color:rgba(242,238,232,.22)}
-    .fsoc{display:flex;gap:2rem}
-    .fsoc a{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--m);text-decoration:none;transition:color .3s}
-    .fsoc a:hover{color:var(--gold)}
-
-    /* CURSOR */
-    #cur{position:fixed;width:8px;height:8px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .25s,height .25s}
-    #cuf{position:fixed;width:34px;height:34px;border-radius:50%;border:1px solid rgba(200,169,110,.45);pointer-events:none;z-index:9998;transform:translate(-50%,-50%)}
-
-    /* RESPONSIVE */
-    @media(max-width:1100px){
-      nav,nav.sx{padding-left:2.5rem;padding-right:2.5rem}
-      section{padding:6rem 2.5rem}
-      #about{grid-template-columns:1fr;gap:3.5rem}
-      .sg{grid-template-columns:repeat(2,1fr)}
-      .pg{grid-template-columns:repeat(2,1fr)}
-      .ag{grid-template-columns:1fr}
-      .lg{grid-template-columns:1fr}
-      .ci{grid-template-columns:1fr;gap:3rem}
-      #stats{padding:5rem 2.5rem}
-      #contact{padding:6rem 2.5rem 4rem}
-    }
-    @media(max-width:640px){
-      nav,nav.sx{padding-left:1.5rem;padding-right:1.5rem}
-      .nl,.ncta{display:none}
-      section,#stats,#contact{padding:5rem 1.5rem}
-      .pg{grid-template-columns:1fr}
-      #quote{padding:7rem 1.5rem}
-      .lc{padding:3rem 1.5rem}
-      .fbot{flex-direction:column;gap:1.5rem;text-align:center}
-      #cur,#cuf{display:none}
-    }
+    @keyframes rise { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+    .rise { animation: rise .5s cubic-bezier(.2,.7,.2,1) both; }
+    @keyframes fadein { from { opacity:0 } to { opacity:1 } }
+    .fadein { animation: fadein .35s ease both; }
+    [contenteditable]:focus { outline: none; }
+    .grid-cell:focus-within { box-shadow: inset 0 0 0 1.5px #10b981; }
   </style>
 </head>
 <body>
+  <div id="root"></div>
 
-<div id="cur"></div>
-<div id="cuf"></div>
+  <script type="text/babel" data-presets="react-classic">
+    const { useState, useRef, useEffect, useCallback, useMemo } = React;
 
-<!-- PRELOADER -->
-<div id="pl"><span>Pro Baletas</span></div>
-
-<!-- NAV -->
-<nav id="nav">
-  <a href="#" class="logo">Pro <b>Baletas</b></a>
-  <ul class="nl">
-    <li><a href="#about">Apie mus</a></li>
-    <li><a href="#programs">Programos</a></li>
-    <li><a href="#ach">Pasiekimai</a></li>
-    <li><a href="#loc">Studijos</a></li>
-  </ul>
-  <a href="#contact" class="ncta">Registruotis</a>
-</nav>
-
-<!-- HERO -->
-<section id="hero">
-  <div class="hbg" id="hbg"></div>
-  <div class="hring"></div>
-  <div class="hring"></div>
-  <div class="hring"></div>
-  <div class="hvline"></div>
-  <div class="hvline2"></div>
-
-  <div class="hc">
-    <p class="hey" id="hey">Baleto Akademija &nbsp;·&nbsp; Vilnius &nbsp;·&nbsp; Šiauliai</p>
-    <h1 class="htitle">
-      <span class="hw" id="hw1">Pro</span>
-      <span class="hw gi" id="hw2">Baletas</span>
-    </h1>
-    <p class="hsub" id="hsub">Įkvėpimas &nbsp;·&nbsp; Entuzijazmas &nbsp;·&nbsp; Atsidavimas</p>
-    <div class="hbar" id="hbar"></div>
-    <p class="hdesc" id="hdesc">Virš 14 metų tarptautinėje baleto pedagogikoje</p>
-    <div class="hbtns" id="hbtns">
-      <a href="#programs" class="btn-g">Mūsų programos</a>
-      <a href="#about" class="btn-o">Sužinoti daugiau</a>
-    </div>
-  </div>
-
-  <div class="hscroll" id="hscroll">
-    <span>Scroll</span>
-    <div class="sline"></div>
-  </div>
-</section>
-
-<!-- MARQUEE -->
-<div class="mq" aria-hidden="true">
-  <div class="mqt">
-    <span>Baletas <span class="dot">●</span></span><span>Menas <span class="dot">●</span></span><span>Elegancija <span class="dot">●</span></span><span>Disciplina <span class="dot">●</span></span><span>Gracija <span class="dot">●</span></span><span>Pasiekimai <span class="dot">●</span></span><span>Meistrystė <span class="dot">●</span></span><span>Aistra <span class="dot">●</span></span><span>Baletas <span class="dot">●</span></span><span>Menas <span class="dot">●</span></span><span>Elegancija <span class="dot">●</span></span><span>Disciplina <span class="dot">●</span></span><span>Gracija <span class="dot">●</span></span><span>Pasiekimai <span class="dot">●</span></span><span>Meistrystė <span class="dot">●</span></span><span>Aistra <span class="dot">●</span></span>
-  </div>
-</div>
-
-<!-- ABOUT -->
-<section id="about">
-  <div>
-    <div class="sl rv">Apie mus</div>
-    <h2 class="st rv d1">Kur menas<br>tampa <em>aistra</em></h2>
-    <blockquote class="abig rv d2">
-      „Įkvėpimas, entuzijazmas, atsidavimas — virš 14 metų baleto pedagogikoje atnešė aukščiausius rezultatus stipriausiose tarptautinėse varžybose."
-    </blockquote>
-  </div>
-  <div>
-    <p class="bt rv">Pro Baletas — tai ne tik baleto mokykla. Tai vieta, kur kiekvienas mokinys atranda savo unikalų potencialą ir yra lydimas per visą meninę kelionę nuo pirmų žingsnių iki profesionalios scenos.</p>
-    <p class="bt rv d1">Mūsų pedagogai Aušra ir Žilvinas Beniuševičiai šiame kelyje lydi mokinius jau daugiau nei 14 metų, suformuodami dešimtis profesionalių šokėjų, kurie šiandien tobulina savo meną prestižinėse Europos ir pasaulio institucijose.</p>
-    <p class="bt rv d2">Skirtingai nuo masinių mokyklų, mes tikime, kad tikrasis menas gimsta iš asmeninio ryšio tarp pedagogo ir mokinio. Kiekviena pamoka — tai individualus darbas su kiekvieno mokinio unikaliu potencialu.</p>
-    <p class="bt rv d3">Pro Baletas veikia dviejuose Lietuvos miestuose — Vilniuje ir Šiauliuose — teikdama aukšto lygio baleto ugdymą vaikams nuo 4 metų iki suaugusiųjų grupių.</p>
-    <div class="afound rv d4">
-      <p class="fn">Aušra ir Žilvinas Beniuševičiai</p>
-      <p class="fr">Įkūrėjai · Pagrindiniai pedagogai</p>
-      <p class="fb">Su daugiau nei 14 metų tarptautinės patirties baleto pedagogikoje, Aušra ir Žilvinas sukūrė unikalią mokymo metodiką, kuri atsižvelgia į kiekvieno mokinio individualias galimybes ir siekius. Jų mokiniai atstovavo Lietuvai tarptautinėse varžybose ir stojo į prestižines institucijas kaip Royal Ballet School Londone ir Ellison Ballet School JAV.</p>
-    </div>
-  </div>
-</section>
-
-<!-- STATS -->
-<section id="stats">
-  <div class="sg">
-    <div class="si rv"><div class="sn" data-t="14" data-s="+">0</div><div class="sk">Metų patirties</div></div>
-    <div class="si rv d1"><div class="sn" data-t="2">0</div><div class="sk">Miestai Lietuvoje</div></div>
-    <div class="si rv d2"><div class="sn" data-t="11">0</div><div class="sk">Programų tipų</div></div>
-    <div class="si rv d3"><div class="sn" data-t="100" data-s="+">0</div><div class="sk">Mokinių per metus</div></div>
-  </div>
-</section>
-
-<!-- PROGRAMS -->
-<section id="programs">
-  <div class="ph">
-    <div class="sl rv">Mūsų programos</div>
-    <h2 class="st rv d1">Ugdymas kiekvienam<br><em>amžiui ir lygiui</em></h2>
-  </div>
-  <div class="pg">
-    <div class="pc rv"><div class="pn">01</div><h3 class="pt">4–5 metų grupė</h3><p class="pd">Pirmieji baleto žingsniai mažiausiems. Žaismingos pamokos, ritmo pojūtis ir koordinacijos ugdymas saugioje aplinkoje.</p><div class="pa">→ Sužinoti daugiau</div></div>
-    <div class="pc rv d1"><div class="pn">02</div><h3 class="pt">6–7 metų grupė</h3><p class="pd">Baleto pagrindų formavimas, kūno plastikos ir grožio ugdymas kūrybiškoje aplinkoje. Pirmieji rimti žingsniai meno link.</p><div class="pa">→ Sužinoti daugiau</div></div>
-    <div class="pc rv d2"><div class="pn">03</div><h3 class="pt">8–11 metų grupė</h3><p class="pd">Techninių įgūdžių gilinimas, scenos kultūros ugdymas ir dalyvavimas pirmose viešose programose ir pasirodymose.</p><div class="pa">→ Sužinoti daugiau</div></div>
-    <div class="pc rv"><div class="pn">04</div><h3 class="pt">12–17 metų grupė</h3><p class="pd">Aukšto lygio techninis ir meninis ugdymas. Pasiruošimas tarptautinėms varžyboms ir profesinei karjerai baleto pasaulyje.</p><div class="pa">→ Sužinoti daugiau</div></div>
-    <div class="pc rv d1"><div class="pn">05</div><h3 class="pt">Pointe klasės</h3><p class="pd">Specializuotos Pointe technikos pamokos, atidžiai suplanuotos pagal kiekvieno mokinio pasirengimo lygį ir fizinius duomenis.</p><div class="pa">→ Sužinoti daugiau</div></div>
-    <div class="pc rv d2"><div class="pn">06</div><h3 class="pt">Suaugusiųjų grupės</h3><p class="pd">Baletas neturi amžiaus ribų. Pradedančiųjų ir pažengusiųjų grupės visiems, kurie trokšta pažinti šio meno grožį.</p><div class="pa">→ Sužinoti daugiau</div></div>
-    <div class="pc rv"><div class="pn">07</div><h3 class="pt">Baleto gimnastika</h3><p class="pd">Baleto elementų ir gimnastikos derinys — puikus pasirinkimas lankstumui, koordinacijai ir kūno grakštumui ugdyti.</p><div class="pa">→ Sužinoti daugiau</div></div>
-    <div class="pc rv d1"><div class="pn">08</div><h3 class="pt">Berniukų grupės</h3><p class="pd">Specialiai berniukams pritaikytos pamokos, akcentuojančios jėgą, koordinaciją ir atletinį šokio stilių.</p><div class="pa">→ Sužinoti daugiau</div></div>
-    <div class="pc rv d2"><div class="pn">09</div><h3 class="pt">Individualios pamokos</h3><p class="pd">Privačios pamokos — idealus sprendimas tiems, kurie siekia maksimalaus progreso ar rengiasi varžyboms ir egzaminams.</p><div class="pa">→ Sužinoti daugiau</div></div>
-    <div class="pc rv"><div class="pn">10</div><h3 class="pt">Vasaros stovyklos</h3><p class="pd">Intensyvios vasaros stovyklos — unikalus būdas praleisti vasarą kūrybingai tobulindamas baleto įgūdžius su bendraminčiais.</p><div class="pa">→ Sužinoti daugiau</div></div>
-    <div class="pc rv d1"><div class="pn">11</div><h3 class="pt">Salės nuoma</h3><p class="pd">Mūsų studijos prieinamos nuomai — ideali erdvė repeticijoms, fotosesijoms ar privačioms pamokoms profesionaliu lygiu.</p><div class="pa">→ Sužinoti daugiau</div></div>
-    <div class="pc-cta rv d2"><a href="#contact" class="btn-g">Registruotis &nbsp;→</a></div>
-  </div>
-</section>
-
-<!-- QUOTE -->
-<section id="quote">
-  <blockquote class="qq rv">„Virš 14 metų baleto pedagogikoje atnešė aukščiausius rezultatus stipriausiose tarptautinėse varžybose. Kiekvienas mokinys — mūsų širdyje."</blockquote>
-  <p class="qa rv d2">— Aušra ir Žilvinas Beniuševičiai, Pro Baletas įkūrėjai</p>
-</section>
-
-<!-- ACHIEVEMENTS -->
-<section id="ach">
-  <div class="sl rv">Pasiekimai</div>
-  <h2 class="st rv d1">Rezultatai,<br>kurie <em>kalba patys</em></h2>
-  <div class="ag">
-    <div class="ai rv">
-      <div class="aico">✦</div>
-      <h3 class="at">Royal Ballet School, Londonas</h3>
-      <p class="ad">Pro Baletas mokiniai sėkmingai stoja į vieną prestižiškiausių baleto mokyklų pasaulyje — Royal Ballet School Londone. Tai aukščiausias bet kokios baleto akademijos įvertinimas.</p>
-    </div>
-    <div class="ai rv d1">
-      <div class="aico">✦</div>
-      <h3 class="at">Ellison Ballet School, JAV</h3>
-      <p class="ad">Mūsų auklėtiniai renkasi prestižinę Ellison Ballet School Niujorke — vieną iš aukščiausią reputaciją turinčių baleto institucijų Šiaurės Amerikoje.</p>
-    </div>
-    <div class="ai rv d2">
-      <div class="aico">◆</div>
-      <h3 class="at">Tarptautinės varžybos</h3>
-      <p class="ad">Mūsų mokiniai sėkmingai dalyvauja ir laimi stipriausiose tarptautinėse baleto varžybose. Kiekvieneri metai papildo pergalių sąrašą naujais laimėjimais.</p>
-    </div>
-    <div class="ai rv d3">
-      <div class="aico">◆</div>
-      <h3 class="at">Dešimtys profesionalų</h3>
-      <p class="ad">Per 14 metų veiklos Pro Baletas suformavo dešimtis profesionalių šokėjų, kurie šiandien šoka geriausiose Europos ir pasaulio trupėse bei didžiausiose scenose.</p>
-    </div>
-  </div>
-</section>
-
-<!-- LOCATIONS -->
-<section id="loc">
-  <div class="sl rv">Mūsų studijos</div>
-  <h2 class="st rv d1">Kur mus<br><em>rasti</em></h2>
-  <div class="lg">
-    <div class="lc rv">
-      <div class="lnum">01</div>
-      <div class="lci">Vilnius</div>
-      <div class="ladr">Gedimino pr. 2a, III aukštas<br>Vilnius, Lietuva</div>
-      <div class="lcon">
-        <div class="lci2"><span>✆</span><a href="tel:+37067601724">+370 676 01724 — Aušra</a></div>
-        <div class="lci2"><span>✉</span><a href="mailto:probaletas@gmail.com">probaletas@gmail.com</a></div>
-      </div>
-    </div>
-    <div class="lc rv d2">
-      <div class="lnum">02</div>
-      <div class="lci">Šiauliai</div>
-      <div class="ladr">Aušros al. 31<br>Šiaulių Kultūros Centras<br>Šiauliai, Lietuva</div>
-      <div class="lcon">
-        <div class="lci2"><span>✆</span><a href="tel:+37067602136">+370 676 02136 — Žilvinas</a></div>
-        <div class="lci2"><span>✉</span><a href="mailto:probaletas@gmail.com">probaletas@gmail.com</a></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT -->
-<section id="contact">
-  <div class="ci">
-    <div>
-      <div class="sl rv">Susisiekite</div>
-      <h2 class="cbig rv d1">Pradėkime<br>jūsų <em>kelionę</em><br>kartu</h2>
-      <p class="csub rv d2">Palikite savo duomenis ir mes susisieksime artimiausiu metu. Taip pat galite tiesiogiai paskambinti ar parašyti el. paštu.</p>
-      <div class="clinks rv d3">
-        <a href="tel:+37067601724">+370 676 01724</a>
-        <a href="tel:+37067602136">+370 676 02136</a>
-        <a href="mailto:probaletas@gmail.com">probaletas@gmail.com</a>
-      </div>
-    </div>
-    <form class="cf rv d2" onsubmit="return false">
-      <input type="text" placeholder="JŪSŲ VARDAS" autocomplete="name" />
-      <input type="email" placeholder="EL. PAŠTAS" autocomplete="email" />
-      <input type="tel" placeholder="TELEFONO NUMERIS" autocomplete="tel" />
-      <textarea rows="4" placeholder="ŽINUTĖ / DOMINANTI PROGRAMA"></textarea>
-      <button type="submit" class="btn-g" style="align-self:flex-start;border:none;cursor:pointer">Siųsti užklausą &nbsp;→</button>
-    </form>
-  </div>
-  <div class="fbot">
-    <p class="fcopy">© 2025 Pro Baletas. Visos teisės saugomos.</p>
-    <div class="fsoc">
-      <a href="https://www.facebook.com/probaletas" target="_blank" rel="noopener noreferrer">Facebook</a>
-      <a href="https://www.instagram.com/pro_baletas" target="_blank" rel="noopener noreferrer">Instagram</a>
-    </div>
-  </div>
-</section>
-
-<script>
-(function(){
-  // PRELOADER
-  window.addEventListener('load', function(){
-    setTimeout(function(){
-      document.getElementById('pl').classList.add('out');
-      heroIn();
-    }, 900);
-  });
-
-  // HERO ENTRANCE
-  function heroIn(){
-    function ani(id, delay, extra){
-      setTimeout(function(){
-        var el = document.getElementById(id);
-        if(!el) return;
-        if(extra) Object.assign(el.style, extra);
-        el.classList.add('on');
-      }, delay);
+    /* ---------- Icon helper (renders raw Lucide SVG) ---------- */
+    function Icon({ name, className = "", size = 18, strokeWidth = 2 }) {
+      const svg = useMemo(() => {
+        try {
+          const key = name.split('-').map(p => p[0].toUpperCase() + p.slice(1)).join('');
+          const icon = window.lucide && window.lucide.icons && window.lucide.icons[key];
+          if (!Array.isArray(icon)) return '';
+          // Lucide UMD: icon is the array of [tag, attrs] child pairs.
+          const inner = icon.map(([tag, a]) =>
+            `<${tag} ${Object.entries(a).map(([k, v]) => `${k}="${v}"`).join(' ')} />`
+          ).join('');
+          return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+        } catch (e) { return ''; }
+      }, [name, size, strokeWidth]);
+      return <span className={"inline-flex items-center justify-center " + className}
+        dangerouslySetInnerHTML={{ __html: svg }} />;
     }
-    setTimeout(function(){
-      var e = document.getElementById('hw1');
-      e.style.transition = 'opacity .82s cubic-bezier(.16,1,.3,1),transform .82s cubic-bezier(.16,1,.3,1)';
-      e.classList.add('on');
-    }, 150);
-    setTimeout(function(){
-      var e = document.getElementById('hw2');
-      e.style.transition = 'opacity .82s cubic-bezier(.16,1,.3,1),transform .82s cubic-bezier(.16,1,.3,1)';
-      e.classList.add('on');
-    }, 320);
-    ani('hey',  520, {transition:'opacity .8s ease,transform .8s ease'});
-    ani('hsub', 640, {transition:'opacity .8s ease,transform .8s ease'});
-    ani('hbar', 760, {transition:'opacity .7s ease,transform .7s ease'});
-    ani('hdesc',860, {transition:'opacity .8s ease,transform .8s ease'});
-    ani('hbtns',980, {transition:'opacity .8s ease,transform .8s ease'});
-    setTimeout(function(){
-      var e = document.getElementById('hscroll');
-      e.style.transition = 'opacity 1.2s ease';
-      e.classList.add('on');
-    }, 1380);
-  }
 
-  // NAVBAR
-  var nav = document.getElementById('nav');
-  window.addEventListener('scroll', function(){ nav.classList.toggle('sx', window.scrollY > 70); }, {passive:true});
+    /* ---------- Constants ---------- */
+    const STORAGE_KEY = 'data-unfucker:apikey';
+    const CLAUDE_MODEL = 'claude-opus-4-8';
+    const OPENAI_MODEL = 'gpt-4o';
 
-  // REVEAL ON SCROLL
-  var obs = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if(e.isIntersecting){ e.target.classList.add('on'); obs.unobserve(e.target); }
-    });
-  }, {threshold:0.13});
-  document.querySelectorAll('.rv').forEach(function(el){ obs.observe(el); });
+    const SYSTEM_PROMPT =
+      "You are a data extraction engine. The user provides messy, unstructured, or semi-structured raw text " +
+      "(often pasted from PDFs, emails, invoices, receipts, logs, or copied tables). " +
+      "Your job: infer the most natural tabular structure and return ONLY a strict, valid JSON array of objects. " +
+      "Rules: " +
+      "1) Output JSON ONLY — no markdown fences, no prose, no explanation. " +
+      "2) Each element is an object representing one row/record. " +
+      "3) Object keys are the column headers, chosen dynamically from the data's actual context " +
+      "(e.g. 'Date', 'Description', 'Amount', 'Quantity', 'Name', 'Email'). Use clean, Title Case headers. " +
+      "4) Every object MUST share the same set of keys. Use empty string \"\" for missing values. " +
+      "5) Keep values as plain strings unless clearly numeric. Do not invent data. " +
+      "If absolutely no structure can be found, return [].";
 
-  // COUNTERS
-  var cobs = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){ if(e.isIntersecting){ countUp(e.target); cobs.unobserve(e.target); } });
-  }, {threshold:0.5});
-  document.querySelectorAll('[data-t]').forEach(function(el){ cobs.observe(el); });
+    /* ---------- Demo-mode smart parser ---------- */
+    function detectDelimiter(lines) {
+      const candidates = ['\t', ',', ';', '|'];
+      let best = null, bestScore = 0;
+      for (const d of candidates) {
+        const counts = lines.slice(0, 12).map(l => (l.split(d).length - 1));
+        const nonZero = counts.filter(c => c > 0);
+        if (nonZero.length < Math.max(2, lines.length * 0.4)) continue;
+        const avg = nonZero.reduce((a, b) => a + b, 0) / nonZero.length;
+        const consistent = nonZero.filter(c => c === Math.round(avg)).length / nonZero.length;
+        const score = avg * consistent;
+        if (score > bestScore) { bestScore = score; best = d; }
+      }
+      return best;
+    }
 
-  function countUp(el){
-    var target = parseInt(el.getAttribute('data-t'));
-    var suffix = el.getAttribute('data-s') || '';
-    var dur = 1600, start = null;
-    requestAnimationFrame(function step(ts){
-      if(!start) start = ts;
-      var p = Math.min((ts - start) / dur, 1);
-      var eased = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(eased * target) + suffix;
-      if(p < 1) requestAnimationFrame(step);
-    });
-  }
+    function splitDelimited(line, d) {
+      if (d !== ',') return line.split(d).map(s => s.trim());
+      const out = []; let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { if (inQ && line[i + 1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+        else if (c === ',' && !inQ) { out.push(cur.trim()); cur = ''; }
+        else cur += c;
+      }
+      out.push(cur.trim());
+      return out;
+    }
 
-  // CURSOR
-  var cur = document.getElementById('cur');
-  var cuf = document.getElementById('cuf');
-  if(cur && cuf){
-    var mx = 0, my = 0, fx = 0, fy = 0;
-    document.addEventListener('mousemove', function(e){
-      mx = e.clientX; my = e.clientY;
-      cur.style.left = mx + 'px';
-      cur.style.top  = my + 'px';
-    });
-    (function tick(){
-      fx += (mx - fx) * .09;
-      fy += (my - fy) * .09;
-      cuf.style.left = fx + 'px';
-      cuf.style.top  = fy + 'px';
-      requestAnimationFrame(tick);
-    })();
-    document.querySelectorAll('a,button,.pc,.si,.lc').forEach(function(el){
-      el.addEventListener('mouseenter', function(){ cur.style.width='4px'; cur.style.height='4px'; cuf.style.width='54px'; cuf.style.height='54px'; });
-      el.addEventListener('mouseleave', function(){ cur.style.width='8px'; cur.style.height='8px'; cuf.style.width='34px'; cuf.style.height='34px'; });
-    });
-  }
+    function looksLikeHeader(cells) {
+      const numeric = cells.filter(c => /^-?[\d.,$%\s]+$/.test(c) && /\d/.test(c)).length;
+      return numeric <= cells.length / 3;
+    }
 
-  // HERO GLOW PARALLAX
-  var hbg = document.getElementById('hbg');
-  if(hbg){
-    document.addEventListener('mousemove', function(e){
-      var x = (e.clientX / window.innerWidth * 100).toFixed(1);
-      var y = (e.clientY / window.innerHeight * 100).toFixed(1);
-      hbg.style.background = 'radial-gradient(ellipse 70% 55% at '+x+'% '+y+'%,rgba(200,169,110,.07) 0%,transparent 68%)';
-    });
-  }
+    function smartParse(raw) {
+      const text = (raw || '').replace(/\r\n/g, '\n').trim();
+      if (!text) return [];
+      const lines = text.split('\n').map(l => l.trimEnd()).filter(l => l.trim().length);
+      if (!lines.length) return [];
 
-  // SMOOTH SCROLL
-  document.querySelectorAll('a[href^="#"]').forEach(function(a){
-    a.addEventListener('click', function(e){
-      var target = document.querySelector(a.getAttribute('href'));
-      if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); }
-    });
-  });
-})();
-</script>
+      // 1) Delimited table
+      const d = detectDelimiter(lines);
+      if (d) {
+        let rows = lines.map(l => splitDelimited(l, d));
+        const width = Math.max(...rows.map(r => r.length));
+        rows = rows.map(r => { while (r.length < width) r.push(''); return r; });
+        let headers, dataRows;
+        if (looksLikeHeader(rows[0])) {
+          headers = rows[0].map((h, i) => h || `Column ${i + 1}`);
+          dataRows = rows.slice(1);
+        } else {
+          headers = rows[0].map((_, i) => `Column ${i + 1}`);
+          dataRows = rows;
+        }
+        const seen = {};
+        headers = headers.map(h => { if (seen[h] != null) { seen[h]++; return `${h} ${seen[h]}`; } seen[h] = 1; return h; });
+        return dataRows.map(r => Object.fromEntries(headers.map((h, i) => [h, r[i] ?? ''])));
+      }
+
+      // 2) Key: value records separated by blank lines
+      const blocks = text.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+      const kvBlocks = blocks.map(b => {
+        const o = {};
+        b.split('\n').forEach(line => {
+          const m = line.match(/^\s*([A-Za-z][\w .\/#-]{0,40}?)\s*[:\-]\s+(.*)$/);
+          if (m) o[m[1].trim()] = m[2].trim();
+        });
+        return o;
+      }).filter(o => Object.keys(o).length >= 2);
+      if (kvBlocks.length) {
+        const allKeys = [];
+        kvBlocks.forEach(o => Object.keys(o).forEach(k => { if (!allKeys.includes(k)) allKeys.push(k); }));
+        return kvBlocks.map(o => Object.fromEntries(allKeys.map(k => [k, o[k] ?? ''])));
+      }
+
+      // 3) Whitespace-aligned columns (2+ spaces)
+      const multiCol = lines.map(l => l.split(/\s{2,}/).map(s => s.trim()).filter(Boolean));
+      const widthCounts = {};
+      multiCol.forEach(r => { widthCounts[r.length] = (widthCounts[r.length] || 0) + 1; });
+      const common = Number(Object.keys(widthCounts).sort((a, b) => widthCounts[b] - widthCounts[a])[0]);
+      if (common >= 2 && multiCol.filter(r => r.length === common).length >= lines.length * 0.6) {
+        const rows = multiCol.filter(r => r.length === common);
+        let headers, dataRows;
+        if (looksLikeHeader(rows[0])) { headers = rows[0]; dataRows = rows.slice(1); }
+        else { headers = rows[0].map((_, i) => `Column ${i + 1}`); dataRows = rows; }
+        return dataRows.map(r => Object.fromEntries(headers.map((h, i) => [h, r[i] ?? ''])));
+      }
+
+      // 4) Fallback — one row per non-empty line
+      return lines.map((l, i) => ({ '#': String(i + 1), Value: l.trim() }));
+    }
+
+    /* ---------- JSON extraction from model output ---------- */
+    function extractJsonArray(content) {
+      if (!content) throw new Error('Empty response from AI.');
+      let s = content.trim();
+      const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      if (fence) s = fence[1].trim();
+      const start = s.indexOf('[');
+      const end = s.lastIndexOf(']');
+      if (start !== -1 && end !== -1 && end > start) s = s.slice(start, end + 1);
+      const parsed = JSON.parse(s);
+      if (!Array.isArray(parsed)) throw new Error('AI did not return a JSON array.');
+      return parsed.map(row => {
+        const o = {};
+        Object.entries(row || {}).forEach(([k, v]) => {
+          o[String(k)] = (v === null || v === undefined) ? '' :
+            (typeof v === 'object' ? JSON.stringify(v) : String(v));
+        });
+        return o;
+      });
+    }
+
+    function normalizeColumns(rows) {
+      const cols = [];
+      rows.forEach(r => Object.keys(r).forEach(k => { if (!cols.includes(k)) cols.push(k); }));
+      return rows.map(r => Object.fromEntries(cols.map(c => [c, r[c] ?? ''])));
+    }
+
+    /* ---------- API calls ---------- */
+    async function callClaude(apiKey, rawText) {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: CLAUDE_MODEL,
+          max_tokens: 8000,
+          system: SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: 'Convert this into a clean table as a JSON array of objects:\n\n' + rawText }],
+        }),
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => '');
+        throw new Error(`Claude API ${res.status}: ${t.slice(0, 200)}`);
+      }
+      const data = await res.json();
+      const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+      return extractJsonArray(text);
+    }
+
+    async function callOpenAI(apiKey, rawText) {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: 'Bearer ' + apiKey },
+        body: JSON.stringify({
+          model: OPENAI_MODEL,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT + ' Return an object {"rows": [...]} where rows is the array.' },
+            { role: 'user', content: 'Convert this into a clean table:\n\n' + rawText },
+          ],
+          response_format: { type: 'json_object' },
+        }),
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => '');
+        throw new Error(`OpenAI API ${res.status}: ${t.slice(0, 200)}`);
+      }
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content || '';
+      const obj = JSON.parse(content);
+      const arr = Array.isArray(obj) ? obj : (obj.rows || obj.data || obj.table || Object.values(obj).find(Array.isArray) || []);
+      return extractJsonArray(JSON.stringify(arr));
+    }
+
+    function providerOf(key) {
+      if (!key) return null;
+      return key.trim().startsWith('sk-ant-') ? 'claude' : 'openai';
+    }
+
+    /* ---------- CSV export ---------- */
+    function toCsv(rows, columns) {
+      const esc = (v) => {
+        const s = (v ?? '').toString();
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      };
+      const head = columns.map(esc).join(',');
+      const body = rows.map(r => columns.map(c => esc(r[c])).join(',')).join('\n');
+      return head + '\n' + body;
+    }
+
+    function downloadCsv(rows, columns) {
+      const csv = toCsv(rows, columns);
+      const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `unfucked-data-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    /* ===================================================================== */
+    /*  COMPONENTS                                                            */
+    /* ===================================================================== */
+
+    function ApiKeyButton({ apiKey, onSave }) {
+      const [open, setOpen] = useState(false);
+      const [draft, setDraft] = useState(apiKey || '');
+      const [show, setShow] = useState(false);
+      const provider = providerOf(apiKey);
+      useEffect(() => { setDraft(apiKey || ''); }, [apiKey]);
+
+      return (
+        <div className="relative">
+          <button onClick={() => setOpen(o => !o)}
+            className="group flex items-center gap-2 rounded-xl border border-ink-700 bg-ink-850 px-3.5 py-2 text-sm font-medium text-zinc-300 transition hover:border-ink-600 hover:bg-ink-800">
+            <Icon name="key-round" size={16} className={apiKey ? 'text-em-400' : 'text-zinc-500'} />
+            <span className="hidden sm:inline">{apiKey ? (provider === 'claude' ? 'Claude key' : 'OpenAI key') : 'API key'}</span>
+            <span className={"h-1.5 w-1.5 rounded-full " + (apiKey ? 'bg-em-400' : 'bg-zinc-600')} />
+          </button>
+
+          {open && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
+              <div className="fadein absolute right-0 z-40 mt-2 w-[340px] rounded-2xl border border-ink-700 bg-ink-850 p-4 shadow-2xl shadow-black/60">
+                <div className="mb-1 flex items-center gap-2">
+                  <Icon name="shield-check" size={16} className="text-em-400" />
+                  <h3 className="text-sm font-semibold text-white">API Configuration</h3>
+                </div>
+                <p className="mb-3 text-xs leading-relaxed text-zinc-500">
+                  Paste your Claude or OpenAI key. Stored only in your browser's localStorage — never sent anywhere but the provider.
+                </p>
+                <div className="relative">
+                  <input
+                    type={show ? 'text' : 'password'}
+                    value={draft}
+                    onChange={e => setDraft(e.target.value)}
+                    placeholder="sk-ant-... or sk-..."
+                    className="w-full rounded-lg border border-ink-700 bg-ink-900 px-3 py-2.5 pr-9 text-sm text-zinc-200 placeholder-zinc-600 focus:border-em-600 focus:ring-1 focus:ring-em-600"
+                  />
+                  <button onClick={() => setShow(s => !s)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                    <Icon name={show ? 'eye-off' : 'eye'} size={16} />
+                  </button>
+                </div>
+                {draft && (
+                  <p className="mt-2 text-xs text-zinc-500">
+                    Detected: <span className="font-medium text-em-400">{providerOf(draft) === 'claude' ? 'Anthropic Claude' : 'OpenAI'}</span>
+                  </p>
+                )}
+                <div className="mt-3 flex gap-2">
+                  <button onClick={() => { onSave(draft.trim()); setOpen(false); }}
+                    className="flex-1 rounded-lg bg-em-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-em-500">
+                    Save key
+                  </button>
+                  {apiKey && (
+                    <button onClick={() => { onSave(''); setDraft(''); }}
+                      className="rounded-lg border border-ink-700 px-3 py-2 text-sm text-zinc-400 transition hover:border-rose-700 hover:text-rose-400">
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    const LOADING_STAGES = [
+      { icon: 'file-text', text: 'Reading file…' },
+      { icon: 'brain-circuit', text: 'AI analyzing structure…' },
+      { icon: 'table-2', text: 'Generating clean table…' },
+    ];
+
+    function LoadingState({ demo }) {
+      const [stage, setStage] = useState(0);
+      useEffect(() => {
+        const t = setInterval(() => setStage(s => (s + 1) % LOADING_STAGES.length), 900);
+        return () => clearInterval(t);
+      }, []);
+      const cur = LOADING_STAGES[stage];
+      return (
+        <div className="flex flex-col items-center justify-center gap-5 py-16">
+          <div className="relative">
+            <div className="h-16 w-16 animate-spin rounded-full border-2 border-ink-700 border-t-em-500" style={{ animationDuration: '0.9s' }} />
+            <div className="absolute inset-0 flex items-center justify-center text-em-400">
+              <Icon name={cur.icon} size={22} />
+            </div>
+          </div>
+          <div className="h-6 overflow-hidden">
+            <p key={stage} className="rise text-sm font-medium text-zinc-300">{cur.text}</p>
+          </div>
+          {demo && <p className="text-xs text-zinc-600">Demo Mode — parsing locally</p>}
+        </div>
+      );
+    }
+
+    function DropZone({ onText, fileName }) {
+      const [drag, setDrag] = useState(false);
+      const inputRef = useRef(null);
+
+      const readFile = useCallback((file) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => onText(String(e.target.result || ''), file.name);
+        reader.readAsText(file);
+      }, [onText]);
+
+      const onDrop = (e) => {
+        e.preventDefault(); setDrag(false);
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        readFile(file);
+      };
+
+      return (
+        <div
+          onDragOver={e => { e.preventDefault(); setDrag(true); }}
+          onDragLeave={() => setDrag(false)}
+          onDrop={onDrop}
+          onClick={() => inputRef.current && inputRef.current.click()}
+          className={"group relative cursor-pointer rounded-3xl border-2 border-dashed p-10 text-center transition-all duration-200 " +
+            (drag
+              ? 'border-em-500 bg-em-500/[0.06] shadow-glow'
+              : 'border-ink-700 bg-ink-900/40 hover:border-ink-600 hover:bg-ink-850/60')}
+        >
+          <input ref={inputRef} type="file" accept=".txt,.csv,.tsv,.md,.log,.json,text/*" className="hidden"
+            onChange={e => readFile(e.target.files[0])} />
+          <div className={"mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl transition " +
+            (drag ? 'bg-em-500/20 text-em-400' : 'bg-ink-800 text-zinc-500 group-hover:text-em-400')}>
+            <Icon name="upload-cloud" size={26} />
+          </div>
+          <p className="text-base font-semibold text-zinc-200">
+            {fileName ? <span className="text-em-400">{fileName}</span> : 'Drop a file or click to browse'}
+          </p>
+          <p className="mt-1 text-sm text-zinc-500">Supports .txt, .csv, .tsv, .log, .md & raw text documents</p>
+        </div>
+      );
+    }
+
+    function DataGrid({ rows, columns, onEdit, onAddRow, onDeleteRow }) {
+      return (
+        <div className="overflow-hidden rounded-2xl border border-ink-700 bg-ink-900/60">
+          <div className="max-h-[460px] overflow-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-ink-800">
+                  <th className="w-10 border-b border-ink-700 px-2 py-2.5 text-center text-xs font-medium text-zinc-600">#</th>
+                  {columns.map(col => (
+                    <th key={col} className="border-b border-l border-ink-700 px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-em-400/90 whitespace-nowrap">
+                      {col}
+                    </th>
+                  ))}
+                  <th className="w-10 border-b border-l border-ink-700"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, ri) => (
+                  <tr key={ri} className="group transition hover:bg-ink-850/70">
+                    <td className="border-b border-ink-800 px-2 py-0 text-center text-xs text-zinc-600">{ri + 1}</td>
+                    {columns.map(col => (
+                      <td key={col} className="grid-cell border-b border-l border-ink-800 align-top">
+                        <div
+                          contentEditable
+                          suppressContentEditableWarning
+                          spellCheck={false}
+                          onBlur={e => onEdit(ri, col, e.currentTarget.textContent)}
+                          className="min-h-[2.4rem] px-3 py-2 text-zinc-300 outline-none"
+                        >{row[col]}</div>
+                      </td>
+                    ))}
+                    <td className="border-b border-l border-ink-800 text-center">
+                      <button onClick={() => onDeleteRow(ri)}
+                        className="text-zinc-700 opacity-0 transition hover:text-rose-400 group-hover:opacity-100">
+                        <Icon name="trash-2" size={15} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center justify-between border-t border-ink-700 bg-ink-850/60 px-3 py-2">
+            <button onClick={onAddRow}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-zinc-400 transition hover:bg-ink-800 hover:text-em-400">
+              <Icon name="plus" size={14} /> Add row
+            </button>
+            <span className="text-xs text-zinc-600">{rows.length} rows · {columns.length} columns · cells are editable</span>
+          </div>
+        </div>
+      );
+    }
+
+    /* ===================================================================== */
+    /*  APP                                                                   */
+    /* ===================================================================== */
+    function App() {
+      const [apiKey, setApiKey] = useState(() => { try { return localStorage.getItem(STORAGE_KEY) || ''; } catch { return ''; } });
+      const [rawText, setRawText] = useState('');
+      const [fileName, setFileName] = useState('');
+      const [rows, setRows] = useState([]);
+      const [columns, setColumns] = useState([]);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+
+      const provider = providerOf(apiKey);
+      const demo = !apiKey;
+
+      const saveKey = useCallback((k) => {
+        setApiKey(k);
+        try { k ? localStorage.setItem(STORAGE_KEY, k) : localStorage.removeItem(STORAGE_KEY); } catch {}
+      }, []);
+
+      const handleText = useCallback((text, name) => {
+        setRawText(text);
+        setFileName(name || '');
+        setError('');
+      }, []);
+
+      const unfuck = useCallback(async () => {
+        if (!rawText.trim()) { setError('Add some data first — drop a file or paste text below.'); return; }
+        setError(''); setLoading(true);
+        try {
+          let result;
+          if (demo) {
+            await new Promise(r => setTimeout(r, 2000));
+            result = smartParse(rawText);
+          } else if (provider === 'claude') {
+            result = await callClaude(apiKey, rawText);
+          } else {
+            result = await callOpenAI(apiKey, rawText);
+          }
+          if (!result || !result.length) { setError('No tabular structure could be detected in that input.'); setRows([]); setColumns([]); }
+          else {
+            const norm = normalizeColumns(result);
+            setRows(norm);
+            setColumns(Object.keys(norm[0]));
+          }
+        } catch (e) {
+          setError(e.message || 'Something went wrong while processing.');
+        } finally {
+          setLoading(false);
+        }
+      }, [rawText, demo, provider, apiKey]);
+
+      const editCell = useCallback((ri, col, val) => {
+        setRows(rs => rs.map((r, i) => i === ri ? { ...r, [col]: val } : r));
+      }, []);
+      const addRow = useCallback(() => {
+        setRows(rs => [...rs, Object.fromEntries(columns.map(c => [c, '']))]);
+      }, [columns]);
+      const deleteRow = useCallback((ri) => {
+        setRows(rs => rs.filter((_, i) => i !== ri));
+      }, []);
+
+      const charCount = rawText.length;
+
+      return (
+        <div className="bg-mesh min-h-screen text-zinc-200">
+          {/* Nav */}
+          <header className="sticky top-0 z-20 border-b border-ink-800/80 bg-ink-950/70 backdrop-blur-xl">
+            <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-em-500 to-em-700 text-white shadow-glow">
+                  <Icon name="sparkles" size={18} />
+                </div>
+                <div className="leading-none">
+                  <h1 className="text-[15px] font-bold tracking-tight text-white">Data Unfucker</h1>
+                  <p className="mt-0.5 text-[11px] text-zinc-500">Messy in. Clean out.</p>
+                </div>
+              </div>
+              <ApiKeyButton apiKey={apiKey} onSave={saveKey} />
+            </div>
+          </header>
+
+          {/* Demo banner */}
+          {demo && (
+            <div className="fadein border-b border-amber-500/20 bg-amber-500/[0.07]">
+              <div className="mx-auto flex max-w-6xl items-center gap-2.5 px-5 py-2.5 text-sm">
+                <Icon name="info" size={16} className="shrink-0 text-amber-400" />
+                <p className="text-amber-200/90">
+                  <span className="font-semibold">Demo Mode active.</span> Enter your API key for live AI processing.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <main className="mx-auto max-w-6xl px-5 py-10">
+            {/* Hero */}
+            <div className="mb-9 max-w-2xl">
+              <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
+                Turn <span className="text-em-400">messy data</span> into clean tables.
+              </h2>
+              <p className="mt-3 text-[15px] leading-relaxed text-zinc-400">
+                Drop a file or paste raw text from PDFs, receipts, invoices, or logs. The AI infers the
+                structure, builds a clean editable grid, and exports it to CSV — all in your browser.
+              </p>
+            </div>
+
+            {/* Workspace */}
+            <div className="grid gap-5 lg:grid-cols-5">
+              {/* Input column */}
+              <section className="lg:col-span-2 space-y-4">
+                <DropZone onText={handleText} fileName={fileName} />
+
+                <div className="rounded-2xl border border-ink-700 bg-ink-900/50">
+                  <div className="flex items-center justify-between border-b border-ink-800 px-4 py-2.5">
+                    <span className="flex items-center gap-2 text-xs font-medium text-zinc-400">
+                      <Icon name="clipboard-paste" size={14} /> Or paste raw text
+                    </span>
+                    {charCount > 0 && <span className="text-xs text-zinc-600">{charCount.toLocaleString()} chars</span>}
+                  </div>
+                  <textarea
+                    value={rawText}
+                    onChange={e => { setRawText(e.target.value); setFileName(''); setError(''); }}
+                    placeholder={"Paste anything here…\n\nInvoice #1042\nDate: 2026-06-01\nClient: Acme Co\nAmount: $1,250.00"}
+                    className="h-48 w-full resize-y bg-transparent px-4 py-3 font-mono text-[13px] leading-relaxed text-zinc-300 placeholder-zinc-700 outline-none"
+                  />
+                </div>
+
+                <button
+                  onClick={unfuck}
+                  disabled={loading}
+                  className="group flex w-full items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-br from-em-500 to-em-600 px-5 py-4 text-base font-bold text-white shadow-glow transition hover:from-em-400 hover:to-em-500 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Icon name="wand-sparkles" size={20} className="transition group-hover:rotate-12" />
+                  {loading ? 'Working…' : 'Unfuck Data'}
+                </button>
+
+                {error && (
+                  <div className="fadein flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/[0.08] px-3.5 py-3 text-sm text-rose-300">
+                    <Icon name="triangle-alert" size={16} className="mt-0.5 shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+              </section>
+
+              {/* Output column */}
+              <section className="lg:col-span-3">
+                <div className="flex h-full min-h-[300px] flex-col rounded-2xl border border-ink-700 bg-ink-900/30 p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="flex items-center gap-2 text-sm font-semibold text-zinc-300">
+                      <Icon name="table-2" size={16} className="text-em-400" /> Clean Preview
+                    </h3>
+                    {rows.length > 0 && (
+                      <button onClick={() => downloadCsv(rows, columns)}
+                        className="flex items-center gap-2 rounded-lg border border-em-600/40 bg-em-600/10 px-3.5 py-2 text-sm font-semibold text-em-300 transition hover:bg-em-600/20">
+                        <Icon name="download" size={15} /> Export to CSV
+                      </button>
+                    )}
+                  </div>
+
+                  {loading ? (
+                    <LoadingState demo={demo} />
+                  ) : rows.length > 0 ? (
+                    <div className="fadein">
+                      <DataGrid rows={rows} columns={columns} onEdit={editCell} onAddRow={addRow} onDeleteRow={deleteRow} />
+                    </div>
+                  ) : (
+                    <div className="flex flex-1 flex-col items-center justify-center gap-3 py-12 text-center">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink-850 text-zinc-700">
+                        <Icon name="table-properties" size={26} />
+                      </div>
+                      <p className="text-sm text-zinc-500">Your clean table will appear here.</p>
+                      <p className="max-w-xs text-xs text-zinc-700">
+                        Columns are detected automatically from your data — no fixed schema.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
+
+            {/* Feature strip */}
+            <div className="mt-12 grid gap-4 sm:grid-cols-3">
+              {[
+                { icon: 'lock', t: 'Private by default', d: 'Files are read locally with the browser FileReader. Your key lives in localStorage.' },
+                { icon: 'columns-3', t: 'Dynamic columns', d: 'Headers come straight from your data’s context — never hardcoded.' },
+                { icon: 'pencil', t: 'Editable & exportable', d: 'Fix any AI slip inline, then export a clean .csv in one click.' },
+              ].map(f => (
+                <div key={f.t} className="rounded-2xl border border-ink-800 bg-ink-900/40 p-5">
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-em-500/10 text-em-400">
+                    <Icon name={f.icon} size={18} />
+                  </div>
+                  <h4 className="text-sm font-semibold text-zinc-200">{f.t}</h4>
+                  <p className="mt-1 text-[13px] leading-relaxed text-zinc-500">{f.d}</p>
+                </div>
+              ))}
+            </div>
+          </main>
+
+          <footer className="border-t border-ink-800/70 py-6">
+            <div className="mx-auto max-w-6xl px-5 text-center text-xs text-zinc-600">
+              Data Unfucker · client-side AI data cleaning ·
+              {provider ? <span className="text-zinc-500"> connected to {provider === 'claude' ? 'Claude' : 'OpenAI'}</span> : <span> running in demo mode</span>}
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
