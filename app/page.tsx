@@ -119,7 +119,12 @@ export default async function TodayPage() {
       {/* Telemetry rail */}
       <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-3">
         <span>Pl8 · Today</span>
-        <span className="tabular-nums">{dateLabel}</span>
+        <span className="flex items-center gap-3">
+          <span className="tabular-nums">{dateLabel}</span>
+          <a href="/profile" aria-label="Settings" className="text-sm leading-none text-ink-2 transition active:scale-90">
+            ⚙
+          </a>
+        </span>
       </div>
 
       <header className="mb-6 mt-3">

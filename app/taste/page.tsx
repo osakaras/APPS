@@ -10,14 +10,14 @@ const codes = new Set(LOCALES.map((l) => l.code));
 
 // ── Design-preview data ─────────────────────────────────────────────────────
 const DEMO_AFFINITY: TasteEntry[] = [
-  { label: "chicken breast", score: 0.82, samples: 6 },
-  { label: "quinoa", score: 0.64, samples: 4 },
-  { label: "baby spinach", score: 0.5, samples: 5 },
-  { label: "feta", score: 0.38, samples: 3 },
+  { ingredientId: "i-chicken", label: "chicken breast", score: 0.82, samples: 6 },
+  { ingredientId: "i-quinoa", label: "quinoa", score: 0.64, samples: 4 },
+  { ingredientId: "i-spinach", label: "baby spinach", score: 0.5, samples: 5 },
+  { ingredientId: "i-feta", label: "feta", score: 0.38, samples: 3 },
 ];
 const DEMO_AVERSION: TasteEntry[] = [
-  { label: "olive oil", score: -0.22, samples: 2 },
-  { label: "cherry tomato", score: -0.45, samples: 3 },
+  { ingredientId: "i-oil", label: "olive oil", score: -0.22, samples: 2 },
+  { ingredientId: "i-tomato", label: "cherry tomato", score: -0.45, samples: 3 },
 ];
 const DEMO_GOALS = ["high_protein", "gain_muscle"];
 
@@ -50,11 +50,12 @@ export default async function TastePage() {
 
     const { data: taste } = await supabase
       .from("taste_preferences")
-      .select("score, samples, ingredients(canonical_name)")
+      .select("ingredient_id, score, samples, ingredients(canonical_name)")
       .not("ingredient_id", "is", null);
 
     const entries: TasteEntry[] = (taste ?? [])
       .map((t: any) => ({
+        ingredientId: t.ingredient_id as string,
         label: t.ingredients?.canonical_name ?? "ingredient",
         score: Number(t.score),
         samples: t.samples,

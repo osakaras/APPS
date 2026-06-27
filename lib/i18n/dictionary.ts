@@ -109,12 +109,20 @@ export interface Dict {
     noTaste: string;
     samples: string;
   };
+  settings: {
+    title: string;
+    language: string;
+    save: string;
+    saved: string;
+    editTaste: string;
+    back: string;
+  };
 }
 
 // The per-locale objects below define the core copy; the success screen,
-// dashboard, scanner, fridge and matrix sections are merged in at the bottom
-// to keep each block lean.
-type Base = Omit<Dict, "success" | "today" | "scan" | "fridge" | "taste">;
+// dashboard, scanner, fridge, matrix and settings sections are merged in at
+// the bottom to keep each block lean.
+type Base = Omit<Dict, "success" | "today" | "scan" | "fridge" | "taste" | "settings">;
 
 const en: Base = {
   step: "Step {n} of {total}",
@@ -643,12 +651,24 @@ const TASTE: Record<LocaleCode, Dict["taste"]> = {
   ru: { title: "Матрица вкуса и здоровья", affinities: "Индекс предпочтений", aversions: "Индекс неприятия", goals: "Активные протоколы", noTaste: "Нет данных о вкусе — сканируйте и оценивайте блюда.", samples: "выборок" },
 };
 
+// Settings copy.
+const SETTINGS: Record<LocaleCode, Dict["settings"]> = {
+  en: { title: "Settings", language: "Language", save: "Save changes", saved: "Saved", editTaste: "Taste Matrix", back: "Back" },
+  lt: { title: "Nustatymai", language: "Kalba", save: "Išsaugoti pakeitimus", saved: "Išsaugota", editTaste: "Skonio matrica", back: "Atgal" },
+  lv: { title: "Iestatījumi", language: "Valoda", save: "Saglabāt izmaiņas", saved: "Saglabāts", editTaste: "Garšas matrica", back: "Atpakaļ" },
+  pl: { title: "Ustawienia", language: "Język", save: "Zapisz zmiany", saved: "Zapisano", editTaste: "Matryca smaku", back: "Wstecz" },
+  de: { title: "Einstellungen", language: "Sprache", save: "Änderungen speichern", saved: "Gespeichert", editTaste: "Geschmacksmatrix", back: "Zurück" },
+  es: { title: "Ajustes", language: "Idioma", save: "Guardar cambios", saved: "Guardado", editTaste: "Matriz de gusto", back: "Atrás" },
+  fr: { title: "Réglages", language: "Langue", save: "Enregistrer", saved: "Enregistré", editTaste: "Matrice de goût", back: "Retour" },
+  ru: { title: "Настройки", language: "Язык", save: "Сохранить изменения", saved: "Сохранено", editTaste: "Матрица вкуса", back: "Назад" },
+};
+
 const BASES: Record<LocaleCode, Base> = { en, lt, lv, pl, de, es, fr, ru };
 
 export const DICTIONARIES = Object.fromEntries(
   (Object.keys(BASES) as LocaleCode[]).map((code) => [
     code,
-    { ...BASES[code], success: SUCCESS[code], today: TODAY[code], scan: SCAN[code], fridge: FRIDGE[code], taste: TASTE[code] },
+    { ...BASES[code], success: SUCCESS[code], today: TODAY[code], scan: SCAN[code], fridge: FRIDGE[code], taste: TASTE[code], settings: SETTINGS[code] },
   ]),
 ) as Record<LocaleCode, Dict>;
 

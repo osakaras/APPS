@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { TabBar } from "@/components/ui/TabBar";
 import { haptic, HAPTIC } from "@/lib/haptics";
 import { clsx } from "@/lib/cn";
+import type { Sentiment } from "@/lib/types";
 
 export interface TasteEntry {
+  ingredientId: string;
   label: string;
   score: number; // -1..1
   samples: number;
 }
 
-// Goal protocols — labels stay English mono (technical readouts).
 const GOALS: { kind: string; label: string }[] = [
   { kind: "lose_weight", label: "Fat Loss" },
   { kind: "maintain", label: "Maintain" },
@@ -36,7 +38,12 @@ export function TasteMatrix({
   activeGoals: string[];
 }) {
   const { d } = useLocale();
+  const { configured } = useAuth();
+  const [pos, setPos] = useState<TasteEntry[]>(affinities);
+  const [neg, setNeg] = useState<TasteEntry[]>(aversions);
   const [active, setActive] = useState<Set<string>>(new Set(activeGoals));
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState("");
 
   async function toggleGoal(kind: string) {
     const next = new Set(active);
@@ -44,18 +51,55 @@ export function TasteMatrix({
     willActivate ? next.add(kind) : next.delete(kind);
     setActive(next);
     haptic(HAPTIC.tick);
+    fetch("/api/taste/goals", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ kind, active: willActivate }),
+    }).catch(() => {});
+  }
+
+  function removePref(entry: TasteEntry, positive: boolean) {
+    haptic(HAPTIC.pulse);
+    (positive ? setPos : setNeg)((xs) => xs.filter((e) => e.ingredientId !== entry.ingredientId));
+    fetch("/api/taste/pref", {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ingredientId: entry.ingredientId }),
+    }).catch(() => {});
+  }
+
+  async function addPref(sentiment: Sentiment) {
+    const label = draft.trim().toLowerCase();
+    if (!label) return;
+    haptic(HAPTIC.pulse);
+    const positive = sentiment === "loved";
+    const entry: TasteEntry = {
+      ingredientId: `tmp-${Date.now()}`,
+      label,
+      score: positive ? 1 : -0.5,
+      samples: 1,
+    };
+    (positive ? setPos : setNeg)((xs) => [entry, ...xs.filter((e) => e.label !== label)]);
+    setDraft("");
+    setAdding(false);
     try {
-      await fetch("/api/taste/goals", {
+      const res = await fetch("/api/taste/pref", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ kind, active: willActivate }),
+        body: JSON.stringify({ label, sentiment }),
       });
+      const data = await res.json();
+      if (data.ingredientId) {
+        (positive ? setPos : setNeg)((xs) =>
+          xs.map((e) => (e.ingredientId === entry.ingredientId ? { ...e, ingredientId: data.ingredientId } : e)),
+        );
+      }
     } catch {
-      /* optimistic — local state already reflects intent */
+      /* optimistic entry remains */
     }
   }
 
-  const hasTaste = affinities.length > 0 || aversions.length > 0;
+  const hasTaste = pos.length > 0 || neg.length > 0;
 
   return (
     <main className="mx-auto max-w-md px-4 pb-28 pt-12">
@@ -64,7 +108,49 @@ export function TasteMatrix({
         {classification && <span style={{ color: "#3DA37A" }}>{classification}</span>}
       </div>
 
-      <h1 className="mb-6 mt-3 text-3xl font-semibold tracking-tight">{d.taste.title}</h1>
+      <div className="mb-6 mt-3 flex items-end justify-between">
+        <h1 className="text-3xl font-semibold tracking-tight">{d.taste.title}</h1>
+        <button
+          onClick={() => setAdding((v) => !v)}
+          className={clsx(
+            "pb-1.5 font-mono text-[10px] uppercase tracking-[0.14em] transition",
+            adding ? "text-ink-3" : "text-ink",
+          )}
+        >
+          {adding ? "Cancel" : "+ Add"}
+        </button>
+      </div>
+
+      {/* Add preference */}
+      {adding && (
+        <div className="mb-5 animate-fade-up rounded-2xl border border-ink/40 bg-surface p-3">
+          <input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="INGREDIENT"
+            className="w-full bg-transparent font-mono text-sm uppercase tracking-[0.08em] outline-none placeholder:text-ink-3"
+          />
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              onClick={() => addPref("loved")}
+              disabled={!draft.trim()}
+              className="rounded-xl py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-white transition active:scale-95 disabled:opacity-30"
+              style={{ backgroundColor: "#3DA37A" }}
+            >
+              ◆ Affinity
+            </button>
+            <button
+              onClick={() => addPref("disliked")}
+              disabled={!draft.trim()}
+              className="rounded-xl py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-white transition active:scale-95 disabled:opacity-30"
+              style={{ backgroundColor: "#C77A6E" }}
+            >
+              ○ Aversion
+            </button>
+          </div>
+        </div>
+      )}
 
       {!hasTaste ? (
         <p className="rounded-3xl border border-hairline bg-surface p-5 font-mono text-[12px] uppercase leading-relaxed tracking-[0.1em] text-ink-3">
@@ -72,17 +158,17 @@ export function TasteMatrix({
         </p>
       ) : (
         <>
-          {affinities.length > 0 && (
+          {pos.length > 0 && (
             <Section title={d.taste.affinities}>
-              {affinities.map((e) => (
-                <TasteRow key={e.label} entry={e} samplesLabel={d.taste.samples} positive />
+              {pos.map((e) => (
+                <TasteRow key={e.ingredientId} entry={e} positive onRemove={() => removePref(e, true)} />
               ))}
             </Section>
           )}
-          {aversions.length > 0 && (
+          {neg.length > 0 && (
             <Section title={d.taste.aversions}>
-              {aversions.map((e) => (
-                <TasteRow key={e.label} entry={e} samplesLabel={d.taste.samples} positive={false} />
+              {neg.map((e) => (
+                <TasteRow key={e.ingredientId} entry={e} positive={false} onRemove={() => removePref(e, false)} />
               ))}
             </Section>
           )}
@@ -102,9 +188,7 @@ export function TasteMatrix({
               onClick={() => toggleGoal(g.kind)}
               className={clsx(
                 "flex items-center justify-between rounded-2xl border px-4 py-3.5 font-mono text-[11px] uppercase tracking-[0.1em] transition active:scale-[0.97] ease-ios",
-                on
-                  ? "border-transparent bg-[#0C0D12] text-white"
-                  : "border-hairline bg-surface text-ink-2",
+                on ? "border-transparent bg-[#0C0D12] text-white" : "border-hairline bg-surface text-ink-2",
               )}
             >
               {g.label}
@@ -133,20 +217,19 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function TasteRow({
   entry,
-  samplesLabel,
   positive,
+  onRemove,
 }: {
   entry: TasteEntry;
-  samplesLabel: string;
   positive: boolean;
+  onRemove: () => void;
 }) {
   const color = positive ? "#4E9E82" : "#C77A6E";
   const magnitude = Math.min(1, Math.abs(entry.score));
   return (
     <div className="flex items-center gap-3">
-      <span className="w-28 shrink-0 truncate text-sm font-medium capitalize">{entry.label}</span>
+      <span className="w-24 shrink-0 truncate text-sm font-medium capitalize">{entry.label}</span>
 
-      {/* Bipolar bar */}
       <div className="relative h-1.5 flex-1 rounded-full bg-hairline">
         <div className="absolute left-1/2 top-0 h-full w-px bg-ink-3/30" />
         <div
@@ -159,10 +242,17 @@ function TasteRow({
         />
       </div>
 
-      <span className="w-12 shrink-0 text-right font-mono text-[11px] tabular-nums" style={{ color }}>
+      <span className="w-11 shrink-0 text-right font-mono text-[11px] tabular-nums" style={{ color }}>
         {entry.score > 0 ? "+" : ""}
         {entry.score.toFixed(2)}
       </span>
+      <button
+        onClick={onRemove}
+        aria-label="Remove"
+        className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-ink-3 transition hover:text-coral active:scale-90"
+      >
+        ✕
+      </button>
     </div>
   );
 }
