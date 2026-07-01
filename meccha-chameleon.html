@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>MECCHA CHAMELEON — Roblox-style Blend & Hide</title>
+<style>
+  :root{
+    --studs:#232527;
+    --panel:#2b2f33;
+    --panel2:#33383d;
+    --accent:#00b06f;
+    --accent2:#12d98a;
+    --danger:#e8433d;
+    --warn:#ffb020;
+    --ink:#f4f7fb;
+    --muted:#9aa4ad;
+    --stroke:#00000055;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;background:#15171a;color:var(--ink);
+    font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;overflow:hidden;user-select:none;}
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;}
+  #stage{position:relative;width:100%;height:100%;}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block;
+    image-rendering:optimizeSpeed;}
+
+  /* ---------- Chunky Roblox-ish UI ---------- */
+  .btn{
+    font-family:inherit;font-weight:bold;letter-spacing:.5px;color:#fff;cursor:pointer;
+    border:none;border-radius:12px;padding:14px 26px;font-size:17px;
+    background:linear-gradient(#12d98a,#00a866);
+    box-shadow:0 6px 0 #00713f, 0 10px 18px #0007;transition:transform .05s, box-shadow .05s;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 #00713f,0 6px 12px #0007;}
+  .btn.grey{background:linear-gradient(#4a525a,#343a40);box-shadow:0 6px 0 #20252a,0 10px 18px #0007;}
+  .btn.grey:active{box-shadow:0 2px 0 #20252a;}
+
+  .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    text-align:center;background:radial-gradient(120% 120% at 50% 0%,#1c2b26cc,#0a0d0fee);
+    backdrop-filter:blur(3px);z-index:20;}
+  .card{background:linear-gradient(#2f353b,#23272b);border:2px solid #00000066;
+    border-radius:20px;padding:30px 34px;max-width:560px;width:min(92vw,560px);
+    box-shadow:0 20px 60px #000a, inset 0 2px 0 #ffffff14;}
+  h1{margin:0 0 4px;font-size:min(11vw,54px);line-height:1;letter-spacing:1px;
+    text-shadow:0 3px 0 #00000060;}
+  h1 .a{color:var(--accent2);}
+  h1 .b{color:#ffd34d;}
+  .tag{color:var(--muted);margin:0 0 20px;font-size:15px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;}
+  .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px;}
+  .how{background:#0000002e;border-radius:14px;padding:14px 16px;margin:14px 0;text-align:left;
+    font-size:14.5px;line-height:1.55;color:#d7dde2;}
+  .how b{color:var(--accent2);}
+  .key{display:inline-block;background:#0b0d0f;border:1px solid #ffffff22;border-bottom:3px solid #000;
+    border-radius:6px;padding:1px 8px;font-size:13px;font-weight:bold;margin:0 2px;color:#fff;}
+
+  /* ---------- HUD ---------- */
+  #hud{position:absolute;inset:0;pointer-events:none;z-index:10;}
+  .top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;
+    align-items:flex-start;gap:10px;}
+  .pill{background:#000000a8;border:1px solid #ffffff1f;border-radius:12px;padding:8px 14px;
+    font-weight:bold;font-size:15px;box-shadow:0 4px 10px #0006;}
+  .pill small{display:block;color:var(--muted);font-size:10px;letter-spacing:2px;font-weight:bold;}
+  #phaseBig{color:var(--accent2);}
+  .timer{font-size:26px;line-height:1;}
+  .center-msg{position:absolute;top:64px;left:0;right:0;text-align:center;}
+  .center-msg span{display:inline-block;background:#000000b0;padding:8px 18px;border-radius:30px;
+    font-weight:bold;font-size:15px;border:1px solid #ffffff1a;}
+
+  /* blend meter */
+  #blendWrap{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);
+    width:min(78vw,420px);background:#000000b0;border-radius:14px;padding:10px 12px;
+    border:1px solid #ffffff1a;box-shadow:0 6px 16px #0007;}
+  #blendWrap .lab{display:flex;justify-content:space-between;font-size:12px;font-weight:bold;
+    color:var(--muted);letter-spacing:1px;margin-bottom:6px;}
+  #blendBarBg{height:16px;border-radius:8px;background:#0008;overflow:hidden;}
+  #blendBar{height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#e8433d,#ffb020,#12d98a);
+    transition:width .12s;}
+  #swatch{display:inline-block;width:16px;height:16px;border-radius:4px;border:1px solid #fff5;
+    vertical-align:-2px;margin-left:6px;}
+
+  /* controls hint bottom */
+  #controls{position:absolute;left:12px;bottom:14px;font-size:12.5px;color:#cfd6db;
+    background:#000000a0;border:1px solid #ffffff17;border-radius:12px;padding:8px 12px;line-height:1.6;}
+  #controls b{color:var(--accent2);}
+
+  /* detection ring warning flash */
+  #alertFlash{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 0 #e8433d00;
+    transition:box-shadow .1s;z-index:9;}
+
+  /* mobile controls */
+  #touch{position:absolute;inset:0;z-index:12;display:none;pointer-events:none;}
+  #stick{position:absolute;left:18px;bottom:88px;width:130px;height:130px;border-radius:50%;
+    background:#0006;border:2px solid #ffffff26;pointer-events:auto;touch-action:none;}
+  #knob{position:absolute;left:40px;top:40px;width:52px;height:52px;border-radius:50%;
+    background:#12d98a;box-shadow:0 0 0 3px #0006;}
+  #actionBtns{position:absolute;right:16px;bottom:96px;display:flex;flex-direction:column;gap:12px;pointer-events:auto;}
+  .tbtn{width:74px;height:74px;border-radius:50%;border:none;font-weight:bold;color:#fff;font-size:13px;
+    background:linear-gradient(#4a525a,#343a40);box-shadow:0 5px 0 #20252a;touch-action:none;}
+  .tbtn.lock{background:linear-gradient(#12d98a,#00a866);box-shadow:0 5px 0 #00713f;}
+
+  .mini{font-size:12px;color:var(--muted);margin-top:14px;}
+  .statline{display:flex;justify-content:space-between;font-size:15px;padding:6px 0;border-bottom:1px dashed #ffffff1a;}
+  .statline b{color:var(--accent2);}
+  .big-verdict{font-size:min(9vw,40px);font-weight:bold;margin:6px 0;}
+  .win{color:var(--accent2);} .lose{color:var(--danger);}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <canvas id="game"></canvas>
+  <div id="alertFlash"></div>
+
+  <div id="hud">
+    <div class="top">
+      <div class="pill"><small>ROUND</small><span id="roundNum">1</span></div>
+      <div class="pill" style="text-align:center"><small>PHASE</small><span id="phaseBig">READY</span></div>
+      <div class="pill" style="text-align:right"><small>TIME</small><span id="timer" class="timer">00</span></div>
+    </div>
+    <div class="center-msg"><span id="centerMsg"></span></div>
+
+    <div id="blendWrap">
+      <div class="lab"><span>CAMOUFLAGE MATCH <span id="swatch"></span></span><span id="blendPct">0%</span></div>
+      <div id="blendBarBg"><div id="blendBar"></div></div>
+    </div>
+
+    <div id="controls">
+      <b>WASD / Arrows</b> Move &nbsp; • &nbsp; <b>Click / E</b> Sample color (eyedropper)<br>
+      <b>Space</b> Pose &amp; hold still &nbsp; • &nbsp; Blend in, freeze, survive the Seekers!
+    </div>
+  </div>
+
+  <!-- touch -->
+  <div id="touch">
+    <div id="stick"><div id="knob"></div></div>
+    <div id="actionBtns">
+      <button class="tbtn" id="tSample">SAMPLE</button>
+      <button class="tbtn lock" id="tPose">POSE</button>
+    </div>
+  </div>
+
+  <!-- MENU -->
+  <div class="overlay" id="menu">
+    <div class="card">
+      <h1><span class="a">MECCHA</span> <span class="b">CHAMELEON</span></h1>
+      <p class="tag">Roblox-style Blend &amp; Hide</p>
+      <div class="how">
+        You are a <b>white Hider</b> dropped into a colourful stage. Before the <b>Seekers</b> wake up,
+        <b>sample</b> a colour from the floor or furniture to paint yourself, <b>slide into a matching spot</b>,
+        then hit <b>Pose</b> to freeze. Move while a Seeker is looking and you'll blow your cover —
+        the better your <b>Camouflage Match</b>, the harder you are to spot. Survive the Hunt to win the round.
+      </div>
+      <div class="how" style="background:#00000018">
+        <span class="key">WASD</span>/<span class="key">↑←↓→</span> move &nbsp;·&nbsp;
+        <span class="key">Click</span>/<span class="key">E</span> eyedropper &nbsp;·&nbsp;
+        <span class="key">Space</span> pose &amp; hold still
+      </div>
+      <div class="row">
+        <button class="btn" id="playBtn">▶ PLAY</button>
+      </div>
+      <p class="mini">A self-contained fan tribute inspired by MECCHA CHAMELEON — built for the browser.</p>
+    </div>
+  </div>
+
+  <!-- ROUND END -->
+  <div class="overlay" id="roundEnd" style="display:none">
+    <div class="card">
+      <div id="verdict" class="big-verdict"></div>
+      <div id="roundStats"></div>
+      <div class="row">
+        <button class="btn" id="nextBtn">CONTINUE ▶</button>
+        <button class="btn grey" id="menuBtn">MENU</button>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<script>
+"use strict";
+(function(){
+// ============================================================= setup
+const cvs = document.getElementById('game');
+const ctx = cvs.getContext('2d');
+// offscreen static background for pixel sampling + fast redraw
+const bg = document.createElement('canvas');
+const bgx = bg.getContext('2d', { willReadFrequently:true });
+
+const UI = {
+  menu:document.getElementById('menu'), roundEnd:document.getElementById('roundEnd'),
+  round:document.getElementById('roundNum'), phase:document.getElementById('phaseBig'),
+  timer:document.getElementById('timer'), center:document.getElementById('centerMsg'),
+  blendBar:document.getElementById('blendBar'), blendPct:document.getElementById('blendPct'),
+  swatch:document.getElementById('swatch'), verdict:document.getElementById('verdict'),
+  stats:document.getElementById('roundStats'), flash:document.getElementById('alertFlash'),
+  controls:document.getElementById('controls'), blendWrap:document.getElementById('blendWrap'),
+};
+
+// world is a fixed-size arena; canvas scales to fit
+const W = 1280, H = 720;
+let scale=1, ox=0, oy=0;
+function resize(){
+  const vw=window.innerWidth, vh=window.innerHeight, dpr=Math.min(window.devicePixelRatio||1,2);
+  cvs.width=vw*dpr; cvs.height=vh*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  scale=Math.min(vw/W, vh/H);
+  ox=(vw - W*scale)/2; oy=(vh - H*scale)/2;
+}
+window.addEventListener('resize', resize);
+
+// ============================================================= scene
+// A stage = list of rectangles (floor tiles + furniture) with colors.
+// Built onto the bg canvas; also kept as data for the seeker "sight" logic.
+let scene = [];
+function rnd(a,b){return a+Math.random()*(b-a);}
+function pick(arr){return arr[(Math.random()*arr.length)|0];}
+
+const PALETTES = [
+  // themed rooms — each is {name, floor, tiles:[colors], props:[colors]}
+  {name:"Cozy Living Room", floor:"#7d5a3c",
+   tiles:["#8a6440","#6f4e33","#9a7a52","#7d5a3c"],
+   props:["#3d6b52","#8a2f2f","#2f4a7a","#c9a24b","#b8b2a6","#5a3d6b"]},
+  {name:"Neon Arcade", floor:"#1d2140",
+   tiles:["#242a55","#1a1e3a","#2c3468","#20264c"],
+   props:["#ff3d7f","#12d0ff","#ffe23d","#7b3dff","#12ff8a","#ff7b12"]},
+  {name:"Zen Garden", floor:"#c9c3a0",
+   tiles:["#bdb894","#d3cfae","#b0aa86","#c9c3a0"],
+   props:["#5f8f4f","#8a6d4a","#7a9c6a","#c4b48a","#6d8a8f","#a86f4a"]},
+  {name:"Candy Kitchen", floor:"#f0d9e6",
+   tiles:["#f6e2ee","#e7c7da","#f0d9e6","#efd0e0"],
+   props:["#ff8fb0","#8fd0ff","#ffd98f","#a0e88f","#c79fff","#ff9f8f"]},
+  {name:"Deep Ocean Lab", floor:"#12303a",
+   tiles:["#164049","#0f2830","#1b4a52","#143840"],
+   props:["#28c4c9","#2f7ad0","#5fe0c0","#c9d24b","#c94b7a","#4b6dc9"]},
+];
+
+function buildScene(){
+  const p = pick(PALETTES);
+  scene = [];
+  currentRoomName = p.name;
+  // floor
+  bgx.fillStyle = p.floor; bgx.fillRect(0,0,W,H);
+  // floor tiles grid (checkerboard-ish variety)
+  const gs=80;
+  for(let y=0;y<H;y+=gs){
+    for(let x=0;x<W;x+=gs){
+      const c=pick(p.tiles);
+      bgx.fillStyle=c; bgx.fillRect(x,y,gs,gs);
+      // subtle stud
+      bgx.fillStyle="#00000012"; bgx.fillRect(x+gs-4,y,4,gs); bgx.fillRect(x,y+gs-4,gs,4);
+      scene.push({x,y,w:gs,h:gs,color:c,type:'floor'});
+    }
+  }
+  // border walls
+  bgx.fillStyle="#0e1013"; bgx.fillRect(0,0,W,18); bgx.fillRect(0,H-18,W,18);
+  bgx.fillRect(0,0,18,H); bgx.fillRect(W-18,0,18,H);
+
+  // props / furniture — chunky blocks in random spots (leave margins)
+  props = [];
+  const n = 10 + (Math.random()*5|0);
+  for(let i=0;i<n;i++){
+    const w=rnd(70,180), h=rnd(70,170);
+    const x=rnd(60, W-60-w), y=rnd(60, H-60-h);
+    const c=pick(p.props);
+    // avoid center spawn area for player
+    if(Math.hypot(x+w/2-W/2, y+h/2-H/2)<120) continue;
+    props.push({x,y,w,h,color:c});
+    // drawn as block with bevel + top face
+    roundRect(bgx,x,y,w,h,10); bgx.fillStyle=c; bgx.fill();
+    bgx.fillStyle="#ffffff20"; roundRect(bgx,x,y,w,14,10); bgx.fill();
+    bgx.fillStyle="#00000030"; roundRect(bgx,x,y+h-12,w,12,10); bgx.fill();
+    scene.push({x,y,w,h,color:c,type:'prop'});
+  }
+  // cache the pixel data for sampling
+  bgData = bgx.getImageData(0,0,W,H).data;
+}
+let props=[], bgData=null, currentRoomName="";
+
+function roundRect(c,x,y,w,h,r){
+  r=Math.min(r,w/2,h/2);
+  c.beginPath();
+  c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath();
+}
+
+// sample a solid-color region at world (x,y) from cached bg pixels
+function sampleBg(x,y){
+  x=Math.max(0,Math.min(W-1,x|0)); y=Math.max(0,Math.min(H-1,y|0));
+  const i=(y*W+x)*4;
+  return {r:bgData[i],g:bgData[i+1],b:bgData[i+2]};
+}
+
+// ============================================================= entities
+const player = {x:W/2,y:H/2, r:18, color:{r:245,g:247,b:250}, painted:false,
+  posed:false, movedTimer:0, vx:0, vy:0, speed:3.4, facing:0};
+
+let seekers=[];
+function makeSeekers(count, speed){
+  seekers=[];
+  const spots=[{x:70,y:70},{x:W-70,y:70},{x:70,y:H-70},{x:W-70,y:H-70},{x:W/2,y:60}];
+  for(let i=0;i<count;i++){
+    const s=spots[i%spots.length];
+    seekers.push({
+      x:s.x,y:s.y, r:20, speed:speed, facing:Math.random()*6.28,
+      targetFacing:Math.random()*6.28, wp:randWaypoint(), scan:Math.random()*6.28,
+      fov:0.9, range:300, alertOn:null, suspicion:0,
+    });
+  }
+}
+function randWaypoint(){ return {x:rnd(80,W-80), y:rnd(80,H-80)}; }
+
+// ============================================================= game state
+const S={MENU:0,PREP:1,HUNT:2,END:3};
+let state=S.MENU;
+let round=1, phaseTime=0, detection=0, caught=false, survived=false;
+let blend=0; // 0..1
+let elapsed=0;
+
+const PREP_TIME=18, HUNT_TIME=30;
+
+function startRound(){
+  buildScene();
+  resize();
+  player.x=W/2; player.y=H/2; player.color={r:245,g:247,b:250};
+  player.painted=false; player.posed=false; player.movedTimer=0;
+  detection=0; caught=false; survived=false;
+  state=S.PREP; phaseTime=PREP_TIME;
+  const seekerCount=Math.min(1+Math.floor(round/2),4);
+  const seekerSpeed=2.0 + round*0.18;
+  makeSeekers(seekerCount, seekerSpeed);
+  UI.round.textContent=round;
+  UI.menu.style.display='none'; UI.roundEnd.style.display='none';
+  setCenter(currentRoomName+"  ·  PAINT YOURSELF & HIDE!");
+  UI.controls.style.display='';
+  UI.blendWrap.style.display='';
+}
+
+function toHunt(){
+  state=S.HUNT; phaseTime=HUNT_TIME;
+  if(!player.posed){ player.posed=true; } // auto-freeze
+  setCenter("HUNT! Stay perfectly still while a Seeker is watching");
+  setTimeout(()=>{ if(state===S.HUNT) setCenter(""); }, 2600);
+}
+
+function endRound(win){
+  state=S.END;
+  survived=win; caught=!win;
+  UI.verdict.className="big-verdict "+(win?"win":"lose");
+  UI.verdict.textContent = win ? "🦎 YOU SURVIVED!" : "❌ SPOTTED!";
+  const blendPct=Math.round(blend*100);
+  UI.stats.innerHTML =
+    `<div class="statline"><span>Room</span><b>${currentRoomName}</b></div>`+
+    `<div class="statline"><span>Round reached</span><b>${round}</b></div>`+
+    `<div class="statline"><span>Final camouflage match</span><b>${blendPct}%</b></div>`+
+    `<div class="statline"><span>Seekers hunting</span><b>${seekers.length}</b></div>`+
+    `<div class="statline"><span>Result</span><b class="${win?'win':'lose'}" style="color:${win?'var(--accent2)':'var(--danger)'}">${win?'HIDER WINS':'SEEKERS WIN'}</b></div>`;
+  document.getElementById('nextBtn').textContent = win ? "NEXT ROUND ▶" : "TRY AGAIN ▶";
+  UI.roundEnd.style.display='flex';
+}
+
+function setCenter(t){ UI.center.textContent=t; }
+
+// ============================================================= input
+const keys={};
+addEventListener('keydown',e=>{
+  const k=e.key.toLowerCase();
+  keys[k]=true;
+  if(k===' '){ e.preventDefault(); if(state===S.PREP){ player.posed=!player.posed; setCenter(player.posed?"POSED — hold still!":"Free to move"); } }
+  if(k==='e'){ eyedropAt(player.x,player.y); }
+});
+addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
+
+function toWorld(cx,cy){ return { x:(cx-ox)/scale, y:(cy-oy)/scale }; }
+
+cvs.addEventListener('pointerdown', e=>{
+  if(state===S.MENU||state===S.END) return;
+  const w=toWorld(e.clientX,e.clientY);
+  eyedropAt(w.x,w.y);
+});
+
+function eyedropAt(x,y){
+  if(state!==S.PREP) return;
+  const c=sampleBg(x,y);
+  player.color={r:c.r,g:c.g,b:c.b};
+  player.painted=true;
+  // little confirm ping
+  setCenter("Sampled colour ▸ painted yourself");
+  clearTimeout(eyedropAt._t); eyedropAt._t=setTimeout(()=>{ if(state===S.PREP)setCenter(currentRoomName+"  ·  find a matching spot!"); },1200);
+}
+
+// buttons
+document.getElementById('playBtn').onclick=()=>{ round=1; startRound(); };
+document.getElementById('nextBtn').onclick=()=>{ if(survived) round++; startRound(); };
+document.getElementById('menuBtn').onclick=()=>{ state=S.MENU; UI.roundEnd.style.display='none'; UI.menu.style.display='flex'; };
+
+// ---- touch controls
+let touchVec={x:0,y:0}, usingTouch=false;
+const stick=document.getElementById('stick'), knob=document.getElementById('knob');
+if('ontouchstart' in window){
+  document.getElementById('touch').style.display='block';
+  UI.controls.style.display='none';
+  let sid=null, base={x:83,y:0};
+  const rectC=()=>stick.getBoundingClientRect();
+  stick.addEventListener('pointerdown',e=>{ sid=e.pointerId; stick.setPointerCapture(sid); moveStick(e); });
+  stick.addEventListener('pointermove',e=>{ if(e.pointerId===sid) moveStick(e); });
+  stick.addEventListener('pointerup',e=>{ sid=null; touchVec={x:0,y:0}; knob.style.left='40px'; knob.style.top='40px'; });
+  function moveStick(e){
+    const r=rectC(); let dx=e.clientX-(r.left+r.width/2), dy=e.clientY-(r.top+r.height/2);
+    const m=Math.hypot(dx,dy), max=48; if(m>max){dx=dx/m*max;dy=dy/m*max;}
+    knob.style.left=(40+dx)+'px'; knob.style.top=(40+dy)+'px';
+    touchVec={x:dx/max,y:dy/max};
+  }
+  document.getElementById('tSample').addEventListener('pointerdown',e=>{ e.preventDefault(); eyedropAt(player.x,player.y); });
+  document.getElementById('tPose').addEventListener('pointerdown',e=>{ e.preventDefault();
+    if(state===S.PREP){ player.posed=!player.posed; setCenter(player.posed?"POSED — hold still!":"Free to move"); } });
+}
+
+// ============================================================= update
+function colorDist(a,b){
+  // weighted RGB distance ~ perceptual
+  const dr=a.r-b.r, dg=a.g-b.g, db=a.b-b.b;
+  return Math.sqrt(2*dr*dr + 4*dg*dg + 3*db*db); // max ~ sqrt(9)*255 ≈ 765
+}
+const MAXDIST=Math.sqrt(9)*255;
+
+let last=performance.now();
+function loop(now){
+  const dt=Math.min((now-last)/1000, 0.05); last=now;
+  if(state===S.PREP||state===S.HUNT){ update(dt); }
+  render();
+  requestAnimationFrame(loop);
+}
+
+function update(dt){
+  elapsed+=dt;
+  phaseTime-=dt;
+  UI.timer.textContent=Math.max(0,Math.ceil(phaseTime)).toString().padStart(2,'0');
+  UI.phase.textContent = state===S.PREP ? "PREP" : "HUNT";
+
+  // ---- player movement
+  let mx=0,my=0;
+  if(keys['w']||keys['arrowup'])mx+=0,my-=1;
+  if(keys['s']||keys['arrowdown'])my+=1;
+  if(keys['a']||keys['arrowleft'])mx-=1;
+  if(keys['d']||keys['arrowright'])mx+=1;
+  if(usingTouch||touchVec.x||touchVec.y){ mx+=touchVec.x; my+=touchVec.y; }
+  const moving = (Math.abs(mx)+Math.abs(my))>0.08;
+  const canMove = !(state===S.PREP && player.posed) && !(state===S.HUNT && player.posed && moving===false);
+  // In HUNT the player can still nudge (breaks camo). In PREP posing locks you.
+  if(state===S.PREP && player.posed) { mx=0;my=0; }
+  const m=Math.hypot(mx,my)||1;
+  const sp=player.speed;
+  const nx=player.x + (mx/m)*sp*(moving?1:0);
+  const ny=player.y + (my/m)*sp*(moving?1:0);
+  if(moving){
+    player.x=Math.max(28,Math.min(W-28,nx));
+    player.y=Math.max(28,Math.min(H-28,ny));
+    player.movedTimer=0.7; // seconds of "recently moved"
+    player.facing=Math.atan2(my,mx);
+  } else {
+    player.movedTimer=Math.max(0,player.movedTimer-dt);
+  }
+  player.moving=moving;
+
+  // ---- camouflage match vs the surface directly under player
+  const under=sampleBg(player.x,player.y);
+  const d=colorDist(player.color, under);
+  blend = 1 - Math.min(1, d/(MAXDIST*0.55)); // 0.55 makes it forgiving
+  const bp=Math.round(blend*100);
+  UI.blendPct.textContent=bp+'%';
+  UI.blendBar.style.width=Math.max(2,bp)+'%';
+  UI.swatch.style.background=`rgb(${player.color.r|0},${player.color.g|0},${player.color.b|0})`;
+
+  // ---- phase transitions
+  if(state===S.PREP && phaseTime<=0){ toHunt(); return; }
+  if(state===S.HUNT){
+    updateSeekers(dt);
+    if(phaseTime<=0){ endRound(true); return; }
+    if(detection>=100){ endRound(false); return; }
+  }
+}
+
+function angleDiff(a,b){ let d=(a-b)%(Math.PI*2); if(d>Math.PI)d-=Math.PI*2; if(d<-Math.PI)d+=Math.PI*2; return Math.abs(d);}
+
+// line-of-sight: does a prop fully block view between seeker & player?
+function blocked(sx,sy,px,py){
+  for(const p of props){
+    // segment vs AABB, quick sampling
+    const steps=10;
+    let inside=0;
+    for(let i=1;i<steps;i++){
+      const t=i/steps, x=sx+(px-sx)*t, y=sy+(py-sy)*t;
+      if(x>p.x&&x<p.x+p.w&&y>p.y&&y<p.y+p.h) inside++;
+    }
+    if(inside>=2) return true;
+  }
+  return false;
+}
+
+let anyAlert=0;
+function updateSeekers(dt){
+  anyAlert=0;
+  for(const s of seekers){
+    // patrol toward waypoint
+    const dx=s.wp.x-s.x, dy=s.wp.y-s.y, dist=Math.hypot(dx,dy);
+    if(dist<24){ s.wp=randWaypoint(); }
+    else { s.x+=dx/dist*s.speed; s.y+=dy/dist*s.speed;
+      s.targetFacing=Math.atan2(dy,dx); }
+    // sweep the head a bit
+    s.scan+=dt*1.4;
+    let want=s.targetFacing + Math.sin(s.scan)*0.6;
+    // rotate toward
+    let df=((want-s.facing+Math.PI*3)%(Math.PI*2))-Math.PI;
+    s.facing+=df*Math.min(1,dt*6);
+
+    // can it see the player?
+    const pdx=player.x-s.x, pdy=player.y-s.y, pd=Math.hypot(pdx,pdy);
+    const ang=Math.atan2(pdy,pdx);
+    const inCone = pd<s.range && angleDiff(ang,s.facing)<s.fov/1 ;
+    let visible=false, rate=0;
+    if(inCone && !blocked(s.x,s.y,player.x,player.y)){
+      // visibility grows if poorly blended, if moving, or if very close
+      const closeness=1-Math.min(1,pd/s.range);
+      const exposure=(1-blend);           // 0 perfect camo .. 1 obvious
+      const movePenalty=player.movedTimer>0?0.65:0;
+      // raw per-second detection rate
+      rate = ( exposure*1.5 + movePenalty + closeness*0.25 - 0.15 );
+      if(rate>0){
+        visible=true;
+        s.suspicion=Math.min(1,s.suspicion+dt*rate);
+      } else {
+        s.suspicion=Math.max(0,s.suspicion-dt*0.6);
+      }
+    } else {
+      s.suspicion=Math.max(0,s.suspicion-dt*0.9);
+    }
+    // once fully suspicious, seeker locks on and homes -> detection climbs fast
+    if(s.suspicion>=1){
+      s.wp={x:player.x,y:player.y};
+      detection=Math.min(100, detection + dt*45);
+      anyAlert=Math.max(anyAlert,1);
+    } else if(visible){
+      detection=Math.min(100, detection + dt*22*s.suspicion);
+      anyAlert=Math.max(anyAlert,0.5+s.suspicion*0.5);
+    }
+    s._visible=visible;
+  }
+  detection=Math.max(0, detection - dt*10); // cool down when unseen
+  UI.flash.style.boxShadow = anyAlert>0
+    ? `inset 0 0 ${40+anyAlert*80}px ${8+anyAlert*20}px rgba(232,67,61,${0.15+anyAlert*0.45})`
+    : 'inset 0 0 0 0 #0000';
+}
+
+// ============================================================= render
+function render(){
+  ctx.save();
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  ctx.translate(ox,oy); ctx.scale(scale,scale);
+
+  // draw background scene
+  ctx.drawImage(bg,0,0);
+
+  if(state===S.PREP||state===S.HUNT||state===S.END){
+    if(state===S.HUNT||state===S.END) drawSeekers();
+    drawPlayer();
+    if(state===S.HUNT) drawDetection();
+  }
+  ctx.restore();
+}
+
+function drawPlayer(){
+  const p=player;
+  // shadow
+  ctx.fillStyle="#00000030"; ctx.beginPath(); ctx.ellipse(p.x,p.y+p.r*0.7,p.r*0.9,p.r*0.4,0,0,7); ctx.fill();
+  const col=`rgb(${p.color.r|0},${p.color.g|0},${p.color.b|0})`;
+  // chameleon body (rounded blob) with slight outline that fades as blend improves
+  const outlineA = state===S.HUNT ? 0.10*(1-blend) : 0.5;
+  ctx.save();
+  ctx.translate(p.x,p.y);
+  ctx.rotate(p.facing);
+  // tail
+  ctx.strokeStyle=col; ctx.lineWidth=8; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(-p.r*0.5,0);
+  ctx.quadraticCurveTo(-p.r*1.6,-p.r*0.2,-p.r*1.7,p.r*0.7); ctx.stroke();
+  // body
+  ctx.fillStyle=col; ctx.strokeStyle=`rgba(0,0,0,${outlineA})`; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.ellipse(0,0,p.r*1.15,p.r*0.9,0,0,7); ctx.fill(); if(outlineA>0.02)ctx.stroke();
+  // head
+  ctx.beginPath(); ctx.ellipse(p.r*0.9,0,p.r*0.55,p.r*0.5,0,0,7); ctx.fill();
+  // eye (turret) — always faintly visible so player can locate themselves
+  ctx.fillStyle="#111"; ctx.beginPath(); ctx.arc(p.r*0.95,-p.r*0.15,3.2,0,7); ctx.fill();
+  ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(p.r*0.95,-p.r*0.15,3.2,0,7);
+  ctx.fillStyle=`rgba(255,255,255,${state===S.HUNT?0.35:0.9})`; ctx.beginPath(); ctx.arc(p.r*1.05,-p.r*0.2,1.2,0,7); ctx.fill();
+  // legs feet dots
+  ctx.fillStyle=col;
+  ctx.beginPath(); ctx.arc(-p.r*0.2,p.r*0.85,4,0,7); ctx.arc(p.r*0.5,p.r*0.85,4,0,7); ctx.fill();
+  ctx.restore();
+
+  // "you" marker ring in prep so you never lose yourself
+  if(state===S.PREP){
+    ctx.strokeStyle="#12d98a"; ctx.lineWidth=2; ctx.setLineDash([5,5]);
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r*1.8,0,7); ctx.stroke(); ctx.setLineDash([]);
+    if(player.posed){ ctx.fillStyle="#12d98a"; ctx.font="bold 13px Trebuchet MS";
+      ctx.textAlign="center"; ctx.fillText("POSED",p.x,p.y-p.r*2.2); }
+  }
+}
+
+function drawSeekers(){
+  for(const s of seekers){
+    // vision cone
+    const alert = s.suspicion;
+    const g=ctx.createRadialGradient(s.x,s.y,10,s.x,s.y,s.range);
+    const base = alert>0.99? '232,67,61' : (s._visible? '255,176,32':'255,255,255');
+    g.addColorStop(0,`rgba(${base},${0.16+alert*0.22})`);
+    g.addColorStop(1,`rgba(${base},0)`);
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.moveTo(s.x,s.y);
+    ctx.arc(s.x,s.y,s.range,s.facing-s.fov,s.facing+s.fov); ctx.closePath(); ctx.fill();
+
+    // body (robot seeker)
+    ctx.fillStyle="#00000035"; ctx.beginPath(); ctx.ellipse(s.x,s.y+s.r*0.7,s.r,s.r*0.45,0,0,7); ctx.fill();
+    ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(s.facing);
+    ctx.fillStyle= alert>0.99?'#e8433d':'#3a4249';
+    roundRect(ctx,-s.r,-s.r,s.r*2,s.r*2,7); ctx.fill();
+    ctx.fillStyle="#12141600";
+    // visor
+    ctx.fillStyle= alert>0.99?'#ffd0cd':'#12d0ff';
+    roundRect(ctx,-s.r*0.2,-s.r*0.55,s.r*1.1,s.r*1.1,5); ctx.fill();
+    // antenna
+    ctx.strokeStyle="#222"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(0,-s.r); ctx.lineTo(0,-s.r*1.6); ctx.stroke();
+    ctx.fillStyle= alert>0.99?'#e8433d':'#12d98a'; ctx.beginPath(); ctx.arc(0,-s.r*1.6,4,0,7); ctx.fill();
+    ctx.restore();
+    // exclamation on lock
+    if(alert>=0.99){ ctx.fillStyle="#e8433d"; ctx.font="bold 26px Trebuchet MS"; ctx.textAlign="center";
+      ctx.fillText("!",s.x,s.y-s.r*2); }
+    else if(alert>0.4){ ctx.fillStyle="#ffb020"; ctx.font="bold 22px Trebuchet MS"; ctx.textAlign="center";
+      ctx.fillText("?",s.x,s.y-s.r*2); }
+  }
+}
+
+function drawDetection(){
+  if(detection<=0) return;
+  const x=player.x, y=player.y-player.r*2.4;
+  const w=54,h=7;
+  ctx.fillStyle="#000000aa"; roundRect(ctx,x-w/2-2,y-2,w+4,h+4,4); ctx.fill();
+  const c = detection>66?'#e8433d':detection>33?'#ffb020':'#12d98a';
+  ctx.fillStyle=c; roundRect(ctx,x-w/2,y,w*detection/100,h,3); ctx.fill();
+}
+
+// ============================================================= go
+resize();
+buildScene();  // draw something behind the menu
+render();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
