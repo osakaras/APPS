@@ -18,24 +18,24 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   metadataBase: new URL("https://kepalasbakery.lt"),
   title: {
-    default: "Kepalas Bakery — Amatininkų kepykla Vilniuje",
+    default: "Kepalas Bakery — Šeimos kepykla Justiniškėse",
     template: "%s — Kepalas Bakery",
   },
   description:
-    "Kepalas Bakery — amatininkų kepykla, kurioje kasdien nuo ankstaus ryto kepame babkas, bobas ir raugo duoną iš natūralių ingredientų.",
+    "„KEPALAS“ – šeimos kepykla Justiniškėse, Vilniuje. Kasdien kepame sourdough duoną ir saldžius kepinius iš aukščiausios kokybės produktų. Taikos g. 104.",
   keywords: [
     "kepykla",
-    "babka",
-    "boba",
-    "raugo duona",
+    "sourdough duona",
+    "suktinukai",
+    "saldūs kepiniai",
+    "Justiniškės",
     "Vilnius",
-    "kepiniai",
     "Kepalas Bakery",
   ],
   openGraph: {
-    title: "Kepalas Bakery — Amatininkų kepykla",
+    title: "Kepalas Bakery — Šeimos kepykla Justiniškėse",
     description:
-      "Kasdien šviežiai kepamos babkos, bobos ir raugo duona. Iškepta su meile Vilniuje.",
+      "Skoniai, kurie artimi jūsų namams. Sourdough duona ir saldūs kepiniai, iškepti su meile Vilniuje, Taikos g. 104.",
     locale: "lt_LT",
     type: "website",
   },

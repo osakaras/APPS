@@ -1,11 +1,11 @@
 const items = [
-  "Raugo duona",
-  "Šokoladinė babka",
-  "Aguoninė babka",
-  "Migdolinė boba",
+  "Sourdough duona",
   "Cinamono suktinukai",
-  "Sviestiniai kruasanai",
-  "Medaus tortas",
+  "Sūrio pyragas",
+  "Ruginė duona",
+  "Sviestinės bandelės",
+  "Šokoladinė babka",
+  "Sezoniniai kepiniai",
 ];
 
 export function Marquee() {

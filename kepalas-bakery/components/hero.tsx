@@ -8,9 +8,9 @@ import { ButtonColorful } from "@/components/ui/button-colorful";
 import { Reveal } from "@/components/reveal";
 
 const stats = [
-  { value: "15+", label: "rūšių kepinių kasdien" },
-  { value: "6:00", label: "pirmieji kepalai iš krosnies" },
-  { value: "48 val.", label: "brandinamas raugas" },
+  { value: "100%", label: "šeimos kepykla" },
+  { value: "15+", label: "rūšių kepinių" },
+  { value: "III–VII", label: "šviežia iš krosnies" },
 ];
 
 export function Hero() {
@@ -61,9 +61,10 @@ export function Hero() {
 
           <Reveal onLoad delay={0.28}>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-brown-600">
-              Kiekvieną rytą, dar prieš miestui pabundant, mūsų krosnyse gimsta
-              babkos, bobos ir raugo duona. Tik miltai, vanduo, laikas ir
-              rankos — jokių skubinimų, jokių kompromisų.
+              Šeimos kepykloje Justiniškėse kasdien gimsta sourdough duona,
+              suktinukai ir saldūs kepiniai. Tik aukščiausios kokybės
+              produktai, tradiciniai metodai ir rankų darbas — jokių
+              kompromisų.
             </p>
           </Reveal>
 
@@ -79,7 +80,7 @@ export function Hero() {
                 href="/istorija"
                 className="group inline-flex items-center gap-2 text-sm font-semibold text-brown-800 transition-colors hover:text-caramel-600"
               >
-                Mūsų istorija
+                Apie mus
                 <span className="transition-transform duration-300 group-hover:translate-x-1">
                   →
                 </span>
@@ -128,13 +129,14 @@ export function Hero() {
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           >
-            <div className="flex items-center gap-1 text-caramel-500">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
-              ))}
+            <div className="flex items-center gap-2 text-caramel-500">
+              <Star size={14} fill="currentColor" strokeWidth={0} />
+              <p className="text-xs font-semibold uppercase tracking-wider text-caramel-700">
+                Šeimos kepykla
+              </p>
             </div>
             <p className="mt-1 text-xs font-semibold text-brown-800">
-              4.9 — 300+ atsiliepimų
+              Justiniškės, Vilnius
             </p>
           </motion.div>
 
@@ -149,9 +151,9 @@ export function Hero() {
             }}
           >
             <p className="font-display text-lg font-semibold text-caramel-400">
-              Šiandien iškepta
+              Šviežia kasdien
             </p>
-            <p className="text-xs text-sand-300">6:00 val. ryto</p>
+            <p className="text-xs text-sand-300">Taikos g. 104, Vilnius</p>
           </motion.div>
         </motion.div>
       </div>

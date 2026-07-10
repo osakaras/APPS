@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock, Mail, MapPin, Phone, Wheat } from "lucide-react";
+import { Clock, Mail, MapPin, Wheat } from "lucide-react";
 
 export function Footer() {
   return (
@@ -16,8 +16,8 @@ export function Footer() {
             Kepalas <span className="text-caramel-400">Bakery</span>
           </Link>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-sand-300/80">
-            Amatininkų kepykla, kurioje kiekvienas kepalas gimsta iš raugo,
-            laiko ir rankų šilumos. Kepame kasdien nuo 6 valandos ryto.
+            Šeimos kepykla Justiniškėse, kurioje kiekvienas kepinys gimsta iš
+            aukščiausios kokybės produktų, tradicinių metodų ir rankų šilumos.
           </p>
         </div>
 
@@ -29,7 +29,7 @@ export function Footer() {
             {[
               { href: "/", label: "Pradžia" },
               { href: "/#kepiniai", label: "Kepiniai" },
-              { href: "/istorija", label: "Mūsų istorija" },
+              { href: "/istorija", label: "Apie mus" },
               { href: "/#kontaktai", label: "Kontaktai" },
             ].map((link) => (
               <li key={link.href}>
@@ -51,19 +51,21 @@ export function Footer() {
           <ul className="mt-4 space-y-3 text-sm text-sand-300/80">
             <li className="flex items-start gap-3">
               <MapPin size={16} className="mt-0.5 shrink-0 text-caramel-400" />
-              Pylimo g. 21, Vilnius
+              Taikos g. 104, Vilnius
             </li>
             <li className="flex items-start gap-3">
               <Clock size={16} className="mt-0.5 shrink-0 text-caramel-400" />
-              I–VI 7:00–19:00, VII 8:00–15:00
-            </li>
-            <li className="flex items-start gap-3">
-              <Phone size={16} className="mt-0.5 shrink-0 text-caramel-400" />
-              +370 600 00 000
+              <span>
+                III–V 9:00–17:00
+                <br />
+                VI–VII 9:00–16:00
+                <br />
+                I–II nedirbame
+              </span>
             </li>
             <li className="flex items-start gap-3">
               <Mail size={16} className="mt-0.5 shrink-0 text-caramel-400" />
-              labas@kepalasbakery.lt
+              kepalasbakery@gmail.com
             </li>
           </ul>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, MapPin, Phone } from "lucide-react";
+import { Clock, Mail, MapPin } from "lucide-react";
 import { Reveal } from "@/components/reveal";
 import { ButtonColorful } from "@/components/ui/button-colorful";
 
@@ -9,17 +9,17 @@ const details = [
   {
     icon: MapPin,
     title: "Adresas",
-    lines: ["Pylimo g. 21, Vilnius"],
+    lines: ["Taikos g. 104, Vilnius"],
   },
   {
     icon: Clock,
     title: "Darbo laikas",
-    lines: ["I–VI 7:00–19:00", "VII 8:00–15:00"],
+    lines: ["III–V 9:00–17:00", "VI–VII 9:00–16:00", "I–II nedirbame"],
   },
   {
-    icon: Phone,
+    icon: Mail,
     title: "Užsakymai",
-    lines: ["+370 600 00 000", "labas@kepalasbakery.lt"],
+    lines: ["kepalasbakery@gmail.com"],
   },
 ];
 
@@ -39,30 +39,32 @@ export function ContactCta() {
             Užsakymai
           </p>
           <h2 className="mx-auto mt-3 max-w-2xl font-display text-4xl font-semibold tracking-tight text-sand-50 sm:text-5xl">
-            Rytojaus pusryčiai prasideda{" "}
-            <span className="text-caramel-400">šiandien</span>
+            Gardžios akimirkos prasideda{" "}
+            <span className="text-caramel-400">čia</span>
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-sand-300">
-            Parašykite arba paskambinkite iki 18:00 — ryte jūsų lauks dar šilti
-            kepiniai. Didesniems užsakymams ir šventėms kepame pagal
+            Parašykite mums dėl užsakymo arba tiesiog užsukite į kepyklą
+            Justiniškėse. Didesniems užsakymams ir šventėms kepame pagal
             individualius pageidavimus.
           </p>
         </Reveal>
 
         <Reveal delay={0.15}>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <a href="mailto:labas@kepalasbakery.lt">
+            <a href="mailto:kepalasbakery@gmail.com">
               <ButtonColorful
                 label="Užsakyti el. paštu"
                 className="h-12 px-8 text-base"
               />
             </a>
             <a
-              href="tel:+37060000000"
+              href="https://maps.google.com/?q=Taikos+g.+104,+Vilnius"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group inline-flex h-12 items-center gap-2 rounded-full border border-sand-100/25 px-7 text-sm font-semibold text-sand-100 transition-colors hover:border-caramel-400 hover:text-caramel-400"
             >
-              <Phone size={16} />
-              +370 600 00 000
+              <MapPin size={16} />
+              Kaip mus rasti
             </a>
           </div>
         </Reveal>
@@ -92,12 +94,12 @@ export function ContactCta() {
 
         <Reveal delay={0.35}>
           <p className="mt-12 text-sm text-sand-300/70">
-            Norite sužinoti, iš kur atkeliavo mūsų receptai?{" "}
+            Norite sužinoti, kas slypi už mūsų kepinių?{" "}
             <Link
               href="/istorija"
               className="font-semibold text-caramel-400 underline-offset-4 transition-colors hover:text-caramel-300 hover:underline"
             >
-              Skaitykite mūsų istoriją →
+              Skaitykite apie mus →
             </Link>
           </p>
         </Reveal>

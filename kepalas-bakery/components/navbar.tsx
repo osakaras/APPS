@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/#kepiniai", label: "Kepiniai" },
-  { href: "/istorija", label: "Mūsų istorija" },
+  { href: "/istorija", label: "Apie mus" },
   { href: "/#kontaktai", label: "Kontaktai" },
 ];
 
