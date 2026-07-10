@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Clock, Mail, MapPin, Wheat } from "lucide-react";
+import { Clock, Mail, MapPin } from "lucide-react";
+import { Logo } from "@/components/logo";
 
 export function Footer() {
   return (
@@ -8,12 +9,10 @@ export function Footer() {
         <div>
           <Link
             href="/"
-            className="flex items-center gap-2 font-display text-2xl font-semibold text-sand-50"
+            aria-label="Kepalas Bakery — į pradžią"
+            className="inline-block text-sand-50 transition-opacity duration-300 hover:opacity-75"
           >
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-caramel-500 text-sand-50">
-              <Wheat size={18} />
-            </span>
-            Kepalas <span className="text-caramel-400">Bakery</span>
+            <Logo />
           </Link>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-sand-300/80">
             Šeimos kepykla Justiniškėse, kurioje kiekvienas kepinys gimsta iš

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, Wheat, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { Logo } from "@/components/logo";
 import { ButtonColorful } from "@/components/ui/button-colorful";
 import { cn } from "@/lib/utils";
 
@@ -45,13 +46,10 @@ export function Navbar() {
       <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between px-5 sm:px-8">
         <Link
           href="/"
-          className="group flex items-center gap-2 font-display text-xl font-semibold tracking-tight text-brown-900"
+          aria-label="Kepalas Bakery — į pradžią"
+          className="text-brown-900 transition-opacity duration-300 hover:opacity-75"
         >
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-caramel-500 text-sand-50 transition-transform duration-300 group-hover:rotate-12">
-            <Wheat className="h-4.5 w-4.5" size={18} />
-          </span>
-          Kepalas
-          <span className="hidden text-caramel-600 sm:inline">Bakery</span>
+          <Logo />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
