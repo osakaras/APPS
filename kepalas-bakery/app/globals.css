@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-sand-100 text-brown-800 font-sans antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  @apply bg-caramel-500/30 text-brown-900;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-sand-100;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-caramel-500/50 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-caramel-500;
+}
+
+/* Subtle warm grain to keep large sand surfaces from feeling flat */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: radial-gradient(rgba(80, 56, 35, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
