@@ -1,10 +1,9 @@
 const items = [
-  "Sourdough duona",
-  "Cinamono suktinukai",
-  "Sūrio pyragas",
-  "Ruginė duona",
-  "Sviestinės bandelės",
-  "Šokoladinė babka",
+  "Ruginė raugo duona",
+  "Šokoladinės bandelės",
+  "Niujorko sūrio pyragas",
+  "Tinginys",
+  "Šviežios bandelės",
   "Sezoniniai kepiniai",
 ];
 

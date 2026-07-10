@@ -1,28 +1,28 @@
 "use client";
 
-import { Flame, HandHeart, Hourglass, Wheat } from "lucide-react";
+import { Flame, HandHeart, Sparkles, Wheat } from "lucide-react";
 import { Reveal, Stagger, StaggerItem } from "@/components/reveal";
 
 const values = [
   {
     icon: Wheat,
-    title: "Vietiniai miltai",
-    text: "Grūdai — iš Lietuvos ūkių, malami mažomis partijomis, kad išliktų visas aromatas.",
-  },
-  {
-    icon: Hourglass,
-    title: "48 valandų raugas",
-    text: "Mūsų raugui — septyneri metai. Ilga fermentacija duonai dovanoja gylį ir lengvumą.",
-  },
-  {
-    icon: Flame,
-    title: "Kepta akmenyje",
-    text: "Akmeninis padas ir gyva kaitra sukuria tą traškią, karamelizuotą plutą.",
+    title: "Aukščiausios rūšies produktai",
+    text: "Naudojame tik atsargiai atrinktų tiekėjų produktus — natūralų skonį girdite kiekviename kąsnyje.",
   },
   {
     icon: HandHeart,
-    title: "Rankų darbas",
-    text: "Jokių konvejerių — kiekvieną kepalą formuojame, pyname ir prižiūrime rankomis.",
+    title: "Rankų darbo metodai",
+    text: "„KEPALAS“ nėra fabrikas — tai tradicinių metodų ir rankų darbo meistrystės derinys.",
+  },
+  {
+    icon: Flame,
+    title: "Šviežia kiekvieną dieną",
+    text: "Kepiniai gimsta kasdien mūsų kepykloje Justiniškėse — nuo raugo duonos iki desertų.",
+  },
+  {
+    icon: Sparkles,
+    title: "Tradicija ir kūrybiškumas",
+    text: "Nesustojame ties vienu receptu — nuolat eksperimentuojame ir ieškome naujų skonių.",
   },
 ];
 
@@ -36,14 +36,14 @@ export function Craft() {
       <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-caramel-600">
-            Kodėl Kepalas?
+            Kodėl KEPALAS?
           </p>
           <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-brown-900 sm:text-5xl">
             Amatas, kurio <span className="text-caramel-600">neskubiname</span>
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-brown-600">
-            Gera duona neturi paslapčių — tik ingredientus, kuriuos drįstame
-            išvardinti, ir laiką, kurio negailime.
+            Geri kepiniai neturi paslapčių — tik kokybiškus produktus,
+            nuoširdų požiūrį į maistą ir laiką, kurio negailime.
           </p>
         </Reveal>
 

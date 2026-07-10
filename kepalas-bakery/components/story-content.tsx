@@ -245,7 +245,7 @@ export function StoryContent() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brown-900/70 via-transparent to-transparent" />
               <p className="absolute bottom-6 left-8 max-w-md font-display text-2xl font-semibold text-sand-50 sm:text-3xl">
-                Nuo sourdough duonos iki saldžių kepinių
+                Nuo raugo duonos iki saldžių kepinių
               </p>
             </div>
           </Reveal>

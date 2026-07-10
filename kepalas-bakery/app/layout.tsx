@@ -22,10 +22,10 @@ export const metadata: Metadata = {
     template: "%s — Kepalas Bakery",
   },
   description:
-    "„KEPALAS“ – šeimos kepykla Justiniškėse, Vilniuje. Kasdien kepame sourdough duoną ir saldžius kepinius iš aukščiausios kokybės produktų. Taikos g. 104.",
+    "„KEPALAS“ – šeimos kepykla Justiniškėse, Vilniuje. Kasdien kepame raugo duoną ir saldžius kepinius iš aukščiausios kokybės produktų. Taikos g. 104.",
   keywords: [
     "kepykla",
-    "sourdough duona",
+    "raugo duona",
     "suktinukai",
     "saldūs kepiniai",
     "Justiniškės",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Kepalas Bakery — Šeimos kepykla Justiniškėse",
     description:
-      "Skoniai, kurie artimi jūsų namams. Sourdough duona ir saldūs kepiniai, iškepti su meile Vilniuje, Taikos g. 104.",
+      "Skoniai, kurie artimi jūsų namams. Raugo duona ir saldūs kepiniai, iškepti su meile Vilniuje, Taikos g. 104.",
     locale: "lt_LT",
     type: "website",
   },

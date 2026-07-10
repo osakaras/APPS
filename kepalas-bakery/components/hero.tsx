@@ -61,8 +61,8 @@ export function Hero() {
 
           <Reveal onLoad delay={0.28}>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-brown-600">
-              Šeimos kepykloje Justiniškėse kasdien gimsta sourdough duona,
-              suktinukai ir saldūs kepiniai. Tik aukščiausios kokybės
+              Šeimos kepykloje Justiniškėse kasdien gimsta raugo duona,
+              bandelės ir saldūs kepiniai. Tik aukščiausios kokybės
               produktai, tradiciniai metodai ir rankų darbas — jokių
               kompromisų.
             </p>

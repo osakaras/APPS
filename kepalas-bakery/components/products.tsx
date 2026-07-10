@@ -1,42 +1,42 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { Reveal, Stagger, StaggerItem } from "@/components/reveal";
 import { ButtonColorful } from "@/components/ui/button-colorful";
 
+const WOLT_URL = "https://wolt.com/lt/ltu/vilnius/venue/kepalas-taikos-g";
+
 const products = [
   {
-    name: "Šokoladinė babka",
+    name: "Ruginė duona",
     description:
-      "Sluoksniuota mielinė tešla, susipynusi su tirpstančiu belgišku šokoladu.",
-    price: "16 €",
-    image: "/images/babka-round.jpg",
-    tag: "Bestseleris",
+      "Tamsi raugo duona su sėklomis — be cukraus ir be mielių.",
+    price: "6,70 €",
+    image: "/images/apie/rugine-duona.jpg",
+    tag: "Duona",
   },
   {
-    name: "Aguoninė babka",
-    description:
-      "Tradicinis pynės kepalas su gausiu naminiu aguonų įdaru ir sviestine tešla.",
-    price: "12 €",
-    image: "/images/babka-winter.jpg",
-    tag: "Sezono skonis",
+    name: "Šokoladinė bandelė",
+    description: "Puri bandelė su šokoladu ir švelniu kremu.",
+    price: "3,30 €",
+    image: "/images/apie/suktinukai.jpg",
+    tag: "Bandelės",
   },
   {
-    name: "Migdolinė boba",
+    name: "Niujorko sūrio pyragas",
     description:
-      "Puri, ilgai brandinta boba su traškia migdolų plutele ir razinomis.",
-    price: "14 €",
-    image: "/images/boba-full.jpg",
-    tag: "Šventinis",
+      "Klasikinis, švelnus ir kreminis — su traškiu sausainių pagrindu.",
+    price: "5,60 €",
+    image: "/images/apie/surio-pyragas.jpg",
+    tag: "Desertai",
   },
   {
-    name: "Šokoladinė boba",
+    name: "Tinginys",
     description:
-      "Kakavinė boba su cukraus perliukais — švelni, drėgna ir kvapni.",
-    price: "14 €",
-    image: "/images/boba-close.jpg",
-    tag: "Naujiena",
+      "Su naminiais sausainiais, glaistytas šokoladu.",
+    price: "3,50 €",
+    image: "/images/apie/sokoladine-tesla.jpg",
+    tag: "Desertai",
   },
 ];
 
@@ -52,9 +52,10 @@ export function Products() {
             Iškepta šįryt, <span className="text-caramel-600">jūsų stalui</span>
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-brown-600">
-            Kepame mažomis partijomis, todėl kiekvienas kepalas gauna tiek
-            laiko, kiek jam iš tiesų reikia. Užsakykite iki 18:00 — atsiimsite
-            rytoj dar šiltus.
+            Kepame mažomis partijomis, todėl kiekvienas kepinys gauna tiek
+            laiko, kiek jam iš tiesų reikia. Užsisakykite per Wolt arba
+            užsukite į kepyklą Taikos g. 104 — visas asortimentas laukia
+            vietoje.
           </p>
         </Reveal>
 
@@ -92,13 +93,16 @@ export function Products() {
           ))}
         </Stagger>
 
-        <Reveal className="mt-12 flex justify-center" delay={0.1}>
-          <Link href="/#kontaktai">
+        <Reveal className="mt-12 flex flex-col items-center gap-3" delay={0.1}>
+          <a href={WOLT_URL} target="_blank" rel="noopener noreferrer">
             <ButtonColorful
-              label="Užsakyti visam savaitgaliui"
+              label="Užsakyti per Wolt"
               className="h-12 px-8 text-base"
             />
-          </Link>
+          </a>
+          <p className="text-sm text-brown-500">
+            Pristatome per Wolt — arba atsiimkite kepykloje Justiniškėse.
+          </p>
         </Reveal>
       </div>
     </section>
