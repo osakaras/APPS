@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-canvas text-ink font-sans;
+    /* Faint top-down warmth so flat white cards read as elevated. */
+    background-image: radial-gradient(
+      120% 80% at 50% -10%,
+      rgba(10, 132, 255, 0.05) 0%,
+      transparent 60%
+    );
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  /* True continuous-curvature corners (Apple squircle) via mask. Falls back
+     to border-radius where mask-composite isn't supported. */
+  .squircle {
+    border-radius: 2.5rem;
+  }
+  @supports (mask-composite: intersect) {
+    .squircle {
+      border-radius: 0;
+      mask: paint(squircle, 0.6);
+    }
+  }
+
+  /* Bento card — the foundational surface of the whole app. */
+  .bento {
+    @apply relative bg-surface rounded-3xl shadow-card border border-hairline
+           p-5 transition duration-500 ease-ios;
+  }
+  .bento-interactive {
+    @apply bento cursor-pointer hover:shadow-card-hover hover:-translate-y-0.5
+           active:scale-[0.985] active:translate-y-0;
+  }
+
+  /* Skeleton shimmer for optimistic / loading states. */
+  .skeleton {
+    @apply relative overflow-hidden bg-hairline/60 rounded-2xl;
+  }
+  .skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    );
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs
+           font-medium;
+  }
+}

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Pl8 — Interactive Prototype</title>
+<style>
+  :root{
+    --ink:#1C1C1E;--ink2:rgba(60,60,67,.62);--ink3:rgba(60,60,67,.32);--hair:rgba(60,60,67,.12);
+    --g:#0C0D12;--jade:#4E9E82;--neon:#3DF5A0;--coral:#C77A6E;--bronze:#B08A52;--slate:#8A77A8;--amber:#FFC24B;
+    --accent:#0A84FF;--bg:#F2F2F7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:#0C0D12;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .device{position:relative;max-width:440px;margin:0 auto;height:100vh;height:100dvh;background:var(--bg);overflow:hidden}
+  .scroll{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .pad{padding:48px 16px 120px}
+  .tap{transition:transform .2s cubic-bezier(.32,.72,0,1)}
+  .tap:active{transform:scale(.97)}
+  button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+  input{font-family:inherit}
+  .eyebrow{font-family:ui-monospace,monospace;font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}
+  .panel{background:var(--g);color:#fff;border-radius:36px;padding:24px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+  .card{background:#fff;border:1px solid var(--hair);border-radius:28px}
+  .row{display:flex;align-items:center}
+  .between{display:flex;align-items:center;justify-content:space-between}
+  .stepbtn{height:36px;width:36px;border:1px solid var(--hair);border-radius:999px;background:#fff;font-family:ui-monospace,monospace;font-size:18px;display:grid;place-items:center}
+  .btn-dark{display:block;width:100%;background:var(--g);color:#fff;border-radius:26px;padding:16px;font-family:ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;text-align:center}
+  .btn-accent{display:block;width:100%;background:var(--accent);color:#fff;border-radius:26px;padding:16px;font-size:16px;font-weight:600;text-align:center;box-shadow:0 12px 40px rgba(10,132,255,.22)}
+  .tabbar{position:absolute;left:0;right:0;bottom:0;margin:0 auto 16px;width:92%;max-width:408px;display:flex;align-items:center;justify-content:space-around;
+    background:rgba(255,255,255,.86);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--hair);border-radius:999px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:64px;padding:6px 0;font-family:ui-monospace,monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+  .tab.on{color:var(--ink)}
+  .tab .gl{font-size:16px;line-height:1}
+  .scanctr{margin-top:-24px;height:56px;width:56px;border-radius:999px;background:var(--g);color:#fff;font-size:24px;display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+  .progress{height:6px;flex:1;border-radius:999px;background:var(--hair);overflow:hidden}
+  .progress>i{display:block;height:100%;border-radius:999px;background:var(--accent);transition:width .5s cubic-bezier(.32,.72,0,1)}
+  .langcard{display:flex;align-items:center;gap:12px;border:1px solid var(--hair);background:#fff;border-radius:24px;padding:14px;text-align:left}
+  .leverage{display:flex;gap:16px;border:1px solid var(--hair);background:#fff;border-radius:28px;padding:16px}
+  .bar{display:block;width:3px;border-radius:999px;flex:none}
+  .chip{border:1px solid var(--hair);background:#fff;border-radius:16px;padding:8px 12px;font-size:14px;font-weight:500;text-transform:capitalize}
+  .dotping{position:relative;height:8px;width:8px;display:grid;place-items:center}
+  .dotping>.p{position:absolute;inset:0;border-radius:999px;opacity:.7;animation:ping 1.4s cubic-bezier(0,0,.2,1) infinite}
+  .dotping>.c{position:relative;height:8px;width:8px;border-radius:999px}
+  @keyframes ping{75%,100%{transform:scale(2.2);opacity:0}}
+  @keyframes scan{from{transform:translateY(0)}to{transform:translateY(200px)}}
+  .scanline{position:absolute;left:0;right:0;top:0;height:50%;animation:scan 1.4s cubic-bezier(.4,0,.6,1) infinite alternate}
+  @keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .fadeup{animation:fadeup .5s cubic-bezier(.32,.72,0,1) both}
+  @keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  .pop{animation:pop .45s cubic-bezier(.32,.72,0,1) both}
+  .sheetwrap{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,.4)}
+  .sheet{position:relative;max-height:92%;overflow-y:auto;border-radius:36px 36px 0 0;background:var(--bg);padding:16px 20px 40px}
+  .grab{width:40px;height:4px;border-radius:999px;background:rgba(60,60,67,.3);margin:0 auto 16px}
+  ::-webkit-scrollbar{width:0;height:0}
+</style>
+</head>
+<body>
+<div class="device"><div class="scroll" id="app"></div></div>
+<script>
+/* ===== engines ===== */
+var GRAPHITE="#0C0D12",NEON="#3DF5A0",JADE="#4E9E82",BRONZE="#B08A52",SLATE="#8A77A8",CORAL="#C77A6E",AMBER="#FFC24B";
+var TIERS={
+  lean_light:{name:"Lean Phenotype",headline:"Lean Baseline Established",color:"#6E8CA8",lev:[
+    ["Low Mechanical Load","Reduced articular stress permits high training volume and rapid motor recovery."],
+    ["High Insulin Sensitivity","Efficient nutrient partitioning primes clean myofibrillar accrual."],
+    ["Elevated Metabolic Flexibility","Rapid substrate switching across lipid and glycolytic energy systems."]]},
+  optimal_balance:{name:"Optimal Balance",headline:"Metabolic Baseline Established",color:JADE,lev:[
+    ["High Metabolic Plasticity","Optimal environment for simultaneous lipid oxidation and myofibrillar hypertrophy."],
+    ["Stabilized Endocrine Baseline","Optimal recovery windows and consistent hormone synthesis pathways."],
+    ["Peak Aerobic Efficiency","Optimized stroke volume and cardiovascular capacity."]]},
+  solid_built:{name:"Power Reserve",headline:"Strength Reserve Identified",color:BRONZE,lev:[
+    ["High Force Output Potential","Neuromuscular system pre-adapted to substantial mechanical load."],
+    ["Anabolic Surplus Reserve","Elevated caloric baseline accelerates myofibrillar hypertrophy under load."],
+    ["Superior Skeletal Density","Increased bone mineral density and joint stability for maximal loading."]]},
+  focus_zone:{name:"High Capacity",headline:"High-Capacity Profile Detected",color:SLATE,lev:[
+    ["High Force Output Potential","Neuromuscular system pre-adapted to substantial mechanical load."],
+    ["Anabolic Surplus Reserve","Elevated caloric baseline accelerates myofibrillar hypertrophy under load."],
+    ["Superior Skeletal Density","Increased bone mineral density and joint stability for maximal loading."]]}
+};
+function tierFor(b){return b<18.5?"lean_light":b<25?"optimal_balance":b<30?"solid_built":"focus_zone";}
+function bmiOf(kg,cm){var b=Math.round(kg/Math.pow(cm/100,2)*10)/10;var k=tierFor(b);var pos=(Math.max(12,Math.min(40,b))-12)/28;return{b:b,k:k,pos:pos,t:TIERS[k]};}
+function sync(h){var p=h<=24?100:Math.max(8,Math.round(100-(h-24)*1.15));var s=p>=90?"stable":p>=35?"risk":"loss";
+  return{p:p,s:s,tag:s==="stable"?"STABLE":s==="risk"?"DEGRADATION RISK":"SIGNAL LOSS",color:s==="stable"?NEON:s==="risk"?AMBER:"#FF6B5A",dir:s==="stable"?null:"LOG BIOMETRIC DATA STREAM"};}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function quote(chain,name,addr,dist,mult,fetaOut){
+  var items=[["chicken breast",cap(chain)+" Chicken Breast 500g",+(3.79*mult).toFixed(2)],
+    ["quinoa",cap(chain)+" Quinoa 500g",+(2.49*mult).toFixed(2)],
+    ["feta",fetaOut?null:cap(chain)+" Feta 200g",fetaOut?null:+(1.99*mult).toFixed(2)]];
+  var total=+items.reduce(function(s,i){return s+(i[2]||0);},0).toFixed(2);
+  var complete=items.every(function(i){return i[2]!==null;});
+  var score=+(total+0.35*(dist/1000)+(complete?0:6)).toFixed(2);
+  return{chain:chain,name:name,addr:addr,dist:dist,items:items,total:total,complete:complete,score:score};
+}
+var RANKED=[quote("lidl","Lidl Žirmūnai","Žirmūnų g. 64, Vilnius",540,0.95,false),
+  quote("maxima","Maxima X Akropolis","Ozo g. 25, Vilnius",1200,1.0,false),
+  quote("rimi","Rimi Europa","Konstitucijos pr. 7A, Vilnius",2100,1.05,false),
+  quote("iki","Iki Ozas","Ozo g. 18, Vilnius",1800,1.08,true)].sort(function(a,b){return a.score-b.score;});
+function eur(n){return "€"+n.toFixed(2);}
+function dst(m){return m<950?Math.round(m/10)*10+" m":(m/1000).toFixed(1)+" km";}
+function buzz(){try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}}
+
+/* ===== state ===== */
+var S={screen:"onb1",lang:"EN",age:29,weight:78,height:179,syncH:0,scan:"idle",
+  match:null,sel:0,mload:false,goals:{ "Muscle Gain":1,"High Protein":1 }};
+var app=document.getElementById("app");
+function set(p){for(var k in p)S[k]=p[k];render();}
+
+/* ===== fragments ===== */
+var LOCALES=[["🇬🇧","English","EN"],["🇱🇹","Lietuvių","LT"],["🇱🇻","Latviešu","LV"],["🇵🇱","Polski","PL"],["🇩🇪","Deutsch","DE"],["🇪🇸","Español","ES"],["🇫🇷","Français","FR"],["🇷🇺","Русский","RU"]];
+function gauge(r){
+  var stops=[(18.5-12)/28,(25-12)/28,(30-12)/28];
+  var ticks=stops.map(function(s){return '<span style="position:absolute;top:50%;height:8px;width:1px;transform:translateY(-50%);left:'+(s*100)+'%;background:rgba(255,255,255,.2)"></span>';}).join("");
+  var needle='<span style="position:absolute;top:50%;left:'+(r?r.pos*100:50)+'%;transform:translate(-50%,-50%);height:26px;width:2px;border-radius:2px;background:'+(r?r.t.color:"#fff")+';transition:left .7s cubic-bezier(.32,.72,0,1);opacity:'+(r?1:.3)+'"></span>';
+  var scale=[12,18.5,25,30,40].map(function(t){return '<span>'+t+'</span>';}).join("");
+  return '<div><div style="position:relative;height:28px"><span style="position:absolute;left:0;right:0;top:50%;height:1px;transform:translateY(-50%);background:rgba(255,255,255,.15)"></span>'+ticks+needle+'</div>'+
+    '<div class="mono between" style="margin-top:4px;font-size:10px;color:rgba(255,255,255,.35)">'+scale+'</div></div>';
+}
+function tabbar(active){
+  var t=[["today","Today","◎"],["scan","Scan","⌖"],["fridge","Fridge","❒"],["taste","Taste","◆"]];
+  return '<div class="tabbar">'+t.map(function(x){
+    if(x[0]==="scan")return '<button class="scanctr tap" data-act="go" data-arg="scan">'+x[2]+'</button>';
+    return '<button class="tab tap'+(active===x[0]?" on":"")+'" data-act="go" data-arg="'+x[0]+'"><span class="gl">'+x[2]+'</span>'+x[1]+'</button>';
+  }).join("")+'</div>';
+}
+
+/* ===== screens ===== */
+function onbProgress(step){
+  var bars="";for(var i=1;i<=3;i++)bars+='<div class="progress"><i style="width:'+(i<=step?100:0)+'%"></i></div>';
+  return '<div class="row" style="gap:8px">'+bars+'</div><div class="eyebrow" style="margin-top:12px">Step '+step+' of 3</div>';
+}
+function onb1(){
+  return '<div class="pad">'+onbProgress(1)+
+    '<h1 style="font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:28px">Choose your language</h1>'+
+    '<p style="color:var(--ink2);margin-top:8px">You can change this anytime in Settings.</p>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px">'+
+    LOCALES.map(function(l){var on=l[2]===S.lang;
+      return '<button class="langcard tap" data-act="lang" data-arg="'+l[2]+'" style="'+(on?"border-color:rgba(10,132,255,.7);box-shadow:0 0 0 4px rgba(10,132,255,.12)":"")+'">'+
+        '<span style="font-size:26px">'+l[0]+'</span><span style="flex:1"><span style="display:block;font-weight:600;line-height:1.1">'+l[1]+'</span><span class="mono" style="font-size:9px;text-transform:uppercase;color:var(--ink3)">'+l[2]+'</span></span>'+
+        (on?'<span style="display:grid;place-items:center;height:24px;width:24px;border-radius:999px;background:var(--accent);color:#fff;font-size:12px">✓</span>':'')+'</button>';
+    }).join("")+'</div>'+
+    '<div style="margin-top:40px"><button class="btn-accent tap" data-act="onb" data-arg="2">Continue</button></div></div>';
+}
+function stepRow(label,key,unit,step){
+  return '<div><div style="margin-bottom:8px;padding:0 4px;font-size:14px;font-weight:500;color:var(--ink2)">'+label+'</div>'+
+    '<div class="card between" style="padding:14px 18px">'+
+    '<button class="stepbtn tap" data-act="step" data-arg="'+key+':-'+step+'">−</button>'+
+    '<div class="mono" style="font-size:30px;font-weight:600">'+S[key]+'<span style="font-size:16px;font-weight:400;color:var(--ink3)"> '+unit+'</span></div>'+
+    '<button class="stepbtn tap" data-act="step" data-arg="'+key+':'+step+'">+</button></div></div>';
+}
+function onb2(){
+  return '<div class="pad">'+onbProgress(2)+
+    '<h1 style="font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:28px">A few details about you</h1>'+
+    '<p style="color:var(--ink2);margin-top:8px">We use these to personalize your nutrition.</p>'+
+    '<div style="display:grid;gap:16px;margin-top:28px">'+stepRow("Age","age","yrs",1)+stepRow("Weight","weight","kg",1)+stepRow("Height","height","cm",1)+'</div>'+
+    '<div class="row" style="gap:12px;margin-top:36px"><button class="tap" data-act="onb" data-arg="1" style="padding:16px 20px;font-weight:600;color:var(--ink2)">Back</button>'+
+    '<button class="btn-accent tap" data-act="onb" data-arg="3" style="flex:1">Continue</button></div></div>';
+}
+function onb3(){
+  var r=bmiOf(S.weight,S.height),t=r.t;
+  return '<div class="pad">'+onbProgress(3)+
+    '<div class="eyebrow" style="margin-top:24px;letter-spacing:.22em">Composition Analysis</div>'+
+    '<div class="panel" style="margin-top:12px">'+
+      '<div class="between" style="align-items:flex-start"><div><div class="mono" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)">BMI · Index</div>'+
+      '<div class="mono" style="font-size:52px;font-weight:600;line-height:1;margin-top:6px">'+r.b.toFixed(1)+'</div></div>'+
+      '<span class="mono" style="margin-top:4px;border:1px solid '+t.color+'55;border-radius:999px;padding:6px 12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:'+t.color+'">'+t.name+'</span></div>'+
+      '<div style="margin-top:24px">'+gauge(r)+'</div></div>'+
+    '<h2 style="font-size:20px;font-weight:600;letter-spacing:-.01em;margin-top:28px">'+t.headline+'</h2>'+
+    '<div class="mono" style="margin-top:6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)">Physical composition analysis complete.</div>'+
+    '<div class="eyebrow" style="margin:32px 0 12px">Primary Biological Leverage Points</div>'+
+    t.lev.map(function(p,i){return '<div class="leverage pop" style="margin-bottom:10px;animation-delay:'+(i*70)+'ms"><span class="bar" style="background:'+t.color+'"></span>'+
+      '<div style="flex:1"><div class="between" style="align-items:baseline"><span style="font-size:15px;font-weight:600">'+p[0]+'</span><span class="mono" style="font-size:10px;color:var(--ink3)">0'+(i+1)+'</span></div>'+
+      '<p style="margin-top:4px;font-size:13px;line-height:1.35;color:var(--ink2)">'+p[1]+'</p></div></div>';}).join("")+
+    '<div class="row" style="gap:12px;margin-top:24px"><button class="tap" data-act="onb" data-arg="2" style="padding:16px 20px;font-weight:600;color:var(--ink2)">Back</button>'+
+    '<button class="btn-accent tap" data-act="go" data-arg="today" style="flex:1">Get started</button></div></div>';
+}
+function macro(label,v,target,color){
+  return '<div><div class="mono" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.4)">'+label+'</div>'+
+    '<div class="mono" style="margin-top:4px;font-size:14px;font-weight:600">'+v+'<span style="color:rgba(255,255,255,.35)"> / '+target+'g</span></div>'+
+    '<div style="margin-top:8px;height:1px;width:100%;background:rgba(255,255,255,.1);overflow:hidden"><i style="display:block;height:100%;width:'+Math.min(100,v/target*100)+'%;background:'+color+'"></i></div></div>';
+}
+function dash(){
+  var r=bmiOf(S.weight,S.height),sy=sync(S.syncH);
+  var date=new Date().toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short"}).toUpperCase();
+  var dir=sy.dir?'<div class="row" style="gap:8px;margin-top:20px;border:1px solid '+sy.color+'40;background:'+sy.color+'0F;border-radius:16px;padding:10px 12px">'+
+    '<span class="mono" style="color:'+sy.color+'">▸</span><span class="mono" style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.7)">'+sy.dir+'</span></div>':'';
+  return '<div class="pad">'+
+    '<div class="between mono" style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3)"><span>Pl8 · Today</span>'+
+    '<span class="row" style="gap:12px"><span>'+date+'</span><button class="tap" data-act="go" data-arg="onb1" style="font-size:14px;color:var(--ink2)">⚙</button></span></div>'+
+    '<div style="margin:12px 0 24px"><h1 style="font-size:30px;font-weight:600;letter-spacing:-.02em">Good evening, Operator</h1>'+
+    '<div class="mono" style="margin-top:6px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)"><span style="color:'+r.t.color+'">'+r.t.name+'</span> · BMI '+r.b.toFixed(1)+'</div></div>'+
+    '<div class="panel">'+
+      '<div class="between" style="margin-bottom:20px;gap:8px"><span class="mono" style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3);flex:none">Bio-Link</span>'+
+      '<button class="tap row" data-act="sync" style="gap:8px"><span class="dotping"><span class="p" style="background:'+sy.color+'"></span><span class="c" style="background:'+sy.color+';box-shadow:0 0 8px 1px '+sy.color+'"></span></span>'+
+      '<span class="mono" style="white-space:nowrap;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55)">System Sync: <span style="color:rgba(255,255,255,.8)">'+sy.p+'%</span> <span style="color:'+sy.color+'">['+sy.tag+']</span></span></button></div>'+
+      '<div class="between" style="align-items:flex-start"><div><div class="mono" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)">Energy · kcal</div>'+
+      '<div class="mono" style="font-size:44px;font-weight:600;line-height:1;margin-top:6px">950<span style="font-size:20px;font-weight:400;color:rgba(255,255,255,.35)"> / 2430</span></div></div>'+
+      '<div style="text-align:right"><div class="mono" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)">Remaining</div>'+
+      '<div class="mono" style="font-size:24px;font-weight:600;margin-top:6px">1480</div></div></div>'+
+      '<div style="margin-top:20px;height:1px;width:100%;background:rgba(255,255,255,.1);overflow:hidden"><i style="display:block;height:100%;width:39%;background:rgba(255,255,255,.7)"></i></div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px">'+macro("Protein",64,140,JADE)+macro("Carbs",95,310,BRONZE)+macro("Fat",34,70,SLATE)+'</div>'+dir+'</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">'+
+      '<div class="card" style="padding:20px"><div class="eyebrow">Composition</div><div class="mono" style="font-size:30px;font-weight:600;margin-top:12px">'+r.b.toFixed(1)+'</div><div style="margin-top:12px;height:3px;width:40px;border-radius:999px;background:'+r.t.color+'"></div><div class="mono" style="margin-top:8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+r.t.color+'">'+r.t.name+'</div></div>'+
+      '<div class="card" style="padding:20px"><div class="eyebrow">Health Index</div><div class="mono" style="font-size:30px;font-weight:600;margin-top:12px">79<span style="font-size:16px;font-weight:400;color:var(--ink3)"> / 100</span></div><div style="margin-top:12px;height:1px;width:100%;background:var(--hair);overflow:hidden"><i style="display:block;height:100%;width:79%;background:'+JADE+'"></i></div></div>'+
+      '<button class="tap" data-act="go" data-arg="scan" style="height:112px;display:flex;flex-direction:column;justify-content:space-between;border-radius:28px;background:var(--g);color:#fff;padding:20px;text-align:left"><span style="font-size:24px;color:rgba(255,255,255,.8)">⌖</span><span class="between"><span class="mono" style="font-size:11px;letter-spacing:.14em;text-transform:uppercase">Scan Plate</span><span style="color:rgba(255,255,255,.4)">→</span></span></button>'+
+      '<button class="tap card" data-act="go" data-arg="fridge" style="height:112px;display:flex;flex-direction:column;justify-content:space-between;padding:20px;text-align:left"><span style="font-size:24px;color:var(--ink2)">❒</span><span class="between"><span class="mono" style="font-size:11px;letter-spacing:.14em;text-transform:uppercase">Fridge</span><span style="color:var(--ink3)">→</span></span></button></div>'+
+    '<div class="mono" style="margin-top:24px;text-align:center;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)">↑ tap the sync chip to simulate data degradation</div>'+
+    '</div>'+tabbar("today");
+}
+function scan(){
+  if(S.scan==="done"){
+    return '<div class="pad" style="min-height:100%;display:flex;flex-direction:column">'+scanHead()+
+      '<div class="fadeup" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center">'+
+      '<div style="position:relative;height:80px;width:80px;display:grid;place-items:center"><span class="dotping" style="position:absolute;inset:0;height:80px;width:80px"><span class="p" style="background:'+JADE+'40"></span></span>'+
+      '<div style="display:grid;place-items:center;height:80px;width:80px;border-radius:999px;border:1px solid '+JADE+'99"><span style="height:12px;width:12px;border-radius:999px;background:'+JADE+';box-shadow:0 0 22px 4px rgba(78,158,130,.7)"></span></div></div>'+
+      '<div class="mono" style="margin-top:24px;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#3DA37A">Logged to core</div></div></div>';
+  }
+  if(S.scan==="result"){
+    var items=[["chicken breast","150g"],["quinoa","120g"],["baby spinach","40g"],["cherry tomato","60g"],["olive oil","10ml"]];
+    var sents=[["◆","Loved it"],["▲","Liked it"],["■","Neutral"],["▽","Disliked"],["○","Not for me"]];
+    return '<div class="pad pop">'+scanHead()+
+      '<div class="panel">'+
+        '<div class="between" style="align-items:flex-start"><div><div class="mono" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)">Macro Telemetry · kcal</div>'+
+        '<div class="mono" style="font-size:44px;font-weight:600;line-height:1;margin-top:6px">540</div></div>'+
+        '<span class="mono" style="margin-top:4px;border:1px solid '+JADE+'55;border-radius:999px;padding:6px 12px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:'+JADE+'">GREAT</span></div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px">'+
+        [["Protein",42,JADE],["Carbs",48,BRONZE],["Fat",18,SLATE]].map(function(m){return '<div><div class="mono" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.4)">'+m[0]+'</div><div class="mono" style="margin-top:4px;font-size:18px;font-weight:600">'+m[1]+'<span style="font-size:12px;color:rgba(255,255,255,.35)">g</span></div><div style="margin-top:8px;height:1px;background:'+m[2]+'"></div></div>';}).join("")+'</div></div>'+
+      '<h1 style="font-size:20px;font-weight:600;margin-top:20px">Grilled chicken &amp; quinoa bowl</h1>'+
+      '<p style="margin-top:6px;font-size:13px;line-height:1.35;color:var(--ink2)">Lean protein with complex carbohydrate and leafy micronutrients — strong recovery substrate.</p>'+
+      '<div class="eyebrow" style="margin:24px 0 8px">Detected · 5</div>'+
+      '<div style="display:grid;gap:6px">'+items.map(function(it){return '<div class="card between" style="padding:10px 16px"><span style="font-size:14px;font-weight:500;text-transform:capitalize">'+it[0]+'</span><span class="mono" style="font-size:11px;color:var(--ink3)">'+it[1]+'</span></div>';}).join("")+'</div>'+
+      '<div class="card" style="margin-top:28px;padding:20px"><div class="eyebrow">Palate Response</div><p style="margin-top:6px;font-size:15px;font-weight:600">Was it delicious?</p>'+
+      '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px">'+sents.map(function(s){return '<button class="tap" data-act="scanlog" style="display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--hair);background:#F2F2F7;border-radius:16px;padding:10px 0"><span style="font-size:16px">'+s[0]+'</span><span class="mono" style="font-size:8px;text-transform:uppercase;color:var(--ink2);text-align:center;line-height:1.2">'+s[1]+'</span></button>';}).join("")+'</div></div></div>';
+  }
+  var analyzing=S.scan==="analyzing";
+  var corners=[["left:16px;top:16px","border-left:2px solid;border-top:2px solid"],["right:16px;top:16px","border-right:2px solid;border-top:2px solid"],["left:16px;bottom:16px","border-left:2px solid;border-bottom:2px solid"],["right:16px;bottom:16px","border-right:2px solid;border-bottom:2px solid"]];
+  return '<div class="pad" style="min-height:100%;display:flex;flex-direction:column">'+scanHead()+
+    '<button class="tap" data-act="'+(analyzing?"":"scanstart")+'" style="position:relative;width:100%;aspect-ratio:4/5;overflow:hidden;border-radius:36px;border:1px solid rgba(255,255,255,.1);background:var(--g)">'+
+    (analyzing?'<span class="scanline" style="background:linear-gradient(to bottom,transparent,'+JADE+'4d,'+JADE+'99)"></span><span class="mono" style="position:absolute;left:0;right:0;bottom:24px;text-align:center;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:'+NEON+'">Analyzing composition…</span>'
+      :'<span class="mono" style="position:absolute;inset:0;display:grid;place-items:center;padding:0 40px;text-align:center;font-size:11px;letter-spacing:.16em;text-transform:uppercase;line-height:1.6;color:rgba(255,255,255,.4)">Tap to simulate capture</span>'+
+       corners.map(function(c){return '<span style="position:absolute;height:20px;width:20px;'+c[0]+';'+c[1]+';border-color:rgba(255,255,255,.3);border-radius:4px"></span>';}).join(""))+'</button>'+
+    '<div class="mono" style="margin-top:20px;text-align:center;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)">Position your meal in frame</div>'+
+    '<div style="margin-top:auto;padding-top:24px"><button class="btn-dark tap" data-act="'+(analyzing?"":"scanstart")+'" style="opacity:'+(analyzing?.6:1)+'">'+(analyzing?"…":"Tap to simulate capture")+'</button></div></div>';
+}
+function scanHead(){
+  return '<div class="between" style="margin-bottom:24px"><button class="tap" data-act="go" data-arg="today" style="display:grid;place-items:center;height:36px;width:36px;border:1px solid var(--hair);border-radius:999px;color:var(--ink2)">✕</button>'+
+    '<span class="mono" style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3)">Plate Scanner</span><span style="width:36px"></span></div>';
+}
+var INV=[["chicken breast","500g"],["baby spinach","200g"],["cherry tomato","250g"],["feta","200g"],["broccoli","1pcs"],["garlic","1pcs"],["olive oil","500ml"]];
+var SUGG=[["Chicken & Quinoa Power Bowl","Lean protein over quinoa with greens and feta.",5,6,540,42,25,1],
+  ["Salmon & Broccoli Plate","Omega-rich salmon with brown rice and roasted broccoli.",3,5,610,38,30,2],
+  ["Mediterranean Chickpea Bowl","Plant-forward chickpea bowl with peppers and feta.",3,6,470,18,20,3]];
+function fridge(){
+  return '<div class="pad">'+
+    '<div class="between mono" style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3)"><span>Pl8 · Fridge</span><span>'+INV.length+' ITEMS</span></div>'+
+    '<button class="tap between" data-act="go" data-arg="scan" style="width:100%;margin-top:16px;border-radius:28px;background:var(--g);color:#fff;padding:16px 20px"><span class="row" style="gap:12px"><span style="font-size:20px">❒</span><span class="mono" style="font-size:12px;letter-spacing:.14em;text-transform:uppercase">Inspect Fridge</span></span><span style="color:rgba(255,255,255,.4)">→</span></button>'+
+    '<div class="eyebrow" style="margin:28px 0 8px">Inventory · '+INV.length+'</div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:8px">'+INV.map(function(it){return '<span class="chip">'+it[0]+'<span class="mono" style="margin-left:6px;font-size:11px;color:var(--ink3)">'+it[1]+'</span></span>';}).join("")+'</div>'+
+    '<div class="eyebrow" style="margin:32px 0 12px">Suggested Protocols</div>'+
+    '<div style="display:grid;gap:12px">'+SUGG.map(function(r){return '<button class="tap card" data-act="match" data-arg="'+r[0]+'" style="width:100%;padding:20px;text-align:left;border-radius:36px">'+
+      '<div class="between" style="align-items:flex-start;gap:12px"><div><h3 style="font-size:17px;font-weight:600">'+r[0]+'</h3><p style="margin-top:2px;font-size:13px;line-height:1.35;color:var(--ink2)">'+r[1]+'</p></div><span class="mono" style="flex:none;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)">'+r[2]+'/'+r[3]+'</span></div>'+
+      '<div style="margin-top:12px;height:1px;width:100%;background:var(--hair);overflow:hidden"><i style="display:block;height:100%;width:'+(r[2]/r[3]*100)+'%;background:'+JADE+'"></i></div>'+
+      '<div class="between" style="margin-top:12px"><span class="mono" style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)">'+r[4]+' kcal · '+r[5]+'g P · '+r[6]+' min</span><span class="mono" style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+BRONZE+'">'+r[7]+' missing</span></div></button>';
+    }).join("")+'</div></div>'+tabbar("fridge")+(S.match?sheet():"");
+}
+function sheet(){
+  var q=RANKED[S.sel];
+  var inner;
+  if(S.mload){
+    inner='<div class="panel"><div class="row" style="gap:8px"><span class="dotping"><span class="p" style="background:'+NEON+'"></span><span class="c" style="background:'+NEON+'"></span></span><span class="mono" style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.5)">Locating signal…</span></div>'+
+      '<div style="margin-top:24px;border-radius:28px;background:rgba(255,255,255,.04);padding:16px">'+[0,1,2].map(function(){return '<div class="between" style="padding:6px 0"><span style="height:14px;width:120px;border-radius:6px;background:rgba(255,255,255,.1);display:block"></span><span style="height:14px;width:44px;border-radius:6px;background:rgba(255,255,255,.1);display:block"></span></div>';}).join("")+'</div></div>';
+  } else {
+    var rows="";q.items.forEach(function(it,i){
+      if(it[2]!==null)rows+='<div class="between" style="padding:10px 0;'+(i?"border-top:1px solid rgba(255,255,255,.1)":"")+'"><div style="min-width:0"><div style="font-size:14px;font-weight:500;text-transform:capitalize">'+it[0]+'</div><div class="mono" style="font-size:10px;color:rgba(255,255,255,.35)">'+it[1]+'</div></div><span class="mono" style="font-size:14px">'+eur(it[2])+'</span></div>';
+      else rows+='<div class="between" style="padding:10px 0;opacity:.6;'+(i?"border-top:1px solid rgba(255,255,255,.1)":"")+'"><span style="font-size:14px;font-weight:500;text-transform:capitalize">'+it[0]+'</span><span class="mono" style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#FF6B5A">not here</span></div>';
+    });
+    var matrix=RANKED.map(function(s,i){var on=i===S.sel;
+      return '<button class="tap" data-act="sel" data-arg="'+i+'" style="display:flex;align-items:center;gap:12px;width:100%;border:1px solid '+(on?"rgba(28,28,30,.7)":"var(--hair)")+';background:#fff;border-radius:16px;padding:12px 16px;text-align:left;opacity:'+(on?1:.85)+';'+(on?"box-shadow:0 8px 24px rgba(0,0,0,.06)":"")+'">'+
+        '<span class="mono" style="font-size:11px;color:var(--ink3)">0'+(i+1)+'</span><div style="min-width:0;flex:1"><div style="font-size:14px;font-weight:600">'+cap(s.chain)+'<span style="margin-left:8px;font-weight:400;color:var(--ink3)">'+dst(s.dist)+'</span></div>'+
+        '<div class="row" style="gap:6px"><span style="height:6px;width:6px;border-radius:999px;background:'+(s.complete?"#3DA37A":AMBER)+'"></span><span class="mono" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:'+(s.complete?"#3DA37A":BRONZE)+'">'+(s.complete?"in stock":"partial")+'</span></div></div>'+
+        '<span class="mono" style="font-size:16px;font-weight:600">'+eur(s.total)+'</span></button>';
+    }).join("");
+    inner='<div class="panel pop"><div class="between" style="align-items:flex-start;gap:16px"><div><div class="mono" style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:'+NEON+'">Optimal Match · '+cap(q.chain)+'</div>'+
+      '<h3 style="font-size:20px;font-weight:600;margin-top:6px">'+q.name+'</h3><div class="mono" style="font-size:11px;color:rgba(255,255,255,.4)">'+q.addr+'</div></div>'+
+      '<div style="text-align:right"><div class="mono" style="font-size:32px;font-weight:600;line-height:1">'+eur(q.total)+'</div><div class="mono" style="margin-top:4px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.4)">Missing cost</div></div></div>'+
+      '<div class="row" style="gap:8px;margin-top:16px"><span class="mono" style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:'+(q.complete?NEON:AMBER)+'">● '+(q.complete?"All items in stock":"Partial stock")+'</span><span class="mono" style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">· '+dst(q.dist)+'</span></div>'+
+      '<div style="margin-top:20px;border-radius:28px;background:rgba(255,255,255,.04);padding:16px">'+rows+'</div>'+
+      '<button class="tap" style="margin-top:20px;display:block;width:100%;background:#fff;color:'+GRAPHITE+';border-radius:16px;padding:14px;font-family:ui-monospace,monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase">Get directions →</button></div>'+
+      '<div class="eyebrow" style="margin:16px 4px 8px">Price Matrix · '+RANKED.length+'</div><div style="display:grid;gap:8px">'+matrix+'</div>'+
+      '<div class="mono" style="margin-top:16px;text-align:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)">tap Iki — cheaper sticker, ranks last (missing feta)</div>';
+  }
+  return '<div class="sheetwrap"><button data-act="closematch" style="position:absolute;inset:0"></button>'+
+    '<div class="sheet fadeup"><div class="grab"></div><div class="eyebrow">Find cheapest store</div><h2 style="margin:4px 0 16px;font-size:18px;font-weight:600">'+S.match+'</h2>'+inner+'</div></div>';
+}
+var AFF=[["chicken breast",.82],["quinoa",.64],["baby spinach",.5],["feta",.38]];
+var AVE=[["olive oil",-.22],["cherry tomato",-.45]];
+var GOALS=["Fat Loss","Maintain","Muscle Gain","High Protein","Low Carb","Low Sugar","Heart Health","Gut Health"];
+function tbar(label,sc,pos){var color=pos?JADE:CORAL,mag=Math.min(1,Math.abs(sc));
+  var fill=pos?'left:50%;width:'+(mag*50)+'%':'right:50%;width:'+(mag*50)+'%';
+  return '<div class="row" style="gap:12px"><span style="width:96px;flex:none;font-size:14px;font-weight:500;text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+label+'</span>'+
+    '<div style="position:relative;height:6px;flex:1;border-radius:999px;background:var(--hair)"><span style="position:absolute;left:50%;top:0;height:100%;width:1px;background:rgba(60,60,67,.3)"></span><span style="position:absolute;top:0;height:100%;border-radius:999px;'+fill+';background:'+color+'"></span></div>'+
+    '<span class="mono" style="width:44px;flex:none;text-align:right;font-size:11px;color:'+color+'">'+(sc>0?"+":"")+sc.toFixed(2)+'</span></div>';
+}
+function taste(){
+  return '<div class="pad">'+
+    '<div class="between mono" style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3)"><span>Pl8 · Matrix</span><span style="color:#3DA37A">OPTIMAL BALANCE</span></div>'+
+    '<h1 style="font-size:30px;font-weight:600;letter-spacing:-.02em;margin:12px 0 24px">Taste &amp; Health Matrix</h1>'+
+    '<div class="eyebrow" style="margin-bottom:8px">Affinity Index</div><div class="card" style="padding:16px;display:grid;gap:10px;margin-bottom:24px">'+AFF.map(function(a){return tbar(a[0],a[1],true);}).join("")+'</div>'+
+    '<div class="eyebrow" style="margin-bottom:8px">Aversion Index</div><div class="card" style="padding:16px;display:grid;gap:10px;margin-bottom:24px">'+AVE.map(function(a){return tbar(a[0],a[1],false);}).join("")+'</div>'+
+    '<div class="eyebrow" style="margin:32px 0 12px">Active Protocols</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+    GOALS.map(function(g){var on=S.goals[g];return '<button class="tap between" data-act="goal" data-arg="'+g+'" style="border:1px solid '+(on?"transparent":"var(--hair)")+';background:'+(on?GRAPHITE:"#fff")+';color:'+(on?"#fff":"var(--ink2)")+';border-radius:16px;padding:14px 16px;font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase">'+g+'<span style="height:8px;width:8px;border-radius:999px;background:'+(on?NEON:"rgba(60,60,67,.2)")+'"></span></button>';}).join("")+'</div></div>'+tabbar("taste");
+}
+
+/* ===== render + events ===== */
+function render(){
+  var html;
+  switch(S.screen){
+    case "onb1":html=onb1();break; case "onb2":html=onb2();break; case "onb3":html=onb3();break;
+    case "today":html=dash();break; case "scan":html=scan();break; case "fridge":html=fridge();break; case "taste":html=taste();break;
+    default:html=dash();
+  }
+  app.innerHTML=html;
+}
+document.addEventListener("click",function(e){
+  var el=e.target.closest&&e.target.closest("[data-act]");if(!el)return;
+  var act=el.getAttribute("data-act"),arg=el.getAttribute("data-arg");buzz();
+  if(act==="lang")set({lang:arg});
+  else if(act==="onb")set({screen:"onb"+arg});
+  else if(act==="step"){var parts=arg.split(":");var key=parts[0];var d=parseInt(parts[1],10);var v={};v[key]=Math.max(1,S[key]+d);set(v);}
+  else if(act==="go")set({screen:arg==="onb1"?"onb1":arg});
+  else if(act==="sync")set({syncH:S.syncH===0?48:S.syncH===48?96:0});
+  else if(act==="scanstart"){set({scan:"analyzing"});setTimeout(function(){set({scan:"result"});},1500);}
+  else if(act==="scanlog"){set({scan:"done"});setTimeout(function(){set({scan:"idle",screen:"today",syncH:0});},1100);}
+  else if(act==="match"){set({match:arg,sel:0,mload:true});setTimeout(function(){set({mload:false});},950);}
+  else if(act==="sel")set({sel:parseInt(arg,10)});
+  else if(act==="closematch")set({match:null});
+  else if(act==="goal"){var g={};for(var k in S.goals)g[k]=S.goals[k];if(g[arg])delete g[arg];else g[arg]=1;set({goals:g});}
+});
+render();
+</script>
+</body>
+</html>
